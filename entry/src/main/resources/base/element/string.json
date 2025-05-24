@@ -1,0 +1,96 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "FinVideo"
+    },
+    {
+      "name": "privacy",
+      "value": "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1574177343973381056"
+    },
+    {
+      "name": "more",
+      "value": "更多"
+    },
+    {
+      "name": "main_group_all",
+      "value": "全部"
+    },
+    {
+      "name": "home_main",
+      "value": "主页"
+    },
+    {
+      "name": "home_media",
+      "value": "媒体库"
+    },
+    {
+      "name": "home_favourite",
+      "value": "收藏"
+    },
+    {
+      "name": "home_prefer",
+      "value": "设置"
+    },
+    {
+      "name": "prefer_current_server",
+      "value": "服务器："
+    },
+    {
+      "name": "prefer_current_address",
+      "value": "地址："
+    },
+    {
+      "name": "prefer_current_user",
+      "value": "用户："
+    },
+    {
+      "name": "prefer_server",
+      "value": "服务器"
+    },
+    {
+      "name": "prefer_user",
+      "value": "用户"
+    },
+    {
+      "name": "prefer_address",
+      "value": "地址"
+    },
+    {
+      "name": "prefer_privacy",
+      "value": "隐私政策"
+    },
+    {
+      "name": "search_title",
+      "value": "搜索"
+    },
+    {
+      "name": "player_select_speed_title",
+      "value": "选择播放速度"
+    },
+    {
+      "name": "player_no_audio_track",
+      "value": "无可用音轨"
+    },
+    {
+      "name": "player_audio_track_title",
+      "value": "选择音轨"
+    },
+    {
+      "name": "player_no_subtitle_track",
+      "value": "无可用字幕"
+    },
+    {
+      "name": "player_subtitle_track_title",
+      "value": "选择字幕"
+    }
+  ]
+}

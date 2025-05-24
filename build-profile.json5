@@ -1,0 +1,72 @@
+{
+  "app": {
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.3(15)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      },
+      {
+        "name": "publish",
+        "signingConfig": "publish",
+        "compatibleSdkVersion": "5.0.3(15)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          },
+          "nativeLib": {
+            "filter": {
+              "excludes": [
+                "**/x86_64/*.so"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default",
+            "publish"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "core",
+      "srcPath": "../FinCore/lib_core"
+    },
+    {
+      "name": "framework",
+      "srcPath": "../FinCore/lib_framework"
+    },
+    {
+      "name": "jellyfin",
+      "srcPath": "../FinSdk/jellyfin"
+    }
+  ]
+}

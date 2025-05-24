@@ -1,0 +1,12 @@
+{
+  "src": [
+    "pages/splash/SplashPage",
+    "pages/home/HomePage",
+    "pages/detail/movie/MoviePage",
+    "pages/detail/show/ShowPage",
+    "pages/detail/show/season/ShowSeasonPage",
+    "pages/media/MediaListPage",
+    "pages/player/PlayerPage",
+    "pages/search/SearchPage"
+  ]
+}

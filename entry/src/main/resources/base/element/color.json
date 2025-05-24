@@ -1,0 +1,84 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "white",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "theme_black_color",
+      "value": "#000000"
+    },
+    {
+      "name": "theme_font_color",
+      "value": "#182431"
+    },
+    {
+      "name": "theme_red_color",
+      "value": "#FF3E50"
+    },
+    {
+      "name": "theme_blue_color",
+      "value": "#0A59F0"
+    },
+    {
+      "name": "theme_yellow_color",
+      "value": "#EB9500"
+    },
+    {
+      "name": "theme_blue_background_color",
+      "value": "#1A0A59F7"
+    },
+    {
+      "name": "common_background_color",
+      "value": "#F1F3F5"
+    },
+    {
+      "name": "page_background_color",
+      "value": "#FAFAFA"
+    },
+    {
+      "name": "skeleton_color",
+      "value": "#ECECEC"
+    },
+    {
+      "name": "action_button_bg_color",
+      "value": "#1A000000"
+    },
+    {
+      "name": "liked_bg_color",
+      "value": "#1AFF3E50"
+    },
+    {
+      "name": "collected_bg_color",
+      "value": "#1AFFA200"
+    },
+    {
+      "name": "view_counts_bg_color",
+      "value": "#4D000000"
+    },
+    {
+      "name": "linear_gradient_bg_color_start",
+      "value": "#00FFFFFF"
+    },
+    {
+      "name": "linear_gradient_bg_color_end",
+      "value": "#FFF2F3F4"
+    },
+    {
+      "name": "swiper_indicator_color",
+      "value": "#cccccc"
+    },
+    {
+      "name": "article_background_color",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "shadow_color",
+      "value": "#1400001E"
+    }
+  ]
+}

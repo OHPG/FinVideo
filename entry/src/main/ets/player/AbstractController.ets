@@ -1,0 +1,218 @@
+import { media } from "@kit.MediaKit";
+import { BaseItemDto } from "@ohpg/jellyfin";
+import { Repository } from "../data/Repository";
+import { ErrorCallback } from "@kit.BasicServicesKit";
+
+/**
+ * @Author peerless2012
+ * @Email peerless2012@126.com
+ * @DateTime 2025/4/26 16:50
+ * @Version V1.0
+ * @Description
+ */
+export abstract class AbstractController extends XComponentController {
+
+  protected readonly context: Context
+
+  protected readonly repository: Repository
+
+  protected itemDto?: BaseItemDto
+
+  protected lastPosition = 0
+
+  private lastState?: media.AVPlayerState = undefined
+
+  private stateChangeCallback?: media.OnAVPlayerStateChangeHandle
+
+  protected progressCallback?: Callback<number>
+
+  protected errorCallback?: ErrorCallback
+
+  constructor(context: Context) {
+    super();
+    this.context = context
+    this.repository = AppStorage.get(Repository.REPOSITORY)!
+  }
+
+  /**
+   * Set data
+   * @param item
+   * @returns
+   */
+  public abstract setData(item: BaseItemDto): Promise<void>
+
+  /**
+   * Set fit type
+   * @param type
+   */
+  public abstract setFitType(type: "Inside" | "Crop"): void
+
+  /**
+   * Get video width
+   * @returns
+   */
+  public abstract getWidth(): number | undefined
+
+  /**
+   * Get video height
+   * @returns
+   */
+  public abstract getHeight(): number | undefined
+
+  /**
+   * Prepare
+   * @returns
+   */
+  public abstract prepare(): Promise<void>
+
+  /**
+   * Start play
+   * @returns
+   */
+  public abstract start(): Promise<void>
+
+  /**
+   * Pause play
+   * @returns
+   */
+  public abstract pause(): Promise<void>
+
+  /**
+   * Stop play
+   * @returns
+   */
+  public abstract stop(): Promise<void>
+
+  /**
+   * Reset play
+   * @returns
+   */
+  public abstract reset(): Promise<void>
+
+  /**
+   * Seek
+   * @param position
+   * @returns
+   */
+  public abstract seek(position: number): Promise<void>
+
+  /**
+   * Get duration
+   * @returns
+   */
+  public abstract getDuration(): number
+
+  /**
+   * Get play position
+   * @returns
+   */
+  public abstract getPosition(): number
+
+  /**
+   * Get current track
+   * @returns
+   */
+  public abstract getCurrentTrack(type: media.MediaType): Promise<number>
+
+  /**
+   * Get tracks
+   * @returns
+   */
+  public abstract getTrackInfo(type: media.MediaType): Promise<Array<media.MediaDescription>>
+
+  /**
+   * Select track
+   * @param type
+   * @param index
+   */
+  public abstract selectTrack(type: media.MediaType, index: number)
+
+  /**
+   * Get speed
+   * @returns
+   */
+  public abstract getSpeed(): media.PlaybackSpeed
+
+  /**
+   * Set speed
+   * @param speed
+   */
+  public abstract setSpeed(speed: media.PlaybackSpeed)
+
+  onProgressChange(callback: Callback<number>) {
+    this.progressCallback = callback
+  }
+
+  offProgressChange() {
+    this.progressCallback = undefined
+  }
+
+  onStateChange(callback: media.OnAVPlayerStateChangeHandle) {
+    this.stateChangeCallback = callback
+  }
+
+  offStateChange() {
+    this.stateChangeCallback = undefined
+  }
+
+  onError(callback: ErrorCallback) {
+    this.errorCallback = callback
+  }
+
+  offError() {
+    this.errorCallback = undefined
+  }
+
+  protected onStateChanged(state: media.AVPlayerState, reason: media.StateChangeReason) {
+    this.lastState = state
+    this.stateChangeCallback?.(state, reason)
+  }
+
+  protected reportPlaybackStart() {
+    if (!this.itemDto) {
+      return
+    }
+    console.log("xxx: start " + this.itemDto.Id)
+    this.repository.onPlaybackStart(this.itemDto.Id!)
+      .then(() => {
+        console.log("xxx: start success.")
+      })
+      .catch((error: Error) => {
+        console.warn("xxx: start fail " + JSON.stringify(error))
+      })
+  }
+
+  protected reportPlaybackUpdate() {
+    if (!this.itemDto) {
+      return
+    }
+    this.lastPosition = this.getPosition() * 10000
+    console.log("xxx: update " + this.itemDto.Id + ", position = " + this.lastPosition)
+    this.repository.onPlaybackUpdate(this.itemDto.Id!, this.lastPosition, this.lastState === 'playing')
+      .then(() => {
+        console.log("xxx: update success.")
+      })
+      .catch((error: Error) => {
+        console.warn("xxx: update fail " + JSON.stringify(error))
+      })
+  }
+
+  protected reportPlaybackStop() {
+    if (!this.itemDto) {
+      return
+    }
+    console.log("xxx: stop " + this.itemDto.Id)
+    this.repository.onPlaybackStop(this.itemDto.Id!, this.lastPosition)
+      .then(() => {
+        console.log("xxx: stop success.")
+      })
+      .catch((error: Error) => {
+        console.warn("xxx: stop fail " + JSON.stringify(error))
+      })
+  }
+
+  public async release(): Promise<void> {
+    this.stateChangeCallback = undefined
+  }
+
+}

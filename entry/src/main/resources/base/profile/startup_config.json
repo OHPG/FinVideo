@@ -1,0 +1,11 @@
+{
+  "startupTasks": [
+    {
+      "name": "AppInit",
+      "srcEntry": "./ets/startup/AppStartupTask.ets",
+      "runOnThread": "mainThread",
+      "waitOnMainThread": true
+    }
+  ],
+  "configEntry": "./ets/startup/AppStartupConfig.ets"
+}

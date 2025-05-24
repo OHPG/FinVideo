@@ -1,0 +1,10 @@
+{
+  "app": {
+    "bundleName": "org.ohpg.fin.video",
+    "vendor": "example",
+    "versionCode": 100,
+    "versionName": "0.1.0",
+    "icon": "$media:logo",
+    "label": "$string:app_name"
+  }
+}
