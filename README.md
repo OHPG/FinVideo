@@ -20,8 +20,11 @@ FinVideo重视用户隐私保护，严格遵守相关法律法规，保护用户
 
 如有隐私相关问题，请通过电子邮件联系: peerless2012@126.com
 
-## 关于OHPG
+## 关于
 OHPG（OpenHarmony PlayGround）是一个开放组织，旨在为HarmonyOS系统打造更多在其他平台应用的替代，欢迎更多感兴趣的小伙伴加入我们。
+
+## 注意
+FinVideo名称及图标，均受版权保护。
 
 ## 特别鸣谢
 * [wlmedia](https://github.com/ywl5320/wlmedia) 赞助本项目的播放器功能。
