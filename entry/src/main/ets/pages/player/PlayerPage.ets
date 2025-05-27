@@ -6,29 +6,35 @@ import { PlayerViewModel } from './PlayerViewModel'
 import { PlayerArgs } from './PlayerArgs'
 import { TimeTool } from '@ohpg/fin-core'
 import { media } from '@kit.MediaKit'
-import { BaseItemDto } from '@ohpg/jellyfin'
+import { BaseItemDto, MediaSourceType, MediaStreamType, VideoRange, VideoRangeType } from '@ohpg/jellyfin'
 import { AbstractController } from '../../player/AbstractController'
 import { WLController } from '../../player/WLController'
 import { AVController } from '../../player/AVController'
 import { AVVolumePanel } from '@kit.AudioKit'
+import { AppPrefer } from '../../prefer/AppPrefer'
+import { PlayerImpl } from '../../player/PlayerImpl'
 
 @Entry
 @Component
 struct PlayerPage {
+  
+  private args = router.getParams() as PlayerArgs
 
   private currenWindow = AppStorage.get<window.Window>(AvoidAreaSystem.CURRENT_WINDOW)!
 
-  private args = router.getParams() as PlayerArgs
+  private appPrefer: AppPrefer = AppStorage.get(AppPrefer.PREFER)!
+  
+  @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
   private readonly viewModel = new PlayerViewModel(getContext(), this.args)
-
-  private readonly videoController: AbstractController = new WLController(getContext())
 
   private preferOrientation?: number
 
   private itemDto?: BaseItemDto
 
-  @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
+  private videoController?: AbstractController = undefined
+
+  @State videoControllerReady :boolean = false
 
   @State loading: boolean = false
 
@@ -86,6 +92,45 @@ struct PlayerPage {
       this.currenWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE)
 
     }
+    this.initData()
+  }
+
+  private initData() {
+    this.loading = true
+    this.viewModel.loadData()
+      .then((item) => {
+        let sdr = true
+        item.MediaSources?.[0].MediaStreams?.forEach((source) => {
+          if (source.Type === MediaStreamType.Video) {
+            if (source.VideoRangeType) {
+              sdr = source.VideoRangeType === VideoRangeType.Sdr
+                || source.VideoRangeType == VideoRangeType.Unknown
+            } else if (source.VideoRange) {
+              sdr = source.VideoRange !== VideoRange.Hdr
+            }
+          }
+        })
+        this.itemDto = item
+        this.initPlayer(!sdr)
+        this.videoController!.setData(item)
+      })
+      .catch((error: Error) => {
+        this.itemDto = undefined
+        this.loading = false
+        promptAction.showToast({message: "加载失败，" + error.message})
+      })
+  }
+  
+  private initPlayer(hdr: boolean) {
+    let impl = this.appPrefer.getPlayerImpl()
+    if (impl == PlayerImpl.AVPlayer) {
+      this.videoController = new AVController(getContext())
+    } else if (impl === PlayerImpl.WL_MEDIA){
+      this.videoController = new WLController(getContext())
+    } else {
+      this.videoController = hdr ? new AVController(getContext()) : new WLController(getContext())
+    }
+    this.videoControllerReady = true
     this.videoController.onProgressChange((progress) => {
       this.progress = progress
     })
@@ -100,12 +145,12 @@ struct PlayerPage {
       if (state === 'idle') {
 
       } else if (state === 'initialized') {
-        this.videoController.prepare()
+        this.videoController!.prepare()
       } else if (state === 'prepared') {
         this.loading = false
         this.prepared = true
-        this.duration = this.videoController.getDuration()
-        this.videoController.start()
+        this.duration = this.videoController!.getDuration()
+        this.videoController!.start()
       } else if (state === "playing") {
       } else if (state === 'paused') {
       } else if (state === 'completed') {
@@ -123,33 +168,20 @@ struct PlayerPage {
       this.loading = false
       promptAction.showToast({message: "播放失败，" + error.code + "：" + error.message})
     })
-    this.initData()
-  }
-
-  private initData() {
-    this.loading = true
-    this.viewModel.loadData()
-      .then((item) => {
-        this.itemDto = item
-        this.videoController.setData(item)
-      })
-      .catch((error: Error) => {
-        this.itemDto = undefined
-        this.loading = false
-        promptAction.showToast({message: "加载失败，" + error.message})
-      })
   }
 
   build() {
     Stack() {
       // video
-      XComponent({
-        id: "player_surface",
-        type: XComponentType.SURFACE,
-        controller: this.videoController
-      })
-        .width(CommonConstants.FULL_PERCENT)
-        .height(CommonConstants.FULL_PERCENT)
+      if (this.videoControllerReady) {
+        XComponent({
+          id: "player_surface",
+          type: XComponentType.SURFACE,
+          controller: this.videoController
+        })
+          .width(CommonConstants.FULL_PERCENT)
+          .height(CommonConstants.FULL_PERCENT)
+      }
 
       // gesture
       if (!this.locked) {
@@ -277,12 +309,12 @@ struct PlayerPage {
             // forward & backward
             TapGesture({ count: 2 })
               .onAction((event) => {
-                if (this.state !== 'playing') {
+                if (this.videoController === undefined || this.state !== 'playing') {
                   return
                 }
                 let width = event.target.area.width as number
                 let x = event.fingerList[0].localX as number
-                let position = this.videoController.getPosition()
+                let position = this.videoController!.getPosition()
                 if (x > width / 2) {
                   this.gestureForward = 30
                   position += this.gestureForward * 1000
@@ -302,16 +334,16 @@ struct PlayerPage {
                   this.gestureBackward = undefined
                   this.gestureForwardOrBackwardTimeoutId = undefined
                 }, 600)
-                this.videoController.seek(position)
+                this.videoController!.seek(position)
               }),
 
             // speedup
             LongPressGesture()
               .onAction((event) => {
-                if (this.state !== 'playing') {
+                if (this.videoController == undefined || this.state !== 'playing') {
                   return
                 }
-                let speed = this.videoController.getSpeed()
+                let speed = this.videoController!.getSpeed()
                 if (speed === media.PlaybackSpeed.SPEED_FORWARD_3_00_X) {
                   return
                 }
@@ -319,9 +351,9 @@ struct PlayerPage {
                 this.gesturing = true
                 if (this.saveSpeed === media.PlaybackSpeed.SPEED_FORWARD_2_00_X) {
                   this.gestureSpeed = "3x"
-                  this.videoController.setSpeed(media.PlaybackSpeed.SPEED_FORWARD_3_00_X)
+                  this.videoController!.setSpeed(media.PlaybackSpeed.SPEED_FORWARD_3_00_X)
                 } else {
-                  this.videoController.setSpeed(media.PlaybackSpeed.SPEED_FORWARD_2_00_X)
+                  this.videoController!.setSpeed(media.PlaybackSpeed.SPEED_FORWARD_2_00_X)
                   this.gestureSpeed = "2x"
                 }
               })
@@ -330,7 +362,7 @@ struct PlayerPage {
                 if (this.saveSpeed === undefined) {
                   return
                 }
-                this.videoController.setSpeed(this.saveSpeed)
+                this.videoController?.setSpeed(this.saveSpeed)
                 this.saveSpeed = undefined
                 this.gestureSpeed = undefined
               }),
@@ -378,7 +410,7 @@ struct PlayerPage {
             // scale type
             PinchGesture({fingers: 2})
               .onActionEnd((event) => {
-                this.videoController.setFitType(event.scale > 1
+                this.videoController?.setFitType(event.scale > 1
                   ? 'Crop'
                   : 'Inside')
               })
@@ -430,6 +462,7 @@ struct PlayerPage {
             SymbolGlyph($r('sys.symbol.speed_multiple'))
               .fontSize(28)
               .fontColor([$r('sys.color.font_on_primary')])
+              .enabled(this.prepared)
               .onClick(() => {
                 this.chooseSpeed()
               })
@@ -437,6 +470,7 @@ struct PlayerPage {
             SymbolGlyph($r('sys.symbol.AI_sound'))
               .fontSize(28)
               .fontColor([$r('sys.color.font_on_primary')])
+              .enabled(this.prepared)
               .onClick(() => {
                 this.chooseAudioTrack()
               })
@@ -444,6 +478,7 @@ struct PlayerPage {
             SymbolGlyph($r('sys.symbol.AI_subtitles'))
               .fontSize(28)
               .fontColor([$r('sys.color.font_on_primary')])
+              .enabled(this.prepared)
               .onClick(() => {
                 this.chooseSubtitleTrack()
               })
@@ -495,9 +530,9 @@ struct PlayerPage {
                 .onClick(() => {
                   if (this.itemDto) {
                     if (this.state === 'playing') {
-                      this.videoController.pause()
+                      this.videoController?.pause()
                     } else {
-                      this.videoController.start()
+                      this.videoController?.start()
                     }
                   } else {
                     this.initData()
@@ -540,7 +575,7 @@ struct PlayerPage {
               .enabled(this.prepared)
               .onChange((num, mode) => {
                 if (this.duration > 0 && mode === SliderChangeMode.End) {
-                  this.videoController.seek(num)
+                  this.videoController?.seek(num)
                 }
               })
           }
@@ -609,7 +644,7 @@ struct PlayerPage {
   onPageShow(): void {
     this.ui = true
     if (this.shouldResumePlay) {
-      this.videoController.start()
+      this.videoController?.start()
     }
     this.shouldResumePlay = false
     this.addUITimeout()
@@ -659,7 +694,7 @@ struct PlayerPage {
       , media.PlaybackSpeed.SPEED_FORWARD_3_00_X]
     let speedNameArray = ["0.5x", "0.75x", "1.0x", "1.5x", "1.75x", "2.0x", "3.0x"]
     let speedDialog = new OptionDialog(this.getUIContext())
-    let currentSpeed = this.videoController.getSpeed()
+    let currentSpeed = this.videoController!.getSpeed()
     speedDialog.setTitle($r('app.string.player_select_speed_title'))
     let optionArray = new Array<Option>()
     speedNameArray.forEach((value, index) => {
@@ -670,7 +705,7 @@ struct PlayerPage {
     })
     speedDialog.setOptions(optionArray)
     speedDialog.setOptionCallback((index) => {
-      this.videoController.setSpeed(speedModeArray[index])
+      this.videoController!.setSpeed(speedModeArray[index])
     })
     speedDialog.show()
   }
@@ -684,8 +719,8 @@ struct PlayerPage {
   }
 
   private async chooseTrack(type: media.MediaType) {
-    let selectedTrack = await this.videoController.getCurrentTrack(type)
-    let trackArray = await this.videoController.getTrackInfo(type)
+    let selectedTrack = await this.videoController!.getCurrentTrack(type)
+    let trackArray = await this.videoController!.getTrackInfo(type)
     if (trackArray.length <= 0) {
       this.getUIContext().getPromptAction().showToast({message: type === media.MediaType.MEDIA_TYPE_SUBTITLE
         ? $r('app.string.player_no_subtitle_track') : $r('app.string.player_no_audio_track')})
@@ -708,23 +743,23 @@ struct PlayerPage {
     trackDialog.setOptionCallback((index) => {
       let track = trackArray[index]
       let trackIndex = track[media.MediaDescriptionKey.MD_KEY_TRACK_INDEX] as number
-      this.videoController.selectTrack(type, trackIndex)
+      this.videoController!.selectTrack(type, trackIndex)
     })
     await trackDialog.show()
   }
 
   onPageHide(): void {
-    if (this.state === 'playing') {
-      this.videoController.pause()
+    if (this.state === 'playing' && this.videoController) {
+      this.videoController!.pause()
       this.shouldResumePlay = true
     }
   }
 
   aboutToDisappear(): void {
     this.clearUITimeout()
-    this.videoController.offStateChange()
-    this.videoController.offError()
-    this.videoController.release()
+    this.videoController?.offStateChange()
+    this.videoController?.offError()
+    this.videoController?.release()
     this.currenWindow.setWindowSystemBarEnable(['status', 'navigation'])
     if (this.preferOrientation !== undefined) {
       this.currenWindow.setPreferredOrientation(this.preferOrientation)

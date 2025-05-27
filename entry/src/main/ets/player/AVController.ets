@@ -33,9 +33,11 @@ export class AVController extends AbstractController {
 
   onSurfaceCreated(surfaceId: string): void {
     this.surfaceId = surfaceId
+    // console.log("AVController onSurfaceCreated surfaceId = " + surfaceId)
   }
 
   onSurfaceChanged(surfaceId: string, rect: SurfaceRect): void {
+    // console.log("AVController onSurfaceChanged surfaceId = " + surfaceId + ", rect = " + JSON.stringify(rect))
     if (rect.surfaceWidth > rect.surfaceHeight) {
       if (this.windowWidth <= 0 || this.windowHeight <= 0) {
         this.windowWidth = rect.surfaceWidth
@@ -46,6 +48,7 @@ export class AVController extends AbstractController {
   }
 
   onSurfaceDestroyed(surfaceId: string): void {
+    // console.log("AVController onSurfaceDestroyed surfaceId = " + surfaceId)
     this.surfaceId = undefined
   }
 
@@ -68,7 +71,12 @@ export class AVController extends AbstractController {
         if (this.avSpeed !== undefined) {
           this.avPlayer?.setSpeed(this.avSpeed)
         }
-        // seek
+        // continue play
+        let percent = this.itemDto?.UserData?.PlayedPercentage
+        let ticks = this.itemDto?.UserData?.PlaybackPositionTicks
+        if (ticks && percent && percent <= 98) {
+          this.avPlayer?.seek(ticks / 10000)
+        }
         this.avPlayer?.play()
       }
       if (state === 'playing') {
@@ -135,8 +143,10 @@ export class AVController extends AbstractController {
 
   public async setData(item: BaseItemDto): Promise<void> {
     this.itemDto = item
-    let avPlayer = await this.requireAvPlayer()
     let url = await this.repository.getMediaSource(item.Id!)
+    // console.log("AVController setData began, url = " + url)
+    let avPlayer = await this.requireAvPlayer()
+    // console.log("AVController setData end")
     avPlayer.url = url
   }
 
@@ -244,7 +254,7 @@ export class AVController extends AbstractController {
   }
 
   public async seek(position: number): Promise<void> {
-    console.log("VideoController: seek " + position)
+    // console.log("VideoController: seek " + position)
     this.avPlayer?.seek(position, media.SeekMode.SEEK_CLOSEST)
   }
 

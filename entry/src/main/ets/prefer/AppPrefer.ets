@@ -1,4 +1,5 @@
 import { preferences } from "@kit.ArkData"
+import { PlayerImpl } from "../player/PlayerImpl"
 
 /**
  * @Author peerless2012
@@ -12,6 +13,8 @@ export class AppPrefer {
   public static readonly PREFER = "prefer"
 
   private static readonly KEY_PRIVACY_GRANT = "privacy_grant"
+
+  private static readonly KEY_PLAYER_IMPL = "player_impl"
 
   private readonly preference: preferences.Preferences
 
@@ -28,6 +31,18 @@ export class AppPrefer {
 
   public setPrivacyGrant(): void {
     this.preference.putSync(AppPrefer.KEY_PRIVACY_GRANT, true)
+    this.preference.flush()
+  }
+
+  public getPlayerImpl(): PlayerImpl {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_IMPL)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_IMPL, 0) as number
+    }
+    return 0
+  }
+
+  public setPlayerImpl(impl: PlayerImpl) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_IMPL, impl)
     this.preference.flush()
   }
 

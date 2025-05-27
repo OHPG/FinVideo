@@ -3,6 +3,7 @@ import { HomeToolBar } from "../../../widget/bar/HomeToolBar"
 import { CommonConstants } from "../../common/CommonConstants"
 import { WebTool} from '@ohpg/fin-core'
 import { FinRouter} from '@ohpg/fin-framework'
+import router from "@ohos.router"
 
 /**
  * @Author peerless2012
@@ -75,6 +76,10 @@ export struct PreferComponent {
 
       this.preferItemBuilder($r('sys.symbol.person'), $r('app.string.prefer_user'), () => {
         FinRouter.editUser()
+      })
+
+      this.preferItemBuilder($r('sys.symbol.play_video'), $r('app.string.prefer_video'), () => {
+        router.push({url: "pages/setting/VideoSettingPage"})
       })
 
       this.preferItemBuilder($r('sys.symbol.doc_plaintext'), $r('app.string.prefer_privacy'), () => {

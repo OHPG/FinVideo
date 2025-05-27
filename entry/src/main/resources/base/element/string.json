@@ -65,6 +65,34 @@
       "value": "地址"
     },
     {
+      "name": "prefer_video",
+      "value": "播放器"
+    },
+    {
+      "name": "player_impl_auto",
+      "value": "Auto"
+    },
+    {
+      "name": "player_impl_auto_desc",
+      "value": "* 当播放HDR视频时，选择AVPlayer。\n* 当播放普通视频时，选择WLMedia。"
+    },
+    {
+      "name": "player_impl_system",
+      "value": "AVPlayer"
+    },
+    {
+      "name": "player_impl_system_desc",
+      "value": "优点：\n* 支持HDR。\n\n缺点：\n* 支持视频、音频、字幕格式有限。"
+    },
+    {
+      "name": "player_impl_wl",
+      "value": "WLMedia"
+    },
+    {
+      "name": "player_impl_wl_desc",
+      "value": "优点：\n* 支持绝大数的视频、音频和字幕格式。\n\n缺点：\n* 不支持HDR/DV。"
+    },
+    {
       "name": "prefer_privacy",
       "value": "隐私政策"
     },

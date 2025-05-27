@@ -28,7 +28,11 @@ export class PlayerViewModel extends AppViewModel {
       this.itemDto = await this.repository.loadMovie(this.args.id)
     } else if (this.args.type === BaseItemKind.Episode) {
       this.itemDto = await this.repository.getEpisode(this.args.id)
+    } else {
+      throw new Error("Unsupported type " + this.args.type)
     }
+    let sourceResponse = await this.repository.loadMediaSource(this.itemDto!.Id!)
+    this.itemDto!.MediaSources = sourceResponse.MediaSources
     return this.itemDto!
   }
 

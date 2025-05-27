@@ -7,6 +7,7 @@
     "pages/detail/show/season/ShowSeasonPage",
     "pages/media/MediaListPage",
     "pages/player/PlayerPage",
-    "pages/search/SearchPage"
+    "pages/search/SearchPage",
+    "pages/setting/VideoSettingPage"
   ]
 }

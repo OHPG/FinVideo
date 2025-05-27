@@ -58,7 +58,7 @@ export class WLController extends AbstractController {
         // continue play
         let percent = this.itemDto?.UserData?.PlayedPercentage
         let ticks = this.itemDto?.UserData?.PlaybackPositionTicks
-        if (ticks && percent && percent <= 98 ) {
+        if (ticks && percent && percent <= 98) {
           this.wlPlayer.seek(ticks / (10000 * 1000))
         }
         this.wlPlayer?.start();

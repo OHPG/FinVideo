@@ -16,6 +16,8 @@ export abstract class AbstractController extends XComponentController {
 
   protected readonly repository: Repository
 
+  private reportingPlayback: boolean = false
+
   protected itemDto?: BaseItemDto
 
   protected lastPosition = 0
@@ -172,28 +174,34 @@ export abstract class AbstractController extends XComponentController {
     if (!this.itemDto) {
       return
     }
-    console.log("xxx: start " + this.itemDto.Id)
+    // console.log("AbstractController: reportPlaybackStart " + this.itemDto.Id)
+    this.reportingPlayback = true
     this.repository.onPlaybackStart(this.itemDto.Id!)
       .then(() => {
-        console.log("xxx: start success.")
+        this.reportingPlayback = false
+        // console.log("AbstractController: reportPlaybackStart success.")
       })
       .catch((error: Error) => {
-        console.warn("xxx: start fail " + JSON.stringify(error))
+        this.reportingPlayback = false
+        // console.warn("AbstractController: reportPlaybackStart fail " + JSON.stringify(error))
       })
   }
 
   protected reportPlaybackUpdate() {
-    if (!this.itemDto) {
+    if (!this.itemDto || this.reportingPlayback) {
       return
     }
+    this.reportingPlayback = true
     this.lastPosition = this.getPosition() * 10000
-    console.log("xxx: update " + this.itemDto.Id + ", position = " + this.lastPosition)
+    // console.log("AbstractController: reportPlaybackUpdate " + this.itemDto.Id + ", position = " + this.lastPosition)
     this.repository.onPlaybackUpdate(this.itemDto.Id!, this.lastPosition, this.lastState === 'playing')
       .then(() => {
-        console.log("xxx: update success.")
+        this.reportingPlayback = false
+        // console.log("AbstractController: reportPlaybackUpdate success.")
       })
       .catch((error: Error) => {
-        console.warn("xxx: update fail " + JSON.stringify(error))
+        this.reportingPlayback = false
+        // console.warn("AbstractController: reportPlaybackUpdate fail " + JSON.stringify(error))
       })
   }
 
@@ -201,13 +209,16 @@ export abstract class AbstractController extends XComponentController {
     if (!this.itemDto) {
       return
     }
-    console.log("xxx: stop " + this.itemDto.Id)
+    this.reportingPlayback = true
+    // console.log("AbstractController: reportPlaybackStop " + this.itemDto.Id)
     this.repository.onPlaybackStop(this.itemDto.Id!, this.lastPosition)
       .then(() => {
-        console.log("xxx: stop success.")
+        this.reportingPlayback = false
+        // console.log("AbstractController: reportPlaybackStop success.")
       })
       .catch((error: Error) => {
-        console.warn("xxx: stop fail " + JSON.stringify(error))
+        this.reportingPlayback = false
+        // console.warn("AbstractController: reportPlaybackStop fail " + JSON.stringify(error))
       })
   }
 
