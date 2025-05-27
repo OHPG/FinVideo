@@ -54,7 +54,11 @@ struct PlayerPage {
 
   @State gestureSpeed?: string = undefined
 
+  private gestureInitValue: number = 0
+
   @State gestureBrightness: boolean = false
+
+  @State gestureBrightnessValue: number = 0
 
   private volumePosition?: Position
 
@@ -64,10 +68,6 @@ struct PlayerPage {
 
   @State gestureVolumeValue: number = 0
 
-  private gestureInitValue: number = 0
-
-  @State gestureValue: number = 0
-
   private gestureForwardOrBackwardTimeoutId?: number = undefined
 
   @State gestureForward?: number = undefined
@@ -75,7 +75,7 @@ struct PlayerPage {
   @State gestureBackward?: number = undefined
 
   aboutToAppear(): void {
-    DeviceUtil.restoreBrightness()
+    DeviceUtil.restoreUserBrightness()
     this.currenWindow.setWindowSystemBarEnable([])
     let orientation = display.getDefaultDisplaySync().orientation
     if (orientation == display.Orientation.LANDSCAPE
@@ -232,7 +232,7 @@ struct PlayerPage {
           // light
           if (this.gestureBrightness) {
             Stack({alignContent: Alignment.Bottom}) {
-              Slider({value: this.gestureValue, max: 1, min: 0
+              Slider({value: this.gestureBrightnessValue, max: 1, min: 0
               , reverse: true, style: SliderStyle.NONE, direction: Axis.Vertical})
                 .trackThickness(40)
                 .selectedColor(Color.White)
@@ -347,19 +347,15 @@ struct PlayerPage {
                 } else {
                   this.gestureBrightness = true
                   // https://developer.huawei.com/consumer/cn/doc/best-practices/bpta-page-brightness-settings#section02121449165218
-                  let brightness = DeviceUtil.getBrightness()
-                  // auto
-                  if (brightness < 0) {
-                    brightness = 0.5
-                  }
+                  let brightness = DeviceUtil.getBrightness(getContext())
                   this.gestureInitValue = brightness
                 }
-                this.gestureValue = this.gestureInitValue
+                this.gestureBrightnessValue = this.gestureInitValue
                 this.gesturing = true
               })
                 // 当触发拖动手势时，根据回调函数修改组件的布局位置信息
               .onActionUpdate((event) => {
-                let offset = -event.offsetY / 100
+                let offset = -event.offsetY / 200
                 let newValue = this.gestureInitValue + offset
                 if (newValue < 0) {
                   newValue = 0
@@ -368,8 +364,8 @@ struct PlayerPage {
                   newValue = 1
                 }
                 if (this.gestureBrightness) {
-                  DeviceUtil.setBrightness(newValue)
-                  this.gestureValue = newValue
+                  DeviceUtil.setBrightness(getContext(), newValue)
+                  this.gestureBrightnessValue = newValue
                 } else {
                   this.gestureVolumeValue = newValue
                 }
@@ -733,7 +729,7 @@ struct PlayerPage {
     if (this.preferOrientation !== undefined) {
       this.currenWindow.setPreferredOrientation(this.preferOrientation)
     }
-    DeviceUtil.saveBrightness()
+    DeviceUtil.restoreDefaultBrightness(getContext())
   }
 
 }
