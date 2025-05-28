@@ -89,8 +89,20 @@
       "value": "WLMedia"
     },
     {
+      "name": "player_impl_wl_url",
+      "value": "https://github.com/ywl5320/wlmedia"
+    },
+    {
       "name": "player_impl_wl_desc",
       "value": "优点：\n* 支持绝大数的视频、音频和字幕格式。\n\n缺点：\n* 不支持HDR/DV。"
+    },
+    {
+      "name": "player_video_thanks_01",
+      "value": "特别感谢"
+    },
+    {
+      "name": "player_video_thanks_02",
+      "value": "对本项目提供播放器支持。"
     },
     {
       "name": "prefer_about",
