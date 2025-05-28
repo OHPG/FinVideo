@@ -130,6 +130,7 @@ struct PlayerPage {
     } else {
       this.videoController = hdr ? new AVController(getContext()) : new WLController(getContext())
     }
+    console.log("create player: " + this.videoController.getName())
     this.videoControllerReady = true
     this.videoController.onProgressChange((progress) => {
       this.progress = progress
@@ -733,7 +734,9 @@ struct PlayerPage {
     trackArray.forEach((track) => {
       let index = track[media.MediaDescriptionKey.MD_KEY_TRACK_INDEX] as number
       optionArray.push({
-        title: track[media.MediaDescriptionKey.MD_KEY_TRACK_NAME] as string,
+        title: track[media.MediaDescriptionKey.MD_KEY_TRACK_NAME] as string
+          + "-"
+          + track[media.MediaDescriptionKey.MD_KEY_CODEC_MIME],
         checked: selectedTrack == index
       })
     })

@@ -43,6 +43,10 @@ export class WLController extends AbstractController {
     this.requirePlayer()
   }
 
+  public getName(): string {
+    return "WLMedia"
+  }
+
   private requirePlayer(): WlPlayer {
     this.onStateChanged('idle', media.StateChangeReason.BACKGROUND)
     this.wlPlayer.setOnMediaInfoListener({

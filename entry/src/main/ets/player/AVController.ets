@@ -31,6 +31,10 @@ export class AVController extends AbstractController {
     super(context);
   }
 
+  public getName(): string {
+    return "AVPlayer"
+  }
+
   onSurfaceCreated(surfaceId: string): void {
     this.surfaceId = surfaceId
     // console.log("AVController onSurfaceCreated surfaceId = " + surfaceId)

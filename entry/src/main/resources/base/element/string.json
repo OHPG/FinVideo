@@ -74,7 +74,7 @@
     },
     {
       "name": "player_impl_auto_desc",
-      "value": "* 当播放HDR视频时，选择AVPlayer。\n* 当播放普通视频时，选择WLMedia。"
+      "value": "* 当播放HDR视频时，使用AVPlayer。\n* 当播放普通视频时，使用WLMedia。"
     },
     {
       "name": "player_impl_system",

@@ -37,6 +37,12 @@ export abstract class AbstractController extends XComponentController {
   }
 
   /**
+   * Get player name
+   * @returns
+   */
+  public abstract getName(): string
+
+  /**
    * Set data
    * @param item
    * @returns
