@@ -8,6 +8,7 @@
     "pages/media/MediaListPage",
     "pages/player/PlayerPage",
     "pages/search/SearchPage",
-    "pages/setting/VideoSettingPage"
+    "pages/setting/VideoSettingPage",
+    "pages/about/AboutPage"
   ]
 }

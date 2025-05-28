@@ -93,6 +93,34 @@
       "value": "优点：\n* 支持绝大数的视频、音频和字幕格式。\n\n缺点：\n* 不支持HDR/DV。"
     },
     {
+      "name": "prefer_about",
+      "value": "关于我们"
+    },
+    {
+      "name": "prefer_about_desc",
+      "value": "FinVideo是一款支持Jellyfin协议的客户端。\n它有以下特点：\n  * 手势支持：快捷调整亮度、音量、快进/快退。\n  * 夜间模式：呵护你得眼睛，夜间看剧更安心。\n  * 音轨字幕：选择你喜爱的声音或字幕。\n  * 倍速控制：播放速度，随心控制。\n  * AVPlayer：支持HDR视频播放。\n  * WLMedia：支持各种主流格式的视频，包括mp4、mkv、ac3、dts、true-hd等。"
+    },
+    {
+      "name": "prefer_about_qq_group",
+      "value": "QQ群："
+    },
+    {
+      "name": "prefer_about_qq_group_value",
+      "value": "1053123111"
+    },
+    {
+      "name": "prefer_about_qq_group_copied",
+      "value": "QQ群号已拷贝到剪贴板"
+    },
+    {
+      "name": "prefer_about_official_web",
+      "value": "官方网站："
+    },
+    {
+      "name": "prefer_about_official_web_value",
+      "value": "https://ohpg.org"
+    },
+    {
       "name": "prefer_privacy",
       "value": "隐私政策"
     },

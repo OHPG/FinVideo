@@ -1,7 +1,6 @@
-import { Repository } from "../../../data/Repository"
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar"
 import { CommonConstants } from "../../common/CommonConstants"
-import { WebTool} from '@ohpg/fin-core'
+import { ActiveInfo, AppStorageKeys, WebTool} from '@ohpg/fin-core'
 import { FinRouter} from '@ohpg/fin-framework'
 import router from "@ohos.router"
 
@@ -15,7 +14,7 @@ import router from "@ohos.router"
 @Component
 export struct PreferComponent {
 
-  @StorageLink("Repository") repository?: Repository = undefined
+  @StorageProp(AppStorageKeys.KEY_ACTIVE_INFO) activeInfo?: ActiveInfo = undefined
 
   @Builder
   preferItemBuilder(icon: Resource, title: ResourceStr, callback: Callback<void>) {
@@ -48,15 +47,15 @@ export struct PreferComponent {
       Column({ space: CommonConstants.SPACE_12}) {
         Row() {
           Text($r('app.string.prefer_current_server'))
-          Text(this.repository?.getActiveInfo()?.serverInfo.serverName)
+          Text(this.activeInfo?.serverInfo.serverName)
         }
         Row() {
           Text($r('app.string.prefer_current_address'))
-          Text(this.repository?.getActiveInfo()?.addressInfo.address)
+          Text(this.activeInfo?.addressInfo.address)
         }
         Row() {
           Text($r('app.string.prefer_current_user'))
-          Text(this.repository?.getActiveInfo()?.userInfo.userName)
+          Text(this.activeInfo?.userInfo.userName)
         }
       }
       .width(CommonConstants.FULL_PERCENT)
@@ -80,6 +79,10 @@ export struct PreferComponent {
 
       this.preferItemBuilder($r('sys.symbol.play_video'), $r('app.string.prefer_video'), () => {
         router.push({url: "pages/setting/VideoSettingPage"})
+      })
+
+      this.preferItemBuilder($r('sys.symbol.message'), $r('app.string.prefer_about'), () => {
+        router.push({url: "pages/about/AboutPage"})
       })
 
       this.preferItemBuilder($r('sys.symbol.doc_plaintext'), $r('app.string.prefer_privacy'), () => {
