@@ -3,6 +3,7 @@ import { CommonConstants } from "../../common/CommonConstants"
 import { ActiveInfo, AppStorageKeys, WebTool} from '@ohpg/fin-core'
 import { FinRouter} from '@ohpg/fin-framework'
 import router from "@ohos.router"
+import { pasteboard } from "@kit.BasicServicesKit"
 
 /**
  * @Author peerless2012
@@ -91,12 +92,37 @@ export struct PreferComponent {
 
       Blank()
 
-      Text("ICP备案：豫ICP备2025110731号-2A")
-        .fontColor($r('sys.color.ohos_id_color_component_activated'))
-        .margin(CommonConstants.SPACE_16)
-        .onClick(() => {
-          WebTool.openBrowser(getContext(), "https://beian.miit.gov.cn")
-        })
+      Row({space: CommonConstants.SPACE_4}) {
+        Text($r('app.string.prefer_about_qq_group'))
+          .fontSize(16)
+          .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+
+        Text($r('app.string.prefer_about_qq_group_value'))
+          .fontSize(16)
+          .fontColor($r('sys.color.ohos_id_color_component_activated'))
+          .onClick(() => {
+            let text = getContext().resourceManager
+              .getStringSync($r('app.string.prefer_about_qq_group_value'))
+            const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
+            const systemPasteboard = pasteboard.getSystemPasteboard();
+            systemPasteboard.setData(pasteboardData);
+            this.getUIContext().getPromptAction().showToast({message: $r('app.string.prefer_about_qq_group_copied')})
+          })
+      }
+
+      Row({space: CommonConstants.SPACE_4}) {
+        Text("ICP备案：")
+          .fontSize(16)
+          .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+
+        Text("豫ICP备2025110731号-2A")
+          .fontColor($r('sys.color.ohos_id_color_component_activated'))
+          .onClick(() => {
+            WebTool.openBrowser(getContext(), "https://beian.miit.gov.cn")
+          })
+      }
+      .margin(CommonConstants.SPACE_16)
+
     }
     .width(CommonConstants.FULL_PERCENT)
     .height(CommonConstants.FULL_PERCENT)
