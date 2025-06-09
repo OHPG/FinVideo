@@ -10,7 +10,7 @@ import { ErrorCallback } from "@kit.BasicServicesKit";
  * @Version V1.0
  * @Description
  */
-export abstract class AbstractController extends XComponentController {
+export abstract class AbstractPlayer {
 
   protected readonly context: Context
 
@@ -31,7 +31,6 @@ export abstract class AbstractController extends XComponentController {
   protected errorCallback?: ErrorCallback
 
   constructor(context: Context) {
-    super();
     this.context = context
     this.repository = AppStorage.get(Repository.REPOSITORY)!
   }
@@ -43,17 +42,18 @@ export abstract class AbstractController extends XComponentController {
   public abstract getName(): string
 
   /**
+   * Set surface id
+   * @param id
+   */
+  public abstract setSurfaceId(id?: string)
+
+  /**
    * Set data
+   * @param url
    * @param item
    * @returns
    */
-  public abstract setData(item: BaseItemDto): Promise<void>
-
-  /**
-   * Set fit type
-   * @param type
-   */
-  public abstract setFitType(type: "Inside" | "Crop"): void
+  public abstract setData(url: string, item: BaseItemDto): Promise<void>
 
   /**
    * Get video width

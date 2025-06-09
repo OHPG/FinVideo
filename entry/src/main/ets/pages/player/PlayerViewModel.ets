@@ -13,7 +13,15 @@ export class PlayerViewModel extends AppViewModel {
 
   private readonly args: PlayerArgs
 
+  /**
+   * 目标媒体
+   */
   itemDto?: BaseItemDto
+
+  /**
+   * 媒体列表，剧集才有
+   */
+  itemDtoArray?: Array<BaseItemDto>
 
   constructor(context: Context, args: PlayerArgs) {
     super(context)
@@ -26,13 +34,13 @@ export class PlayerViewModel extends AppViewModel {
     }
     if (this.args.type === BaseItemKind.Movie) {
       this.itemDto = await this.repository.loadMovie(this.args.id)
+
     } else if (this.args.type === BaseItemKind.Episode) {
       this.itemDto = await this.repository.getEpisode(this.args.id)
+      this.itemDtoArray = await this.repository.getEpisodes(this.itemDto.SeasonId!, this.itemDto.SeasonId!)
     } else {
       throw new Error("Unsupported type " + this.args.type)
     }
-    let sourceResponse = await this.repository.loadMediaSource(this.itemDto!.Id!)
-    this.itemDto!.MediaSources = sourceResponse.MediaSources
     return this.itemDto!
   }
 

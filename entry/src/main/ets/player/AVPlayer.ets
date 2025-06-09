@@ -1,6 +1,6 @@
 import { media } from "@kit.MediaKit";
 import { BaseItemDto } from "@ohpg/jellyfin";
-import { AbstractController } from "./AbstractController";
+import { AbstractPlayer } from "./AbstractPlayer";
 
 /**
  * @Author peerless2012
@@ -9,9 +9,7 @@ import { AbstractController } from "./AbstractController";
  * @Version V1.0
  * @Description
  */
-export class AVController extends AbstractController {
-
-  private surfaceId?: string
+export class AVPlayer extends AbstractPlayer {
 
   private avPlayer?: media.AVPlayer
 
@@ -21,11 +19,7 @@ export class AVController extends AbstractController {
 
   private avSpeed?: media.PlaybackSpeed
 
-  private avFitMode: 'Inside' | 'Crop' = 'Inside'
-
-  private windowWidth = 0
-
-  private windowHeight = 0
+  private surfaceId?: string
 
   constructor(context: Context) {
     super(context);
@@ -33,27 +27,6 @@ export class AVController extends AbstractController {
 
   public getName(): string {
     return "AVPlayer"
-  }
-
-  onSurfaceCreated(surfaceId: string): void {
-    this.surfaceId = surfaceId
-    // console.log("AVController onSurfaceCreated surfaceId = " + surfaceId)
-  }
-
-  onSurfaceChanged(surfaceId: string, rect: SurfaceRect): void {
-    // console.log("AVController onSurfaceChanged surfaceId = " + surfaceId + ", rect = " + JSON.stringify(rect))
-    if (rect.surfaceWidth > rect.surfaceHeight) {
-      if (this.windowWidth <= 0 || this.windowHeight <= 0) {
-        this.windowWidth = rect.surfaceWidth
-        this.windowHeight = rect.surfaceHeight
-        this.updateFitType()
-      }
-    }
-  }
-
-  onSurfaceDestroyed(surfaceId: string): void {
-    // console.log("AVController onSurfaceDestroyed surfaceId = " + surfaceId)
-    this.surfaceId = undefined
   }
 
   private async requireAvPlayer(): Promise<media.AVPlayer> {
@@ -71,7 +44,6 @@ export class AVController extends AbstractController {
       }
       if (state === 'prepared') {
         this.avPlayer!.videoScaleType = media.VideoScaleType.VIDEO_SCALE_TYPE_FIT_CROP
-        this.updateFitType()
         if (this.avSpeed !== undefined) {
           this.avPlayer?.setSpeed(this.avSpeed)
         }
@@ -107,6 +79,10 @@ export class AVController extends AbstractController {
       this.errorCallback?.(error)
     })
     return this.avPlayer
+  }
+
+  public setSurfaceId(id?: string | undefined): void {
+    this.surfaceId = id
   }
 
   private startTimer() {
@@ -145,12 +121,9 @@ export class AVController extends AbstractController {
     return this.avPlayer?.height
   }
 
-  public async setData(item: BaseItemDto): Promise<void> {
+  public async setData(url: string, item: BaseItemDto): Promise<void> {
     this.itemDto = item
-    let url = await this.repository.getMediaSource(item.Id!)
-    // console.log("AVController setData began, url = " + url)
     let avPlayer = await this.requireAvPlayer()
-    // console.log("AVController setData end")
     avPlayer.url = url
   }
 
@@ -209,48 +182,6 @@ export class AVController extends AbstractController {
 
   public selectTrack(type: media.MediaType, index: number) {
     this.avPlayer?.selectTrack(index)
-  }
-
-  /**
-   * Set fit type
-   * @param type
-   */
-  public setFitType(type: "Inside" | "Crop"): void {
-    if (this.avFitMode === type) {
-      return
-    }
-    this.avFitMode = type
-    this.updateFitType()
-  }
-
-  private updateFitType() {
-    let width = this.getWidth()
-    let height = this.getHeight()
-    if (width && height && this.windowWidth > 0 && this.windowHeight > 0) {
-      let width = 0
-      let height = 0
-      if (this.avFitMode == 'Inside') {
-        let videoAspectRatio = width / (height * 1.0)
-        let windowAspectRatio = this.windowWidth / this.windowHeight
-        if (videoAspectRatio > windowAspectRatio) {
-          width = this.windowWidth
-          height = this.windowWidth / videoAspectRatio
-        } else if (videoAspectRatio < windowAspectRatio) {
-          width = this.windowHeight * videoAspectRatio
-          height = this.windowHeight
-        } else {
-          width = this.windowWidth
-          height = this.windowHeight
-        }
-      } else {
-        width = this.windowWidth
-        height = this.windowHeight
-      }
-      this.setXComponentSurfaceRect({
-        surfaceWidth: width,
-        surfaceHeight: height
-      })
-    }
   }
 
   public async start(): Promise<void> {

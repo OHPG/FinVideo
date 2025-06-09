@@ -4,7 +4,7 @@ import {
   WlAudioInterruptType,
   WlScaleType,
   WlCodecType, WlCompleteType, WlLoadStatus, WlPlayer, WlTrackType } from "libwlmedia";
-import { AbstractController } from "./AbstractController";
+import { AbstractPlayer } from "./AbstractPlayer";
 import { media } from "@kit.MediaKit";
 import { WlTrackInfoBean } from "libwlmedia/src/main/ets/com/ywl5320/wlmedia/bean/WlTrackInfoBean";
 
@@ -15,7 +15,7 @@ import { WlTrackInfoBean } from "libwlmedia/src/main/ets/com/ywl5320/wlmedia/bea
  * @Version V1.0
  * @Description wlmedia
  */
-export class WLController extends AbstractController {
+export class WLPlayer extends AbstractPlayer {
 
   private readonly wlPlayer: WlPlayer
 
@@ -37,7 +37,7 @@ export class WLController extends AbstractController {
 
   constructor(context: Context) {
     super(context)
-    this.uniqueNum = WLController.generateUniqueNum();
+    this.uniqueNum = WLPlayer.generateUniqueNum();
     this.wlPlayer = new WlPlayer()
     this.wlPlayer.setCodecType(WlCodecType.WL_CODEC_AUTO);
     this.requirePlayer()
@@ -130,23 +130,9 @@ export class WLController extends AbstractController {
     return this.wlPlayer
   }
 
-  onSurfaceCreated(surfaceId: string): void {
+  public setSurfaceId(id?: string | undefined): void {
     try {
-      this.wlPlayer.setSurface(surfaceId, this.rgba, this.uniqueNum)
-    } catch (error) {
-    }
-  }
-
-  onSurfaceChanged(surfaceId: string, rect: SurfaceRect): void {
-    try {
-      this.wlPlayer.setSurface(surfaceId, this.rgba, this.uniqueNum);
-    } catch (error) {
-    }
-  }
-
-  onSurfaceDestroyed(surfaceId: string): void {
-    try {
-      this.wlPlayer.setSurface(null, this.rgba, this.uniqueNum);
+      this.wlPlayer.setSurface(id, this.rgba, this.uniqueNum)
     } catch (error) {
     }
   }
@@ -155,9 +141,8 @@ export class WLController extends AbstractController {
     return this.uniqueNum;
   }
 
-  public async setData(item: BaseItemDto): Promise<void> {
+  public async setData(url: string, item: BaseItemDto): Promise<void> {
     this.itemDto = item
-    let url = await this.repository.getMediaSource(item.Id!)
     this.wlPlayer.setSource(url)
     this.onStateChanged('initialized', media.StateChangeReason.BACKGROUND)
     this.reportPlaybackStart()

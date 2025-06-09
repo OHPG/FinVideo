@@ -6,6 +6,7 @@ import { BaseItemDto, BaseItemKind,
   ItemFilter,
   ItemSortBy,
   MediaProtocol,
+  MediaSourceInfo,
   PlaybackInfoResponse,
   SortOrder,
   UserItemDataDto} from "@ohpg/jellyfin";
@@ -196,7 +197,7 @@ export class Repository extends FinRepository {
     })
   }
 
-  public loadMediaSource(id: string): Promise<PlaybackInfoResponse> {
+  public getPlaybackInfo(id: string): Promise<PlaybackInfoResponse> {
     return this.jellyfin.getMediaInfoApi().getPlaybackInfo({
       userId: this.activeInfo!.userInfo.userId,
       itemId: id
@@ -211,9 +212,7 @@ export class Repository extends FinRepository {
     })
   }
 
-  public async getMediaSource(id: string): Promise<string> {
-    let response = await this.loadMediaSource(id)
-    let sourceInfo = response.MediaSources![0]
+  public async getMediaSource(id: string, sourceInfo: MediaSourceInfo): Promise<string> {
     let url: string | undefined | null
     switch (sourceInfo.Protocol) {
       case MediaProtocol.File:
