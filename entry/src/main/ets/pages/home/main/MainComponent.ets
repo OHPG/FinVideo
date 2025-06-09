@@ -1,5 +1,4 @@
 import { BaseItemDto } from '@ohpg/jellyfin';
-import { BreakpointTypeEnum } from '@ohpg/fin-core';
 import { CommonConstants } from '../../common/CommonConstants';
 import { MainViewModel } from './MainViewModel';
 import { ListRefreshView } from '@ohpg/fin-framework';
@@ -20,8 +19,6 @@ import { GroupInfo } from '../../../entity/GroupInfo';
 export struct MainComponent {
 
   private viewModel = new MainViewModel(getContext())
-
-  @StorageProp('currentBreakpoint') currentBreakpoint: string = BreakpointTypeEnum.MD;
 
   @Builder
   private mainGroup(groupInfo: GroupInfo, index: number) {
@@ -72,13 +69,13 @@ struct MainNormalGroup {
   build() {
     Column() {
       // title
-      CategoryToolBar({item: this.item?.group})
+      CategoryToolBar({item: this.item})
       // list
       List({space: CommonConstants.SPACE_12}) {
         ForEach(this.item?.items, (item: BaseItemDto) => {
           ListItem() {
-            if (this.item?.group?.CollectionType) {
-              MediaItem({item: item})
+            if (this.item?.type === "Normal") {
+              MediaItem({item: item, itemWidth: 140})
             } else {
               EpisodeItem({item: item, progress: this.item?.type === 'Continue'})
             }

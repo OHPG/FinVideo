@@ -2,7 +2,6 @@ import { GridAttr } from "@abner/refresh";
 import { BaseItemDto, ImageType } from "@ohpg/jellyfin";
 import { MediaViewModel } from "./MediaViewModel";
 import { Repository } from "../../../data/Repository"
-import { BreakpointTypeEnum } from "@ohpg/fin-core";
 import { CommonConstants } from "../../common/CommonConstants";
 import { GridRefreshView } from "@ohpg/fin-framework";
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar";
@@ -19,8 +18,6 @@ import { MediaListArgs } from "../../media/MediaListArgs";
 export struct MediaComponent {
 
   private viewModel = new MediaViewModel(getContext())
-
-  @StorageProp('currentBreakpoint') currentBreakpoint: string = BreakpointTypeEnum.MD;
 
   @Builder
   mediaItem(item: BaseItemDto, index: number) {

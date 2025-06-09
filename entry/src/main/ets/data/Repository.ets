@@ -30,7 +30,8 @@ export class Repository extends FinRepository {
     items?.forEach((item) => {
       let type = item.CollectionType
       if (type == CollectionType.Tvshows
-        || type === CollectionType.Movies) {
+        || type === CollectionType.Movies
+        || type === undefined) {
         if (newItems == undefined) {
           newItems = new Array()
         }

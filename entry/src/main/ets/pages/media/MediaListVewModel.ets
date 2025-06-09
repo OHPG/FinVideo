@@ -33,7 +33,7 @@ export class MediaListVewModel extends ListViewModel {
       default:
         break
     }
-    return this.repository.loadMediaList(this.args.id, types, true)
+    return this.repository.loadMediaList(this.args.id, types, false)
       .then((items) => {
         this.dataSource.initData(items)
       })

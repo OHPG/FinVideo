@@ -1,5 +1,4 @@
-import { BaseItemDto, CollectionType } from "@ohpg/jellyfin";
-import { BreakpointTypeEnum } from "@ohpg/fin-core";
+import { GroupInfo } from "../../entity/GroupInfo";
 import { CommonConstants } from "../../pages/common/CommonConstants";
 import { MediaListArgs } from "../../pages/media/MediaListArgs";
 
@@ -7,22 +6,20 @@ import { MediaListArgs } from "../../pages/media/MediaListArgs";
 @Component
 export struct CategoryToolBar {
 
-  @StorageProp('currentBreakpoint') currentBreakpoint: string = BreakpointTypeEnum.MD;
-
-  @Require @State item?: BaseItemDto = undefined
+  @Require @State item?: GroupInfo = undefined
 
   aboutToReuse(params: Record<string, object>): void {
-    this.item = params['item'] as BaseItemDto
+    this.item = params['item'] as GroupInfo
   }
 
   build() {
 
     Row() {
-      Text(this.item?.Name)
+      Text(this.item?.group?.Name)
         .fontSize($r('app.float.lg_font_size'))
         .fontWeight(FontWeight.Medium)
         .fontFamily(CommonConstants.HARMONY_HEITI_MEDIUM_FONT_FAMILY)
-      if (this.item?.CollectionType === CollectionType.Movies || this.item?.CollectionType === CollectionType.Tvshows) {
+      if (this.item?.type === "Normal") {
         Row() {
           Text($r('app.string.more'))
             .fontSize($r('app.float.md_font_size'))
@@ -34,9 +31,9 @@ export struct CategoryToolBar {
         }
         .onClick(() => {
           let args: MediaListArgs = {
-            id: this.item!.Id!,
-            name: this.item!.Name!,
-            type: this.item!.CollectionType!
+            id: this.item!.group?.Id!,
+            name: this.item!.group?.Name!,
+            type: this.item!.group?.CollectionType!
           }
           this.getUIContext().getRouter().pushUrl({url: "pages/media/MediaListPage", params: args})
         })

@@ -1,6 +1,7 @@
-import { BaseItemKind } from "@ohpg/jellyfin";
-import { DetailArgs } from "../detail/DetailArgs";
 import { router } from "@kit.ArkUI";
+import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin";
+import { DetailArgs } from "../detail/DetailArgs";
+import { MediaListArgs } from "../media/MediaListArgs";
 
 /**
  * @Author peerless2012
@@ -11,13 +12,26 @@ import { router } from "@kit.ArkUI";
  */
 export class MediaRouter {
 
-  public static openDetail(type: BaseItemKind, args: DetailArgs) {
-    if (type === BaseItemKind.Movie) {
-      router.push({url: "pages/detail/movie/MoviePage", params: args})
-    } else if (type === BaseItemKind.Series) {
-      router.push({url: "pages/detail/show/ShowPage", params: args})
+  public static openDetail(item: BaseItemDto) {
+    if (item.Type === BaseItemKind.Movie) {
+      let args: DetailArgs = {
+        id: item.Id!,
+        name: item.Name!
+      }
+      router.pushUrl({url: "pages/detail/movie/MoviePage", params: args})
+    } else if (item.Type === BaseItemKind.Series) {
+      let args: DetailArgs = {
+        id: item.Id!,
+        name: item.Name!
+      }
+      router.pushUrl({url: "pages/detail/show/ShowPage", params: args})
     } else {
-
+      let newArgs: MediaListArgs = {
+        id: item.Id!,
+        name: item.Name!,
+        type: item.CollectionType
+      }
+      router.pushUrl({url: "pages/media/MediaListPage", params: newArgs})
     }
   }
 

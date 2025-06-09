@@ -13,6 +13,6 @@ export interface MediaListArgs {
 
   name: string,
 
-  type: CollectionType
+  type?: CollectionType
 
 }

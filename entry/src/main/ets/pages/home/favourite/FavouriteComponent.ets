@@ -1,7 +1,6 @@
 import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin"
 import { CommonConstants } from "../../common/CommonConstants"
 import { FavouriteViewModel } from "./FavouriteViewModel"
-import { BreakpointTypeEnum } from "@ohpg/fin-core"
 import { ListRefreshView } from "@ohpg/fin-framework"
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar"
 import { CategoryToolBar } from "../../../widget/bar/CategoryToolBar"
@@ -20,8 +19,6 @@ import { GroupInfo } from "../../../entity/GroupInfo"
 export struct FavouriteComponent {
 
   private viewModel = new FavouriteViewModel(getContext())
-
-  @StorageProp('currentBreakpoint') currentBreakpoint: string = BreakpointTypeEnum.MD;
 
   @Builder
   favouriteGroupBuilder(group: GroupInfo, index: number) {
@@ -72,7 +69,7 @@ struct FavouriteGroup {
     Column() {
       // title
       CategoryToolBar({
-        item: this.item?.group
+        item: this.item
       })
       // list
       List({space: 8}) {
@@ -81,7 +78,7 @@ struct FavouriteGroup {
             if (item.Type === BaseItemKind.Episode) {
               EpisodeItem({item: item})
             } else {
-              MediaItem({item: item})
+              MediaItem({item: item, itemWidth: 140})
             }
           }
         })
