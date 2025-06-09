@@ -48,22 +48,23 @@ export class XController extends XComponentController {
   onSurfaceCreated(surfaceId: string): void {
     this.surfaceId = surfaceId
     this.player?.setSurfaceId(surfaceId)
-    // console.log("AVController onSurfaceCreated surfaceId = " + surfaceId)
+    // console.log("XController onSurfaceCreated surfaceId = " + surfaceId)
   }
 
   onSurfaceChanged(surfaceId: string, rect: SurfaceRect): void {
-    // console.log("AVController onSurfaceChanged surfaceId = " + surfaceId + ", rect = " + JSON.stringify(rect))
+    // console.log("XController onSurfaceChanged surfaceId = " + surfaceId + ", rect = " + JSON.stringify(rect))
+    this.player?.setSurfaceId(surfaceId)
     if (rect.surfaceWidth > rect.surfaceHeight) {
       if (this.windowWidth <= 0 || this.windowHeight <= 0) {
         this.windowWidth = rect.surfaceWidth
         this.windowHeight = rect.surfaceHeight
-        // this.updateFitType()
+        this.updateFitType()
       }
     }
   }
 
   onSurfaceDestroyed(surfaceId: string): void {
-    // console.log("AVController onSurfaceDestroyed surfaceId = " + surfaceId)
+    // console.log("XController onSurfaceDestroyed surfaceId = " + surfaceId)
     this.surfaceId = undefined
     this.player?.setSurfaceId(undefined)
   }
@@ -73,42 +74,60 @@ export class XController extends XComponentController {
    * @param type
    */
   public setFitType(type: "Inside" | "Crop"): void {
+    // console.log("XController setFitType type = " + type)
     if (this.avFitMode === type) {
       return
     }
     this.avFitMode = type
-    // this.updateFitType()
+    this.updateFitType()
   }
 
-  // private updateFitType() {
-  //   let width = this.getWidth()
-  //   let height = this.getHeight()
-  //   if (width && height && this.windowWidth > 0 && this.windowHeight > 0) {
-  //     let width = 0
-  //     let height = 0
-  //     if (this.avFitMode == 'Inside') {
-  //       let videoAspectRatio = width / (height * 1.0)
-  //       let windowAspectRatio = this.windowWidth / this.windowHeight
-  //       if (videoAspectRatio > windowAspectRatio) {
-  //         width = this.windowWidth
-  //         height = this.windowWidth / videoAspectRatio
-  //       } else if (videoAspectRatio < windowAspectRatio) {
-  //         width = this.windowHeight * videoAspectRatio
-  //         height = this.windowHeight
-  //       } else {
-  //         width = this.windowWidth
-  //         height = this.windowHeight
-  //       }
-  //     } else {
-  //       width = this.windowWidth
-  //       height = this.windowHeight
-  //     }
-  //     this.setXComponentSurfaceRect({
-  //       surfaceWidth: width,
-  //       surfaceHeight: height
-  //     })
-  //   }
-  // }
+  private updateFitType() {
+    if (this.player === undefined) return
+    let videoWidth = this.player.getWidth()
+    let videoHeight = this.player.getHeight()
+    let impl = this.player.getName()
+    if (videoWidth && videoHeight && this.windowWidth > 0 && this.windowHeight > 0) {
+      let width = 0
+      let height = 0
+      let videoAspectRatio = videoWidth / (videoHeight * 1.0)
+      let windowAspectRatio = this.windowWidth / this.windowHeight
+      if (this.avFitMode == 'Inside') {
+        if (videoAspectRatio > windowAspectRatio) {
+          width = this.windowWidth
+          height = this.windowWidth / videoAspectRatio
+        } else if (videoAspectRatio < windowAspectRatio) {
+          width = this.windowHeight * videoAspectRatio
+          height = this.windowHeight
+        } else {
+          width = this.windowWidth
+          height = this.windowHeight
+        }
+      } else {
+        if (impl === "AVPlayer") {
+          // AVPlayer默认就会裁剪
+          width = this.windowWidth
+          height = this.windowHeight
+        } else {
+          if (videoAspectRatio > windowAspectRatio) {
+            width = this.windowHeight * videoAspectRatio
+            height = this.windowHeight
+          } else if (videoAspectRatio < windowAspectRatio) {
+            width = this.windowWidth
+            height = this.windowWidth / videoAspectRatio
+          } else {
+            width = this.windowWidth
+            height = this.windowHeight
+          }
+        }
+      }
+      // console.log("XController updateFitType width = " + width + ", height = " + height)
+      this.setXComponentSurfaceRect({
+        surfaceWidth: width,
+        surfaceHeight: height
+      })
+    }
+  }
 
   async setData(item: BaseItemDto): Promise<void> {
     // 加载播放媒体源
@@ -150,6 +169,9 @@ export class XController extends XComponentController {
         this.player.setSurfaceId(this.surfaceId)
       }
       this.player.onStateChange((state, reason) => {
+        if (state == 'prepared') {
+          this.updateFitType()
+        }
         this.stateChangeCallback?.(state, reason)
       })
       this.player.onError((error) => {

@@ -394,12 +394,12 @@ struct PlayerPage {
                 this.gestureBrightness = false
               }),
             // scale type
-            // PinchGesture({fingers: 2})
-            //   .onActionEnd((event) => {
-            //     this.videoController?.setFitType(event.scale > 1
-            //       ? 'Crop'
-            //       : 'Inside')
-            //   })
+            PinchGesture({fingers: 2})
+              .onActionEnd((event) => {
+                this.videoController.setFitType(event.scale > 1
+                  ? 'Crop'
+                  : 'Inside')
+              })
           ))
         .onSizeChange((oldValue, newValue) => {
           this.volumePosition = {
