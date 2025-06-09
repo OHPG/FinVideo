@@ -212,10 +212,12 @@ export class XController extends XComponentController {
   }
 
   release() {
+    // console.log("XController release")
     this.player?.offProgressChange()
     this.player?.offStateChange()
     this.player?.offError()
     this.player?.release()
+    this.player = undefined
     this.progressCallback = undefined
     this.stateChangeCallback = undefined
     this.errorCallback = undefined
