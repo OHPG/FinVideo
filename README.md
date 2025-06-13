@@ -17,6 +17,16 @@
 
 ## [效果图](https://ohpg.org/#FinVideo)
 
+## 下载
+<a href="https://appgallery.huawei.com/app/detail?id=org.ohpg.fin.video">
+  <img src="https://img.shields.io/badge/-AppGallery-gray?logo=appgallery&logoColor=red" alt="AppGallery" height="60"/>
+</a>
+<br>
+<br>
+<a href="https://github.com/OHPG/FinVideo/releases">
+  <img src="https://img.shields.io/github/downloads/OHPG/FinVideo/total?logo=github&label=GitHub" height="60"/>
+</a>
+
 ## 隐私政策
 FinVideo重视用户隐私保护，严格遵守相关法律法规，保护用户个人信息安全。
 
