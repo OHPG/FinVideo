@@ -1,4 +1,5 @@
 import { CommonConstants } from "../../pages/common/CommonConstants"
+import { SearchArgs } from "../../pages/search/SearchArgs"
 
 @Component
 export struct HomeToolBar {
@@ -15,17 +16,19 @@ export struct HomeToolBar {
         .fontFamily(CommonConstants.HARMONY_HEITI_BOLD_FONT_FAMILY)
         .margin({ right: $r('app.float.sm_padding_margin') })
 
-      // Search({ placeholder: $r('app.string.search_title') })
-      //   .focusable(false)
-      //   .fontColor($r('sys.color.ohos_id_color_text_primary'))
-      //   .textFont({ size: $r('app.float.large_text_size') })
-      //   .width($r('app.float.search_width'))
-      //   .height($r('app.float.search_height'))
-      //   .onClick(() => {
-      //     this.getUIContext().getRouter().pushUrl({
-      //       url: "pages/search/SearchPage"
-      //     })
-      //   })
+      Search({ placeholder: $r('app.string.search_title') })
+        .fontColor($r('sys.color.ohos_id_color_text_primary'))
+        .textFont({ size: $r('app.float.large_text_size') })
+        .width($r('app.float.search_width'))
+        .height($r('app.float.search_height'))
+        .onSubmit((word: string) => {
+          let searchArgs: SearchArgs = {
+            word: word
+          }
+          this.getUIContext().getRouter().pushUrl({
+            url: "pages/search/SearchPage", params: searchArgs
+          })
+        })
     }
     .padding({
       left: $r('app.float.xxl_padding_margin'),

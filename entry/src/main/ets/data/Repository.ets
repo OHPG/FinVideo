@@ -228,8 +228,17 @@ export class Repository extends FinRepository {
     throw new Error("Source not support.")
   }
 
-  public searchMedia(keyword: string): Promise<Array<BaseItemDto>> {
-    return Promise.resolve([])
+  public async searchMedia(keyword: string): Promise<Array<BaseItemDto>> {
+    let result = await this.jellyfin.getItemsApi().getItems({
+      userId: this.activeInfo?.userInfo.userId,
+      searchTerm: keyword,
+      includeItemTypes: [BaseItemKind.Movie, BaseItemKind.Series, BaseItemKind.Episode],
+      recursive: true
+    })
+    if (result.Items) {
+      return result.Items
+    }
+    return []
   }
 
   public getUserItem(id: string): Promise<UserItemDataDto> {
