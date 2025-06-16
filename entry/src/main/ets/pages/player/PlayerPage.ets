@@ -30,7 +30,7 @@ struct PlayerPage {
 
   private preferOrientation?: number
 
-  private itemDto?: BaseItemDto
+  @State itemDto?: BaseItemDto = undefined
 
   @State canSkipPre: boolean = false
 
@@ -80,7 +80,7 @@ struct PlayerPage {
 
   @State gestureBackward?: number = undefined
 
-  private keyEventTime = 0
+  @State gestureProgress: boolean = false
 
   aboutToAppear(): void {
     DeviceUtil.restoreUserBrightness()
@@ -358,6 +358,30 @@ struct PlayerPage {
                 this.gestureSpeed = undefined
               }),
 
+            // progress
+            PanGesture({fingers: 1, direction: PanDirection.Horizontal})
+              .onActionStart((event) => {
+                if (this.videoController.player == undefined || this.state !== 'playing') {
+                  return
+                }
+                this.gesturing = true
+                this.gesturing = true
+              })
+              // 当触发拖动手势时，根据回调函数修改组件的布局位置信息
+              .onActionUpdate((event) => {
+                let position = this.videoController.player?.getPosition()
+                if (position === undefined) {
+                  return
+                }
+                let offset = -event.offsetX / 200
+                let newPosition = position + offset
+
+              })
+              .onActionEnd((event) => {
+                this.gesturing = false
+                this.gestureProgress = false
+              }),
+
             // brightness&volume
             PanGesture({fingers: 1, direction: PanDirection.Vertical})
               .onActionStart((event) => {
@@ -430,7 +454,7 @@ struct PlayerPage {
                 router.back()
               })
 
-            Text(this.args.name)
+            Text(this.itemDto ? this.itemDto.Name : this.args.name)
               .fontSize($r('sys.float.titlebar_title_secondary_size'))
               .fontColor($r('sys.color.font_on_primary'))
               .layoutWeight(1)
@@ -654,6 +678,26 @@ struct PlayerPage {
   private onPageKeyEvent(event: KeyEvent): boolean {
     let process = false
     if (event.type === KeyType.Down) {
+      if (event.keyCode === KeyCode.KEYCODE_SPACE) {
+        process = true
+      } else if (event.keyCode === KeyCode.KEYCODE_ESCAPE) {
+        if (deviceInfo.deviceType === "2in1") {
+          process = true
+        } else {
+          process = false
+        }
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_RIGHT) {
+          process = true
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_LEFT) {
+          process = true
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_UP) {
+        process = true
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_DOWN) {
+        process = true
+      } else {
+        process = false
+      }
+    } else {
       process = true
       if (event.keyCode === KeyCode.KEYCODE_SPACE) {
         this.playOrPause()
@@ -663,20 +707,14 @@ struct PlayerPage {
           this.currenWindow.recover()
         }
       } else if (event.keyCode === KeyCode.KEYCODE_DPAD_RIGHT) {
-        if (event.timestamp - this.keyEventTime > 500) {
-          this.forward()
-        }
-        this.keyEventTime = event.timestamp
+        this.forward()
       } else if (event.keyCode === KeyCode.KEYCODE_DPAD_LEFT) {
-        if (event.timestamp - this.keyEventTime > 500) {
-          this.backward()
-        }
-      } else {
-        process = false
+        this.backward()
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_UP) {
+        this.volumeUp()
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_DOWN) {
+        this.volumeDown()
       }
-      this.keyEventTime = event.timestamp
-    } else {
-      this.keyEventTime = 0
     }
     return process
   }
@@ -764,6 +802,28 @@ struct PlayerPage {
       this.gestureForwardOrBackwardTimeoutId = undefined
     }, 400)
     this.videoController.player!.seek(position)
+  }
+
+  private volumeUp() {
+    this.volumeUpOrDown(0.1)
+  }
+
+  private volumeDown() {
+    this.volumeUpOrDown(-0.1)
+  }
+
+  private volumeUpOrDown(volume: number) {
+    let current = DeviceUtil.getVolume() / DeviceUtil.MAX_VOLUME
+    let newVolume = current + volume
+    if (newVolume > 1) {
+      newVolume = 1
+    } else if (newVolume < 0) {
+      newVolume = 0
+    }
+    if (current == newVolume) {
+      return
+    }
+    this.gestureVolumeValue = newVolume
   }
 
   private skip(step: number) {
