@@ -9,6 +9,8 @@ import { media } from '@kit.MediaKit'
 import { BaseItemDto } from '@ohpg/jellyfin'
 import { AVVolumePanel } from '@kit.AudioKit'
 import { XController } from './XController'
+import { deviceInfo } from '@kit.BasicServicesKit'
+import { KeyCode } from '@kit.InputKit'
 
 @Entry
 @Component
@@ -17,6 +19,8 @@ struct PlayerPage {
   private args = router.getParams() as PlayerArgs
 
   private currenWindow = AppStorage.get<window.Window>(AvoidAreaSystem.CURRENT_WINDOW)!
+
+  private windowStatusCallback?: Callback<WindowStatusType> = undefined
 
   @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
@@ -76,6 +80,8 @@ struct PlayerPage {
 
   @State gestureBackward?: number = undefined
 
+  private keyEventTime = 0
+
   aboutToAppear(): void {
     DeviceUtil.restoreUserBrightness()
     this.currenWindow.setWindowSystemBarEnable([])
@@ -87,11 +93,19 @@ struct PlayerPage {
       this.preferOrientation = this.currenWindow.getPreferredOrientation()
       this.currenWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE)
     }
+    if (deviceInfo.deviceType === "2in1") {
+      this.update2in1Window()
+      this.windowStatusCallback = (type) => {
+        this.update2in1Window()
+      }
+      this.currenWindow.on("windowStatusChange", this.windowStatusCallback)
+    }
     this.videoController.onStateChange((state, reason) => {
       this.state = state
       DeviceUtil.setWindowKeepScreenState(state === 'playing')
       if (state === 'playing') {
         this.addUITimeout()
+        this.update2in1Window()
       } else {
         this.clearUITimeout()
       }
@@ -155,6 +169,16 @@ struct PlayerPage {
       let index = array.findIndex((item) => item.Id === this.itemDto!.Id)
       this.canSkipPre = index > 0
       this.canSkipNext = index < array.length - 1
+    }
+  }
+
+  /**
+   * 只有2合一才支持此共功能。
+   */
+  private update2in1Window() {
+    if (deviceInfo.deviceType !== "2in1") return
+    if (this.currenWindow.getWindowStatus() === window.WindowStatusType.MAXIMIZE) {
+      this.currenWindow.maximize(window.MaximizePresentation.ENTER_IMMERSIVE)
     }
   }
 
@@ -295,32 +319,13 @@ struct PlayerPage {
             // forward & backward
             TapGesture({ count: 2 })
               .onAction((event) => {
-                if (this.videoController.player === undefined || this.state !== 'playing') {
-                  return
-                }
                 let width = event.target.area.width as number
                 let x = event.fingerList[0].localX as number
-                let position = this.videoController.player.getPosition()
                 if (x > width / 2) {
-                  this.gestureForward = 30
-                  position += this.gestureForward * 1000
+                  this.forward()
                 } else {
-                  this.gestureBackward = 30
-                  if (position < 30 * 1000) {
-                    position = 0
-                  } else {
-                    position -= this.gestureBackward * 1000
-                  }
+                  this.backward()
                 }
-                if (this.gestureForwardOrBackwardTimeoutId !== undefined) {
-                  clearTimeout(this.gestureForwardOrBackwardTimeoutId)
-                }
-                this.gestureForwardOrBackwardTimeoutId = setTimeout(() => {
-                  this.gestureForward = undefined
-                  this.gestureBackward = undefined
-                  this.gestureForwardOrBackwardTimeoutId = undefined
-                }, 600)
-                this.videoController.player?.seek(position)
               }),
 
             // speedup
@@ -519,11 +524,7 @@ struct PlayerPage {
                 .height(56)
                 .onClick(() => {
                   if (this.itemDto) {
-                    if (this.state === 'playing') {
-                      this.videoController.player?.pause()
-                    } else {
-                      this.videoController.player?.start()
-                    }
+                    this.playOrPause()
                   } else {
                     this.initData()
                   }
@@ -633,6 +634,9 @@ struct PlayerPage {
     .onClick(() => {
       this.toggleUI()
     })
+    .onKeyEvent((event): Boolean => {
+      return this.onPageKeyEvent(event)
+    })
     .backgroundColor($r('sys.color.black'))
     .width(CommonConstants.FULL_PERCENT)
     .height(CommonConstants.FULL_PERCENT)
@@ -645,6 +649,36 @@ struct PlayerPage {
     }
     this.shouldResumePlay = false
     this.addUITimeout()
+  }
+
+  private onPageKeyEvent(event: KeyEvent): boolean {
+    let process = false
+    if (event.type === KeyType.Down) {
+      process = true
+      if (event.keyCode === KeyCode.KEYCODE_SPACE) {
+        this.playOrPause()
+      } else if (event.keyCode === KeyCode.KEYCODE_ESCAPE) {
+        let windowStatus = this.currenWindow.getWindowStatus()
+        if (windowStatus === window.WindowStatusType.FULL_SCREEN) {
+          this.currenWindow.recover()
+        }
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_RIGHT) {
+        if (event.timestamp - this.keyEventTime > 500) {
+          this.forward()
+        }
+        this.keyEventTime = event.timestamp
+      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_LEFT) {
+        if (event.timestamp - this.keyEventTime > 500) {
+          this.backward()
+        }
+      } else {
+        process = false
+      }
+      this.keyEventTime = event.timestamp
+    } else {
+      this.keyEventTime = 0
+    }
+    return process
   }
 
   private clearUITimeout() {
@@ -681,12 +715,55 @@ struct PlayerPage {
 
   }
 
+  private playOrPause() {
+    if (!this.itemDto) return
+    if (this.state === 'playing') {
+      this.videoController.player?.pause()
+    } else {
+      this.videoController.player?.start()
+    }
+  }
+
   private skipToPre() {
     this.skip(-1)
   }
 
   private skipToNext() {
     this.skip(1)
+  }
+
+  private forward() {
+    this.gestureForward = 30
+    this.forwardOrBackward(30 * 1000)
+  }
+
+  private backward() {
+    this.gestureBackward = 15
+    this.forwardOrBackward(-15 * 1000)
+  }
+
+  private forwardOrBackward(value: number) {
+    if (!this.videoController.player || this.state !== 'playing') {
+      return
+    }
+    let duration = this.videoController.player.getDuration()
+    let position = this.videoController.player.getPosition()
+    position += value
+    if (position >= duration) {
+      position = duration
+    } else if (position < 0) {
+      position = 0
+    }
+    if (this.gestureForwardOrBackwardTimeoutId !== undefined) {
+      clearTimeout(this.gestureForwardOrBackwardTimeoutId)
+      this.gestureForwardOrBackwardTimeoutId = undefined
+    }
+    this.gestureForwardOrBackwardTimeoutId = setTimeout(() => {
+      this.gestureForward = undefined
+      this.gestureBackward = undefined
+      this.gestureForwardOrBackwardTimeoutId = undefined
+    }, 400)
+    this.videoController.player!.seek(position)
   }
 
   private skip(step: number) {
@@ -782,6 +859,9 @@ struct PlayerPage {
     this.videoController?.offStateChange()
     this.videoController?.offError()
     this.videoController?.release()
+    if (this.windowStatusCallback) {
+      this.currenWindow.off("windowStatusChange", this.windowStatusCallback)
+    }
     this.currenWindow.setWindowSystemBarEnable(['status', 'navigation'])
     if (this.preferOrientation !== undefined) {
       this.currenWindow.setPreferredOrientation(this.preferOrientation)
