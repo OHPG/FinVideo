@@ -23,6 +23,7 @@ export class MediaListVewModel extends ListViewModel {
 
   loadData(type: LoadType): Promise<void> {
     let types: Array<BaseItemKind> = new Array()
+    let recursive = true
     switch (this.args.type) {
       case CollectionType.Movies:
         types.push(BaseItemKind.Movie)
@@ -31,9 +32,10 @@ export class MediaListVewModel extends ListViewModel {
         types.push(BaseItemKind.Series)
         break
       default:
+        recursive = false
         break
     }
-    return this.repository.loadMediaList(this.args.id, types, false)
+    return this.repository.loadMediaList(this.args.id, types, recursive)
       .then((items) => {
         this.dataSource.initData(items)
       })
