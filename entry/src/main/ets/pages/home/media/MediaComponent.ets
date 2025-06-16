@@ -5,7 +5,7 @@ import { Repository } from "../../../data/Repository"
 import { CommonConstants } from "../../common/CommonConstants";
 import { GridRefreshView } from "@ohpg/fin-framework";
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar";
-import { MediaListArgs } from "../../media/MediaListArgs";
+import { MediaRouter } from "../../common/MediaRouter";
 
 /**
  * @Author peerless2012
@@ -20,8 +20,8 @@ export struct MediaComponent {
   private viewModel = new MediaViewModel(getContext())
 
   @Builder
-  mediaItem(item: BaseItemDto, index: number) {
-    MediaItem({
+  mediaLibraryItem(item: BaseItemDto, index: number) {
+    MediaLibraryItem({
       item: item
     })
   }
@@ -34,7 +34,7 @@ export struct MediaComponent {
 
       GridRefreshView({
         source: this.viewModel,
-        itemLayout: this.mediaItem,
+        itemLayout: this.mediaLibraryItem,
         gridAttribute: (attr: GridAttr) => {
           attr.padding = {
             left: CommonConstants.SPACE_16,
@@ -60,7 +60,7 @@ export struct MediaComponent {
 
 @Reusable
 @Component
-struct MediaItem {
+struct MediaLibraryItem {
 
   @StorageLink("Repository") repository?: Repository = undefined
 
@@ -71,7 +71,7 @@ struct MediaItem {
   }
 
   build() {
-    Stack() {
+    Column({space: CommonConstants.SPACE_8}) {
       Image(this.repository?.buildImage(this.item!, ImageType.Primary))
         .alt($r('app.media.alt'))
         .autoResize(true)
@@ -79,14 +79,13 @@ struct MediaItem {
         .borderRadius($r('app.float.lg_border_radius'))
         .width('100%')
         .aspectRatio(1.5)
+
+      Text(this.item?.Name)
+        .width('100%')
+        .maxLines(1)
     }
     .onClick(() => {
-      let args: MediaListArgs = {
-        id: this.item!.Id!,
-        name: this.item!.Name!,
-        type: this.item!.CollectionType!
-      }
-      this.getUIContext().getRouter().pushUrl({url: "pages/media/MediaListPage", params: args})
+      MediaRouter.openDetail(this.item!)
     })
   }
 
