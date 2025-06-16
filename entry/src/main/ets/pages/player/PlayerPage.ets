@@ -428,8 +428,7 @@ struct PlayerPage {
             Text(this.args.name)
               .fontSize($r('sys.float.titlebar_title_secondary_size'))
               .fontColor($r('sys.color.font_on_primary'))
-
-            Blank()
+              .layoutWeight(1)
 
             SymbolGlyph($r('sys.symbol.lock_open'))
               .fontSize(28)
