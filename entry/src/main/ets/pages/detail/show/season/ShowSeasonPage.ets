@@ -46,6 +46,8 @@ struct ShowSeasonPage {
         .width(CommonConstants.FULL_PERCENT)
         .layoutWeight(1)
     }
+    .width(CommonConstants.FULL_PERCENT)
+    .height(CommonConstants.FULL_PERCENT)
   }
 
 }

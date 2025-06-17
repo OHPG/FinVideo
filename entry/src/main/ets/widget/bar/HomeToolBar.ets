@@ -22,6 +22,7 @@ export struct HomeToolBar {
         .width($r('app.float.search_width'))
         .height($r('app.float.search_height'))
         .onSubmit((word: string) => {
+          this.getUIContext().getFocusController().clearFocus()
           let searchArgs: SearchArgs = {
             word: word
           }
