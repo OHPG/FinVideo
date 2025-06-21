@@ -1,4 +1,4 @@
-import { window } from '@kit.ArkUI'
+import { CircleShape, window } from '@kit.ArkUI'
 import { BaseItemDto, ImageType } from '@ohpg/jellyfin'
 import { Repository } from '../../../../data/Repository'
 import { ShowEpisodeSheet } from '../../../../sheet/ShowEpisodeSheet'
@@ -86,7 +86,30 @@ export struct SeasonItem {
             align: HorizontalAlign.Start
           }
         })
-      Text(this.item?.Name)
+
+      SymbolGlyph($r('sys.symbol.checkmark'))
+        .fontColor([Color.Red])
+        .fontSize($r('sys.float.Subtitle_S'))
+        .padding(CommonConstants.SPACE_4)
+        .backgroundColor($r('sys.color.comp_background_primary'))
+        .visibility(this.item?.UserData?.Played ? Visibility.Visible : Visibility.Hidden)
+        .alignRules({
+          top: {
+            anchor: "episode_cover",
+            align: VerticalAlign.Top
+          },
+          right: {
+            anchor: "episode_cover",
+            align: HorizontalAlign.End
+          }
+        })
+        .clipShape(new CircleShape({
+          width: CommonConstants.FULL_PERCENT,
+          height: CommonConstants.FULL_PERCENT
+        }))
+        .margin(CommonConstants.SPACE_4)
+
+      Text(this.item?.IndexNumber + ". " + this.item?.Name)
         .id("episode_name")
         .fontSize($r('sys.float.Body_L'))
         .maxLines(1)
