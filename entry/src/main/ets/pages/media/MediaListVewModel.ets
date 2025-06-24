@@ -1,4 +1,4 @@
-import { BaseItemKind, CollectionType } from "@ohpg/jellyfin";
+import { BaseItemKind, CollectionType, ItemSortBy, SortOrder } from "@ohpg/jellyfin";
 import { LoadType } from "@ohpg/fin-core";
 import { ListViewModel } from "../common/ListViewModel";
 import { MediaListArgs } from "./MediaListArgs";
@@ -35,7 +35,10 @@ export class MediaListVewModel extends ListViewModel {
         recursive = false
         break
     }
-    return this.repository.loadMediaList(this.args.id, types, recursive)
+    return this.repository.loadMediaList(this.args.id
+      , types, recursive
+      , [ItemSortBy.DateCreated]
+      , [SortOrder.Descending])
       .then((items) => {
         this.dataSource.initData(items)
       })
