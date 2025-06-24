@@ -32,7 +32,9 @@ struct MoviePage {
     Column({space: CommonConstants.SPACE_12}) {
       DetailCover({itemDto: item})
       DetailHeader({itemDto: item})
-      DetailFooter({itemDto: item})
+      if (item && item.People && item.People.length > 0) {
+        DetailFooter({itemDto: item})
+      }
     }
     .padding({
       bottom: px2vp(this.avoidArea?.bottomRect.height)

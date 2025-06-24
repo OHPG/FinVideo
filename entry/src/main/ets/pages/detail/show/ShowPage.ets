@@ -65,7 +65,9 @@ struct ShowPage {
           seasonDto: info.seasons
         })
       }
-      DetailFooter({itemDto: info?.show})
+      if (info?.show && info.show.People && info.show.People.length > 0) {
+        DetailFooter({itemDto: info?.show})
+      }
     }
     .padding({
       bottom: px2vp(this.avoidArea?.bottomRect.height)

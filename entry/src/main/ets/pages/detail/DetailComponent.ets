@@ -161,8 +161,24 @@ export struct DetailHeader {
 
   @State finished: boolean = false
 
-  aboutToAppear(): void {
+  @State genres?: string = undefined
 
+  @State actors?: string = undefined
+
+  @State authors?: string = undefined
+
+  aboutToAppear(): void {
+    this.genres = this.itemDto.Genres?.join(",")
+    this.actors = this.itemDto.People?.filter((people) => {
+      return people.Type === PersonKind.Director
+    })?.map((person) => {
+      return person.Name
+    })?.join(",")
+    this.authors = this.itemDto.People?.filter((people) => {
+      return people.Type === PersonKind.Writer
+    })?.map((people) => {
+      return people.Name
+    }).join(",")
   }
 
   build() {
@@ -194,27 +210,25 @@ export struct DetailHeader {
 
       Text(this.itemDto.Overview)
 
-      Row({space: CommonConstants.SPACE_8}) {
-        Text("风格")
-        Text(this.itemDto.Genres?.join(","))
+      if (this.genres) {
+        Row({space: CommonConstants.SPACE_8}) {
+          Text("风格")
+          Text(this.genres)
+        }
       }
 
-      Row({space: CommonConstants.SPACE_8}) {
-        Text("导演")
-        Text(this.itemDto.People?.filter((people) => {
-          return people.Type === PersonKind.Director
-        })?.map((person) => {
-          return person.Name
-        })?.join(","))
+      if (this.actors) {
+        Row({space: CommonConstants.SPACE_8}) {
+          Text("导演")
+          Text(this.actors)
+        }
       }
 
-      Row({space: CommonConstants.SPACE_8}) {
-        Text("作者")
-        Text(this.itemDto.People?.filter((people) => {
-          return people.Type === PersonKind.Writer
-        })?.map((people) => {
-          return people.Name
-        }).join(","))
+      if (this.authors) {
+        Row({space: CommonConstants.SPACE_8}) {
+          Text("作者")
+          Text(this.authors)
+        }
       }
     }
     .padding({

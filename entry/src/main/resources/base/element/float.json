@@ -174,11 +174,11 @@
     },
     {
       "name": "search_width",
-      "value": "260vp"
+      "value": "220vp"
     },
     {
       "name": "search_height",
-      "value": "40vp"
+      "value": "36vp"
     },
     {
       "name": "search_group_height",
