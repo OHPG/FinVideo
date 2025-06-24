@@ -82,6 +82,8 @@ struct PlayerPage {
 
   @State gestureProgress: boolean = false
 
+  @State gestureProgressValue: number = 0
+
   aboutToAppear(): void {
     DeviceUtil.restoreUserBrightness()
     this.currenWindow.setWindowSystemBarEnable([])
@@ -225,6 +227,28 @@ struct PlayerPage {
             })
           }
 
+          if (this.gestureProgress) {
+            Text(TimeTool.formatMillionSecondsToHMS(this.gestureProgressValue)
+              + "/"
+              + TimeTool.formatMillionSecondsToHMS(this.duration))
+              .fontColor($r('sys.color.font_on_primary'))
+              .fontSize(28)
+              .alignRules({
+                middle: {
+                  anchor: "__container__",
+                  align: HorizontalAlign.Center
+                },
+                top: {
+                  anchor: "__container__",
+                  align: VerticalAlign.Top
+                },
+                bottom: {
+                  anchor: "__container__",
+                  align: VerticalAlign.Center
+                }
+              })
+          }
+
           // backward
           if (this.gestureBackward) {
             SymbolGlyph($r('sys.symbol.gobackward_30'))
@@ -364,22 +388,27 @@ struct PlayerPage {
                 if (this.videoController.player == undefined || this.state !== 'playing') {
                   return
                 }
+                this.gestureProgressValue = this.progress
                 this.gesturing = true
-                this.gesturing = true
+                this.gestureProgress = true
               })
               // 当触发拖动手势时，根据回调函数修改组件的布局位置信息
               .onActionUpdate((event) => {
-                let position = this.videoController.player?.getPosition()
-                if (position === undefined) {
-                  return
+                let offset = event.offsetX * (this.duration / 1000)
+                let newPosition = this.progress + offset
+                if (newPosition < 0) {
+                  newPosition = 0
+                } else if (newPosition > this.duration) {
+                  newPosition = this.duration
                 }
-                let offset = -event.offsetX / 200
-                let newPosition = position + offset
+                this.gestureProgressValue = newPosition
 
               })
               .onActionEnd((event) => {
+                // seek
                 this.gesturing = false
                 this.gestureProgress = false
+                this.seekTo(this.gestureProgressValue)
               }),
 
             // brightness&volume
@@ -597,7 +626,7 @@ struct PlayerPage {
               .enabled(this.prepared)
               .onChange((num, mode) => {
                 if (this.duration > 0 && mode === SliderChangeMode.End) {
-                  this.videoController.player?.seek(num)
+                  this.seekTo(num)
                 }
               })
           }
@@ -676,35 +705,15 @@ struct PlayerPage {
   }
 
   private onPageKeyEvent(event: KeyEvent): boolean {
-    let process = false
-    if (event.type === KeyType.Down) {
-      if (event.keyCode === KeyCode.KEYCODE_SPACE) {
-        process = true
-      } else if (event.keyCode === KeyCode.KEYCODE_ESCAPE) {
-        if (deviceInfo.deviceType === "2in1") {
-          process = true
-        } else {
-          process = false
-        }
-      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_RIGHT) {
-          process = true
-      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_LEFT) {
-          process = true
-      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_UP) {
-        process = true
-      } else if (event.keyCode === KeyCode.KEYCODE_DPAD_DOWN) {
-        process = true
-      } else {
-        process = false
-      }
-    } else {
-      process = true
+    if (event.type == KeyType.Up) {
       if (event.keyCode === KeyCode.KEYCODE_SPACE) {
         this.playOrPause()
       } else if (event.keyCode === KeyCode.KEYCODE_ESCAPE) {
         let windowStatus = this.currenWindow.getWindowStatus()
         if (windowStatus === window.WindowStatusType.FULL_SCREEN) {
           this.currenWindow.recover()
+        } else {
+          // ignore
         }
       } else if (event.keyCode === KeyCode.KEYCODE_DPAD_RIGHT) {
         this.forward()
@@ -716,7 +725,7 @@ struct PlayerPage {
         this.volumeDown()
       }
     }
-    return process
+    return true
   }
 
   private clearUITimeout() {
@@ -784,14 +793,9 @@ struct PlayerPage {
     if (!this.videoController.player || this.state !== 'playing') {
       return
     }
-    let duration = this.videoController.player.getDuration()
+    this.gesturing = true
     let position = this.videoController.player.getPosition()
     position += value
-    if (position >= duration) {
-      position = duration
-    } else if (position < 0) {
-      position = 0
-    }
     if (this.gestureForwardOrBackwardTimeoutId !== undefined) {
       clearTimeout(this.gestureForwardOrBackwardTimeoutId)
       this.gestureForwardOrBackwardTimeoutId = undefined
@@ -800,8 +804,9 @@ struct PlayerPage {
       this.gestureForward = undefined
       this.gestureBackward = undefined
       this.gestureForwardOrBackwardTimeoutId = undefined
-    }, 400)
-    this.videoController.player!.seek(position)
+      this.gesturing = false
+    }, 500)
+    this.seekTo(position)
   }
 
   private volumeUp() {
@@ -839,6 +844,16 @@ struct PlayerPage {
       this.updateItem(nextItem)
       this.videoController.setData(nextItem)
     }
+  }
+
+  private seekTo(position: number) {
+    if (this.duration <= 0) return
+    if (position >= this.duration) {
+      position = this.duration
+    } else if (position < 0) {
+      position = 0
+    }
+    this.videoController.player?.seek(position)
   }
 
   private chooseSpeed() {
