@@ -71,7 +71,7 @@ export class Repository extends FinRepository {
       userId: this.activeInfo!.userInfo.userId,
       includeItemTypes: [BaseItemKind.Series, BaseItemKind.Movie],
       parentId: id,
-      limit: 8
+      limit: 12
     })
     if (result) {
       return result
@@ -139,7 +139,7 @@ export class Repository extends FinRepository {
       userId: this.activeInfo!.userInfo.userId,
       includeItemTypes: [BaseItemKind.Movie, BaseItemKind.Episode],
       fields: [ItemFields.Overview],
-      limit: 8,
+      limit: 12,
     }).then((result) => {
       if (result.Items) {
         return result.Items
@@ -154,7 +154,7 @@ export class Repository extends FinRepository {
       seriesId: seriesId,
       enableResumable: false,
       fields: [ItemFields.Overview],
-      limit: 8
+      limit: 12
     })
       .then((result) => {
         if (result.Items) {
