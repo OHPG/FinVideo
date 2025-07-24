@@ -9,7 +9,7 @@ import { BaseItemDto, BaseItemKind,
   MediaSourceInfo,
   PlaybackInfoResponse,
   SortOrder,
-  UserItemDataDto} from "@ohpg/jellyfin";
+  UserItemDataDto} from "@ohpg/fin-core";
 import { uri } from "@kit.ArkTS";
 import { FinRepository } from "@ohpg/fin-framework";
 
@@ -21,10 +21,6 @@ import { FinRepository } from "@ohpg/fin-framework";
  * @Description Repository
  */
 export class Repository extends FinRepository {
-
-  constructor(context: Context) {
-    super(context, "FinVideo")
-  }
 
   private filterItem(items?: Array<BaseItemDto> | null): Array<BaseItemDto> | undefined {
     let newItems: Array<BaseItemDto> | undefined
@@ -131,69 +127,6 @@ export class Repository extends FinRepository {
     return this.jellyfin.getUserLibraryApi().getItem({
       userId: this.activeInfo!.userInfo.userId,
       itemId: showId
-    })
-  }
-
-  public getResumeItems(): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getItemsApi().getResumeItems({
-      userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.Movie, BaseItemKind.Episode],
-      fields: [ItemFields.Overview],
-      limit: 12,
-    }).then((result) => {
-      if (result.Items) {
-        return result.Items
-      }
-      return []
-    })
-  }
-
-  public getNextUp(seriesId?: string): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getTvShowsApi().getNextUp({
-      userId: this.activeInfo!.userInfo.userId,
-      seriesId: seriesId,
-      enableResumable: false,
-      fields: [ItemFields.Overview],
-      limit: 12
-    })
-      .then((result) => {
-        if (result.Items) {
-          return result.Items
-        }
-        return []
-      })
-  }
-
-  public getSeasons(seriesId: string): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getTvShowsApi().getSeasons({
-      userId: this.activeInfo!.userInfo.userId,
-      seriesId: seriesId
-    }).then((result) => {
-      if (result.Items) {
-        return result.Items
-      }
-      return []
-      })
-}
-
-  public getEpisodes(seriesId: string, seasonId: string): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getTvShowsApi().getEpisodes({
-      userId: this.activeInfo!.userInfo.userId,
-      seriesId: seriesId,
-      seasonId: seasonId,
-      fields: [ItemFields.Overview, ItemFields.ParentId]
-    }).then((result) => {
-      if (result.Items) {
-        return result.Items
-      }
-      return []
-    })
-  }
-
-  public getEpisode(episodeId: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: episodeId
     })
   }
 

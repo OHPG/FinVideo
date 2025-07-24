@@ -65,8 +65,16 @@
       "srcPath": "../FinCore/lib_framework"
     },
     {
+      "name": "network",
+      "srcPath": "../FinSdk/network"
+    },
+    {
       "name": "jellyfin",
       "srcPath": "../FinSdk/jellyfin"
+    },
+    {
+      "name": "emby",
+      "srcPath": "../FinSdk/emby"
     }
   ]
 }

@@ -9,6 +9,7 @@
     // https://ohpm.openharmony.cn/#/cn/detail/@abner%2Frefresh
     "@abner/refresh": "1.4.3",
     "@ohpg/jellyfin": 'file:../../FinSdk/jellyfin',
+    "@ohpg/emby": 'file:../../FinSdk/emby',
     "@ohpg/fin-core": 'file:../../FinCore/lib_core',
     "@ohpg/fin-framework": 'file:../../FinCore/lib_framework',
     "libwlmedia": "file:libs/libwlmedia.har"
