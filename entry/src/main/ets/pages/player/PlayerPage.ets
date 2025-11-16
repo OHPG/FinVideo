@@ -433,8 +433,15 @@ struct PlayerPage {
             // brightness&volume
             PanGesture({fingers: 1, direction: PanDirection.Vertical})
               .onActionStart((event) => {
+                let fingerEvent = event.fingerList[0]
+                if (!fingerEvent) return
                 let width = event.target.area.width as number
-                let x = event.fingerList[0].localX as number
+                let height = event.target.area.height as number
+                let x = fingerEvent.localX as number
+                let y = fingerEvent.localY as number
+                if (y < height * 0.1 || y > height * 0.9) {
+                  return
+                }
                 if (x > width / 2) {
                   // https://developer.huawei.com/consumer/cn/doc/best-practices/bpta-video-playback-development-practice#section1877775522017
                   this.gestureInitValue = DeviceUtil.getVolume() / DeviceUtil.MAX_VOLUME
