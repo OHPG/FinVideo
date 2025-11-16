@@ -63,11 +63,15 @@ struct PlayerPage {
 
   private gestureInitValue: number = 0
 
+  @State gestureBrightnessIcon: Resource = $r('sys.symbol.sun_max_fill')
+
   @State gestureBrightness: boolean = false
 
   @State gestureBrightnessValue: number = 0
 
   private volumePosition?: Position
+
+  @State gestureVolumeIcon: Resource = $r('sys.symbol.speaker_wave_3_fill')
 
   // Note:
   // If show AVVolumePanel when gesture, the volume ui may not show.
@@ -324,7 +328,7 @@ struct PlayerPage {
                 .height(160)
                 .width(40)
 
-              SymbolGlyph($r('sys.symbol.sun_max_fill'))
+              SymbolGlyph(this.gestureBrightnessIcon)
                 .fontColor([(Color.Gray)])
                 .margin({bottom: 8})
                 .fontSize(22)
@@ -348,14 +352,47 @@ struct PlayerPage {
           }
 
           // volume
-          if (this.gestureVolume) {
-            AVVolumePanel({
-              volumeLevel: this.gestureVolumeValue * DeviceUtil.MAX_VOLUME,
-              volumeParameter: {
-                position: this.volumePosition
+          AVVolumePanel({
+            volumeLevel: this.gestureVolumeValue * DeviceUtil.MAX_VOLUME,
+            volumeParameter: {
+              // 隐藏系统音量条
+              position: {
+                x: -1,
+                y: -1
               }
-            })
+            }
+          })
+          // volume
+          Stack({alignContent: Alignment.Bottom}) {
+            Slider({value: this.gestureVolumeValue, max: 1, min: 0
+            , reverse: true, style: SliderStyle.NONE, direction: Axis.Vertical})
+              .trackThickness(40)
+              .selectedColor(Color.White)
+              .height(160)
+              .width(40)
+
+            SymbolGlyph(this.gestureVolumeIcon)
+              .fontColor([(Color.Gray)])
+              .margin({bottom: 8})
+              .fontSize(22)
           }
+          .width('auto')
+          .height('auto')
+          .visibility(this.gestureVolume ? Visibility.Visible : Visibility.Hidden)
+          .alignRules({
+            center: {
+              anchor: "__container__",
+              align: VerticalAlign.Center
+            },
+            start: {
+              anchor: "__container__",
+              align: HorizontalAlign.Start
+            },
+            end: {
+              anchor: "__container__",
+              align: HorizontalAlign.Center
+            }
+          })
 
         }
           .gesture(GestureGroup(GestureMode.Exclusive,
@@ -451,6 +488,11 @@ struct PlayerPage {
                   // https://developer.huawei.com/consumer/cn/doc/best-practices/bpta-page-brightness-settings#section02121449165218
                   let brightness = DeviceUtil.getBrightness(getContext())
                   this.gestureInitValue = brightness
+                  if (brightness > 0.3) {
+                    this.gestureBrightnessIcon = $r('sys.symbol.sun_max_fill')
+                  } else {
+                    this.gestureBrightnessIcon = $r('sys.symbol.moon_fill')
+                  }
                 }
                 this.gestureBrightnessValue = this.gestureInitValue
                 this.gesturing = true
@@ -468,6 +510,11 @@ struct PlayerPage {
                 if (this.gestureBrightness) {
                   DeviceUtil.setBrightness(getContext(), newValue)
                   this.gestureBrightnessValue = newValue
+                  if (this.gestureBrightnessValue > 0.3) {
+                    this.gestureBrightnessIcon = $r('sys.symbol.sun_max_fill')
+                  } else {
+                    this.gestureBrightnessIcon = $r('sys.symbol.moon_fill')
+                  }
                 } else {
                   this.gestureVolumeValue = newValue
                 }
@@ -855,6 +902,15 @@ struct PlayerPage {
       return
     }
     this.gestureVolumeValue = newVolume
+    if (volume > 0.7) {
+      this.gestureVolumeIcon = $r('sys.symbol.speaker_wave_3_fill')
+    } else if (volume > 0.4) {
+      this.gestureVolumeIcon = $r('sys.symbol.speaker_wave_2_fill')
+    } else if (volume > 0) {
+      this.gestureVolumeIcon = $r('sys.symbol.speaker_wave_1_fill')
+    } else {
+      this.gestureVolumeIcon = $r('sys.symbol.speaker_slash_fill')
+    }
   }
 
   private skip(step: number) {
