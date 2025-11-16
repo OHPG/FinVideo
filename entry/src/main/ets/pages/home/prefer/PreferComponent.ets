@@ -67,15 +67,15 @@ export struct PreferComponent {
       })
 
       this.preferItemBuilder($r('sys.symbol.externaldrive'), $r('app.string.prefer_server'), () => {
-        FinRouter.editServer()
+        FinRouter.editServer(this.getUIContext())
       })
 
       this.preferItemBuilder($r('sys.symbol.worldclock'), $r('app.string.prefer_address'), () => {
-        FinRouter.editAddress()
+        FinRouter.editAddress(this.getUIContext())
       })
 
       this.preferItemBuilder($r('sys.symbol.person'), $r('app.string.prefer_user'), () => {
-        FinRouter.editUser()
+        FinRouter.editUser(this.getUIContext())
       })
 
       this.preferItemBuilder($r('sys.symbol.play_video'), $r('app.string.prefer_video'), () => {

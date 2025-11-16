@@ -1,5 +1,5 @@
 import { router } from "@kit.ArkUI";
-import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin";
+import { FinItem, FinItemType } from "@ohpg/fin-core";
 import { DetailArgs } from "../detail/DetailArgs";
 import { MediaListArgs } from "../media/MediaListArgs";
 
@@ -12,24 +12,24 @@ import { MediaListArgs } from "../media/MediaListArgs";
  */
 export class MediaRouter {
 
-  public static openDetail(item: BaseItemDto) {
-    if (item.Type === BaseItemKind.Movie) {
+  public static openDetail(item: FinItem) {
+    if (item.type === FinItemType.Movie) {
       let args: DetailArgs = {
-        id: item.Id!,
-        name: item.Name!
+        id: item.id,
+        name: item.name
       }
       router.pushUrl({url: "pages/detail/movie/MoviePage", params: args})
-    } else if (item.Type === BaseItemKind.Series) {
+    } else if (item.type === FinItemType.Series) {
       let args: DetailArgs = {
-        id: item.Id!,
-        name: item.Name!
+        id: item.id,
+        name: item.name
       }
       router.pushUrl({url: "pages/detail/show/ShowPage", params: args})
     } else {
       let newArgs: MediaListArgs = {
-        id: item.Id!,
-        name: item.Name!,
-        type: item.CollectionType
+        id: item.id,
+        name: item.name,
+        type: item.collectionType
       }
       router.pushUrl({url: "pages/media/MediaListPage", params: newArgs})
     }

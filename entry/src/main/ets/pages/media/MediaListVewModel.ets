@@ -1,5 +1,4 @@
-import { BaseItemKind, CollectionType, ItemSortBy, SortOrder } from "@ohpg/jellyfin";
-import { LoadType } from "@ohpg/fin-core";
+import { FinCollectionType, FinItemType, LoadType } from "@ohpg/fin-core";
 import { ListViewModel } from "../common/ListViewModel";
 import { MediaListArgs } from "./MediaListArgs";
 
@@ -14,34 +13,27 @@ export class MediaListVewModel extends ListViewModel {
 
   private readonly args: MediaListArgs
 
-  private lastId?: number
-
   constructor(args: MediaListArgs, context: Context) {
     super(context)
     this.args = args
   }
 
-  loadData(type: LoadType): Promise<void> {
-    let types: Array<BaseItemKind> = new Array()
+  async loadData(type: LoadType): Promise<void> {
+    let types: Array<FinItemType> = new Array()
     let recursive = true
     switch (this.args.type) {
-      case CollectionType.Movies:
-        types.push(BaseItemKind.Movie)
+      case FinCollectionType.Movies:
+        types.push(FinItemType.Movie)
         break
-      case CollectionType.Tvshows:
-        types.push(BaseItemKind.Series)
+      case FinCollectionType.TvShows:
+        types.push(FinItemType.Series)
         break
       default:
         recursive = false
         break
     }
-    return this.repository.loadMediaList(this.args.id
-      , types, recursive
-      , [ItemSortBy.DateCreated]
-      , [SortOrder.Descending])
-      .then((items) => {
-        this.dataSource.initData(items)
-      })
+    let items = await this.repository.getLibraryMediaList(this.args.id, types, recursive)
+    this.dataSource.initData(items)
   }
 
 }

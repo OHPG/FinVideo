@@ -1,4 +1,4 @@
-import { FinCollectionType } from "@ohpg/fin-core";
+import { FinItemType } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -7,12 +7,12 @@ import { FinCollectionType } from "@ohpg/fin-core";
  * @Version V1.0
  * @Description List args
  */
-export interface MediaListArgs {
+export interface FavouriteListArgs {
 
   id: string,
 
   name: string,
 
-  type?: FinCollectionType
+  type: FinItemType
 
 }

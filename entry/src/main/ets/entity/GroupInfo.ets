@@ -1,4 +1,4 @@
-import { BaseItemDto } from "@ohpg/jellyfin";
+import { FinItem } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -11,8 +11,10 @@ export interface GroupInfo {
 
   type: 'Continue' | 'Next' | 'Normal'
 
-  group?: BaseItemDto
+  group?: FinItem
 
-  items?: Array<BaseItemDto>
+  items?: Array<FinItem>
+
+  favourite?: boolean
 
 }

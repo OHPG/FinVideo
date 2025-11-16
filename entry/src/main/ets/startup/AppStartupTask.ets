@@ -1,5 +1,4 @@
 import { common, StartupTask } from "@kit.AbilityKit";
-import { FinVideoApi } from "../api/FinVideoApi";
 import { Repository } from "../data/Repository";
 
 /**
@@ -13,9 +12,7 @@ import { Repository } from "../data/Repository";
 export class AppStartupTask extends StartupTask {
 
   public async init(context: common.AbilityStageContext): Promise<void> {
-    let finVideoApi = new FinVideoApi(context.getApplicationContext(), "FinVideo")
-    AppStorage.setOrCreate(FinVideoApi.FIN_API, finVideoApi)
-    let repository = new Repository(context.getApplicationContext(), finVideoApi)
+    let repository = new Repository(context.getApplicationContext())
     AppStorage.setOrCreate(Repository.REPOSITORY, repository)
     try {
       await repository.init()

@@ -1,15 +1,15 @@
 import router from '@ohos.router'
+import { window } from '@kit.ArkUI'
 import { ListRefreshView, ToolBar } from '@ohpg/fin-framework'
 import { CommonConstants } from '../common/CommonConstants'
 import { SearchArgs } from './SearchArgs'
 import { SearchViewModel } from './SearchViewModel'
 import { SectionInfo } from '../../entity/SectionInfo'
-import { BaseItemDto, BaseItemKind } from '@ohpg/jellyfin'
 import { SectionToolBar } from '../../widget/bar/SectionToolBar'
 import LazyDataSource from '../common/LazyDataSource'
 import { MediaItem } from '../../widget/media/MediaItem'
 import { EpisodeItem } from '../../widget/media/EpisodeItem'
-import { window } from '@kit.ArkUI'
+import { FinItem, FinItemType } from '@ohpg/fin-core'
 
 @Entry
 @Component
@@ -23,7 +23,7 @@ struct SearchPage {
 
   @Builder
   private mainGroup(sectionInfo: SectionInfo, index: number) {
-    if (sectionInfo.type === BaseItemKind.Episode) {
+    if (sectionInfo.type === FinItemType.Episode) {
       SectionLand({item: sectionInfo})
     } else {
       SectionPo({item: sectionInfo})
@@ -62,7 +62,7 @@ struct SectionPo {
 
   @Require @State item?: SectionInfo = undefined
 
-  private itemData = new LazyDataSource<BaseItemDto>()
+  private itemData = new LazyDataSource<FinItem>()
 
   aboutToAppear(): void {
     this.itemData.dataArray = this.item?.items!
@@ -72,7 +72,7 @@ struct SectionPo {
     Column() {
       SectionToolBar({item: this.item})
       List({space: CommonConstants.SPACE_12}) {
-        LazyForEach(this.itemData, (item: BaseItemDto) => {
+        LazyForEach(this.itemData, (item: FinItem) => {
             ListItem() {
               MediaItem({item: item, itemWidth: 140})
             }
@@ -94,7 +94,7 @@ struct SectionLand {
 
   @Require @State item?: SectionInfo = undefined
 
-  private itemData = new LazyDataSource<BaseItemDto>()
+  private itemData = new LazyDataSource<FinItem>()
 
   aboutToAppear(): void {
     this.itemData.dataArray = this.item?.items!
@@ -104,7 +104,7 @@ struct SectionLand {
     Column() {
       SectionToolBar({item: this.item})
       List({space: CommonConstants.SPACE_12}) {
-        LazyForEach(this.itemData, (item: BaseItemDto) => {
+        LazyForEach(this.itemData, (item: FinItem) => {
           ListItem() {
             EpisodeItem({item: item})
           }

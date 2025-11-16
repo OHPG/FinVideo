@@ -1,5 +1,6 @@
 import { GroupInfo } from "../../entity/GroupInfo";
 import { CommonConstants } from "../../pages/common/CommonConstants";
+import { FavouriteListArgs } from "../../pages/favourite/FavouriteListArgs";
 import { MediaListArgs } from "../../pages/media/MediaListArgs";
 
 @Reusable
@@ -15,7 +16,7 @@ export struct CategoryToolBar {
   build() {
 
     Row() {
-      Text(this.item?.group?.Name)
+      Text(this.item?.group?.name)
         .fontSize($r('app.float.lg_font_size'))
         .fontWeight(FontWeight.Medium)
         .fontFamily(CommonConstants.HARMONY_HEITI_MEDIUM_FONT_FAMILY)
@@ -30,12 +31,21 @@ export struct CategoryToolBar {
             .fontSize($r('app.float.more_arrow_icon_height'))
         }
         .onClick(() => {
-          let args: MediaListArgs = {
-            id: this.item!.group?.Id!,
-            name: this.item!.group?.Name!,
-            type: this.item!.group?.CollectionType!
+          if (this.item?.favourite) {
+            let args: FavouriteListArgs = {
+              id: this.item!.group?.id!,
+              name: this.item!.group?.name!,
+              type: this.item!.group?.type!
+            }
+            this.getUIContext().getRouter().pushUrl({url: "pages/favourite/FavouriteListPage", params: args})
+          } else {
+            let args: MediaListArgs = {
+              id: this.item!.group?.id!,
+              name: this.item!.group?.name!,
+              type: this.item!.group?.collectionType!
+            }
+            this.getUIContext().getRouter().pushUrl({url: "pages/media/MediaListPage", params: args})
           }
-          this.getUIContext().getRouter().pushUrl({url: "pages/media/MediaListPage", params: args})
         })
       }
     }

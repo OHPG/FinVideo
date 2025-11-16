@@ -1,25 +1,30 @@
 import { window } from '@kit.ArkUI'
 import { CommonConstants } from '../common/CommonConstants'
-import { MediaListArgs } from './MediaListArgs'
-import { MediaListVewModel } from './MediaListVewModel'
+import { FavouriteListVewModel } from './FavouriteListVewModel'
 import { GridRefreshView } from '@ohpg/fin-framework'
-import { ToolBar } from '@ohpg/fin-framework'
 import { MediaItem } from '../../widget/media/MediaItem'
-import { FinItem } from '@ohpg/fin-core'
+import { FavouriteListArgs } from './FavouriteListArgs'
+import { ToolBar } from '@ohpg/fin-framework'
+import { FinItem, FinItemType } from '@ohpg/fin-core'
+import { EpisodeItem } from '../../widget/media/EpisodeItem'
 
 @Entry
 @Component
-struct MediaListPage {
+struct FavouriteListPage {
 
-  private args = this.getUIContext().getRouter().getParams() as MediaListArgs
+  private args = this.getUIContext().getRouter().getParams() as FavouriteListArgs
 
-  private viewModel = new MediaListVewModel(this.args, this.getUIContext().getHostContext()!)
+  private viewModel = new FavouriteListVewModel(this.args, this.getUIContext().getHostContext()!)
 
   @StorageProp('currentAvoidArea') currentAvoidArea?: window.AvoidArea = undefined
 
   @Builder
   mediaListView(info: Object, index: number) {
-    MediaItem({item: info as FinItem})
+    if ((info as FinItem).type === FinItemType.Episode) {
+      EpisodeItem({item: info as FinItem})
+    } else {
+      MediaItem({item: info as FinItem})
+    }
   }
 
   build() {

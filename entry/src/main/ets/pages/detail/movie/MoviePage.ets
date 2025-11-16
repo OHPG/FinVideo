@@ -4,9 +4,8 @@ import { MovieViewModel } from './MovieViewModel'
 import { CommonConstants } from '../../common/CommonConstants'
 import { DetailCover, DetailFooter, DetailHeader } from '../DetailComponent'
 import { ScrollRefreshView } from '@ohpg/fin-framework'
-import { BaseItemDto } from '@ohpg/jellyfin'
+import { BreakpointSystem, FinItem } from '@ohpg/fin-core'
 import { ToolBar } from '@ohpg/fin-framework'
-import { BreakpointSystem } from '@ohpg/fin-core'
 
 let movieStorage: LocalStorage = new LocalStorage();
 @Entry(movieStorage)
@@ -28,11 +27,11 @@ struct MoviePage {
   }
 
   @Builder
-  movieScrollView(item?: BaseItemDto) {
+  movieScrollView(item?: FinItem) {
     Column({space: CommonConstants.SPACE_12}) {
       DetailCover({itemDto: item})
       DetailHeader({itemDto: item})
-      if (item && item.People && item.People.length > 0) {
+      if (item && item.person && item.person.length > 0) {
         DetailFooter({itemDto: item})
       }
     }

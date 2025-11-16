@@ -1,12 +1,11 @@
 import { display, promptAction, router, window } from '@kit.ArkUI'
 import { DeviceUtil, Option, OptionDialog } from '@ohpg/fin-framework'
-import { AvoidAreaSystem } from '@ohpg/fin-core'
+import { AvoidAreaSystem, FinItem } from '@ohpg/fin-core'
 import { CommonConstants } from '../common/CommonConstants'
 import { PlayerViewModel } from './PlayerViewModel'
 import { PlayerArgs } from './PlayerArgs'
 import { TimeTool } from '@ohpg/fin-core'
 import { media } from '@kit.MediaKit'
-import { BaseItemDto } from '@ohpg/jellyfin'
 import { AVVolumePanel } from '@kit.AudioKit'
 import { XController } from './XController'
 import { deviceInfo } from '@kit.BasicServicesKit'
@@ -30,7 +29,7 @@ struct PlayerPage {
 
   private preferOrientation?: number
 
-  @State itemDto?: BaseItemDto = undefined
+  @State itemDto?: FinItem = undefined
 
   @State canSkipPre: boolean = false
 
@@ -161,14 +160,14 @@ struct PlayerPage {
       })
   }
 
-  private updateItem(item?: BaseItemDto) {
+  private updateItem(item?: FinItem) {
     this.itemDto = item
     let array = this.viewModel.itemDtoArray
     if (!this.itemDto || !array) {
       this.canSkipPre = false
       this.canSkipNext = false
     } else {
-      let index = array.findIndex((item) => item.Id === this.itemDto!.Id)
+      let index = array.findIndex((item) => item.id === this.itemDto!.id)
       this.canSkipPre = index > 0
       this.canSkipNext = index < array.length - 1
     }
@@ -483,7 +482,7 @@ struct PlayerPage {
                 router.back()
               })
 
-            Text(this.itemDto ? this.itemDto.Name : this.args.name)
+            Text(this.itemDto ? this.itemDto.name : this.args.name)
               .fontSize($r('sys.float.titlebar_title_secondary_size'))
               .fontColor($r('sys.color.font_on_primary'))
               .layoutWeight(1)
@@ -832,10 +831,10 @@ struct PlayerPage {
   }
 
   private skip(step: number) {
-    let nextItem: BaseItemDto | undefined
+    let nextItem: FinItem | undefined
     let array = this.viewModel.itemDtoArray
     if (this.itemDto && array && array.length > 0) {
-      let index = array.findIndex((item) => item.Id === this.itemDto!.Id)
+      let index = array.findIndex((item) => item.id === this.itemDto!.id)
       if (index >= 0 && index + step < array.length) {
         nextItem = array[index + step]
       }

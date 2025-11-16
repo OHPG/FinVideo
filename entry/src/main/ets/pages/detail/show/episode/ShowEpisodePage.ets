@@ -1,4 +1,4 @@
-import { BaseItemDto, ImageType } from "@ohpg/jellyfin"
+import { FinItem } from "@ohpg/fin-core"
 import { Repository } from "../../../../data/Repository"
 import { CommonConstants } from "../../../common/CommonConstants"
 import { DetailOperate } from "../../DetailComponent"
@@ -10,7 +10,7 @@ export struct ShowEpisodePage {
 
   @Prop storage: LocalStorage
 
-  @State episodeDto?: BaseItemDto = undefined
+  @State episodeDto?: FinItem = undefined
 
   @State overview?: string | null = undefined
 
@@ -26,7 +26,7 @@ export struct ShowEpisodePage {
   build() {
     Column({space: CommonConstants.SPACE_12}) {
       Row({space: CommonConstants.SPACE_8}) {
-        Image(this.episodeDto ? this.repository?.buildImage(this.episodeDto!, ImageType.Primary) : undefined)
+        Image(this.episodeDto?.image?.primary)
           .id('episode_cover')
           .alt($r('app.media.alt'))
           .autoResize(true)
@@ -37,13 +37,13 @@ export struct ShowEpisodePage {
 
         Stack() {
           Column({space: CommonConstants.SPACE_8}) {
-            Text(this.episodeDto?.SeriesName)
+            Text(this.episodeDto?.seriesName)
               .id('episode_name')
               .fontSize($r('sys.float.Body_L'))
 
-            Text((this.episodeDto?.ParentIndexNumber && this.episodeDto?.IndexNumber)
-              ? `S${this.episodeDto?.ParentIndexNumber}:E${this.episodeDto?.IndexNumber} - ${this.episodeDto?.Name}`
-              : this.episodeDto?.Name)
+            Text((this.episodeDto?.parentIndex && this.episodeDto?.index)
+              ? `S${this.episodeDto?.parentIndex}:E${this.episodeDto?.index} - ${this.episodeDto?.name}`
+              : this.episodeDto?.name)
               .fontSize($r('sys.float.Body_M'))
 
             Blank()
@@ -57,7 +57,7 @@ export struct ShowEpisodePage {
         }
         .layoutWeight(3)
       }
-      Text(this.episodeDto?.Overview)
+      Text(this.episodeDto?.overview)
         .fontSize($r('sys.float.Body_M'))
       Blank(CommonConstants.SPACE_16)
     }

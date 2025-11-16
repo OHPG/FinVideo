@@ -1,13 +1,12 @@
 import { CircleShape, window } from '@kit.ArkUI'
-import { BaseItemDto, ImageType } from '@ohpg/jellyfin'
 import { Repository } from '../../../../data/Repository'
 import { ShowEpisodeSheet } from '../../../../sheet/ShowEpisodeSheet'
 import { ListRefreshView } from '@ohpg/fin-framework'
 import { CommonConstants } from '../../../common/CommonConstants'
-import { DetailArgs } from '../../DetailArgs'
 import { ShowSeasonArgs } from './ShowSeasonArgs'
 import { ShowSeasonViewModel } from './ShowSeasonViewModel'
 import { ToolBar } from '@ohpg/fin-framework'
+import { FinItem } from '@ohpg/fin-core'
 
 @Entry
 @Component
@@ -20,7 +19,7 @@ struct ShowSeasonPage {
   @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
   @Builder
-  seasonItemBuilder(item: BaseItemDto, index: number) {
+  seasonItemBuilder(item: FinItem, index: number) {
     SeasonItem({item: item})
   }
 
@@ -60,15 +59,15 @@ export struct SeasonItem {
 
   @State isSheetShow: boolean = false
 
-  @Require @State item?: BaseItemDto = undefined
+  @Require @State item?: FinItem = undefined
 
   aboutToReuse(params: Record<string, object>): void {
-    this.item = params['item']
+    this.item = params['item'] as FinItem
   }
 
   build() {
     RelativeContainer(){
-      Image(this.repository?.buildImage(this.item!, ImageType.Primary))
+      Image(this.item?.image?.primary)
         .id("episode_cover")
         .alt($r('app.media.alt'))
         .objectFit(ImageFit.Cover)
@@ -92,7 +91,7 @@ export struct SeasonItem {
         .fontSize($r('sys.float.Subtitle_S'))
         .padding(CommonConstants.SPACE_4)
         .backgroundColor($r('sys.color.comp_background_primary'))
-        .visibility(this.item?.UserData?.Played ? Visibility.Visible : Visibility.Hidden)
+        .visibility(this.item?.data?.played ? Visibility.Visible : Visibility.Hidden)
         .alignRules({
           top: {
             anchor: "episode_cover",
@@ -109,7 +108,7 @@ export struct SeasonItem {
         }))
         .margin(CommonConstants.SPACE_4)
 
-      Text(this.item?.IndexNumber + ". " + this.item?.Name)
+      Text(this.item?.index + ". " + this.item?.name)
         .id("episode_name")
         .fontSize($r('sys.float.Body_L'))
         .maxLines(1)
@@ -130,7 +129,7 @@ export struct SeasonItem {
             align: VerticalAlign.Top
           }
         })
-      Text(this.item?.Overview)
+      Text(this.item?.overview)
         .id("episode_overview")
         .fontSize($r('sys.float.Body_S'))
         .maxLines(5)

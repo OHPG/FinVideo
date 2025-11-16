@@ -1,4 +1,4 @@
-import { promptAction, window } from '@kit.ArkUI'
+import { window } from '@kit.ArkUI'
 import { WebTool } from '@ohpg/fin-core'
 import { CommonConstants, ToolBar } from '@ohpg/fin-framework'
 import { pasteboard } from '@kit.BasicServicesKit'

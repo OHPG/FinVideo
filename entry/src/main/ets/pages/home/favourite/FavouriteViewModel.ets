@@ -1,5 +1,4 @@
-import { LoadType } from "@ohpg/fin-core";
-import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin";
+import { FinItem, FinItemType, LoadType } from "@ohpg/fin-core";
 import { ListViewModel } from "../../common/ListViewModel";
 import { GroupInfo } from "../../../entity/GroupInfo";
 
@@ -13,30 +12,33 @@ import { GroupInfo } from "../../../entity/GroupInfo";
 export class FavouriteViewModel extends ListViewModel {
 
   async loadData(type: LoadType): Promise<void> {
-    let includeTypeArray = [BaseItemKind.Movie, BaseItemKind.Series, BaseItemKind.Episode]
-    let items = await this.repository.loadFavourite(includeTypeArray)
+    let includeTypeArray = [FinItemType.Movie, FinItemType.Series, FinItemType.Episode]
+    let items = await this.repository.getFavourite(includeTypeArray)
     let groupMap = new Map<string, GroupInfo>()
     items.forEach((item) => {
-      let groupInfo = groupMap.get(item.Type!)
+      let groupInfo = groupMap.get(item.type!)
       if (!groupInfo) {
         let name: string
-        if (item.Type === BaseItemKind.Movie) {
+        if (item.type === FinItemType.Movie) {
           name = "电影"
-        } else if (item.Type === BaseItemKind.Series) {
+        } else if (item.type === FinItemType.Series) {
           name = "电视剧"
-        } else if (item.Type === BaseItemKind.Episode) {
+        } else if (item.type === FinItemType.Episode) {
           name = "集"
         } else {
-          name = item.Type!
+          name = item.type!
         }
         groupInfo = {
           type: 'Normal',
           group: {
-            Name: name,
+            id: "",
+            name: name,
+            type: item.type,
           },
-          items: new Array<BaseItemDto>()
+          items: new Array<FinItem>(),
+          favourite: true
         }
-        groupMap.set(item.Type!, groupInfo)
+        groupMap.set(item.type!, groupInfo)
       }
       groupInfo.items!.push(item)
     })

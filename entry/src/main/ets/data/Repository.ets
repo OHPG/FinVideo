@@ -1,17 +1,8 @@
-import { BaseItemDto, BaseItemKind,
-  BaseItemPerson,
-  CollectionType,
-  ImageType,
-  ItemFields,
-  ItemFilter,
-  ItemSortBy,
-  MediaProtocol,
-  MediaSourceInfo,
-  PlaybackInfoResponse,
-  SortOrder,
-  UserItemDataDto} from "@ohpg/fin-core";
-import { uri } from "@kit.ArkTS";
+import { FinItem, FinItemData, FinItemType } from "@ohpg/fin-core";
 import { FinRepository } from "@ohpg/fin-framework";
+import { FinVideoApi } from "../api/FinVideoApi";
+import { FinVideoApiFactory } from "../api/FinVideoApiFactory";
+import { FinItemSource } from "../entity/FinItemSource";
 
 /**
  * @Author peerless2012
@@ -22,163 +13,179 @@ import { FinRepository } from "@ohpg/fin-framework";
  */
 export class Repository extends FinRepository {
 
-  private filterItem(items?: Array<BaseItemDto> | null): Array<BaseItemDto> | undefined {
-    let newItems: Array<BaseItemDto> | undefined
-    items?.forEach((item) => {
-      let type = item.CollectionType
-      if (type == CollectionType.Tvshows
-        || type === CollectionType.Movies
-        || type === undefined) {
-        if (newItems == undefined) {
-          newItems = new Array()
-        }
-        newItems.push(item)
-      }
-    }
-    )
-    return newItems
+  constructor(context: Context) {
+    super(context, new FinVideoApiFactory(context))
   }
 
-  public buildImage(dto: BaseItemDto, type: ImageType): string | undefined {
-    let imageUri = new uri.URI(this.jellyfin.apiClient.getServerInfo()!.address)
-    imageUri = imageUri.addEncodedSegment(`items/${dto.Id!}/Images/${type}`)
-    return imageUri.toString()
-  }
-
-  public buildPersonImage(person: BaseItemPerson, type: ImageType): string | undefined {
-    let imageUri = new uri.URI(this.jellyfin.apiClient.getServerInfo()!.address)
-    imageUri = imageUri.addEncodedSegment(`items/${person.Id!}/Images/${type}`)
-    return imageUri.toString()
-  }
-
-  public async getMediaList(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getUserViewsApi().getUserViews({
-      userId: this.activeInfo!.userInfo.userId
-    })
-    let groups = this.filterItem(result.Items)
-    if (!groups) {
-      return []
-    }
-    return groups
-  }
-
-  public async getLatestMedia(id?: string): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getUserLibraryApi().getLatestMedia({
-      userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.Series, BaseItemKind.Movie],
-      parentId: id,
-      limit: 12
-    })
-    if (result) {
-      return result
-    }
-    return []
+  protected requireApi(): FinVideoApi {
+    return super.requireApi() as FinVideoApi
   }
 
   /**
-   * 查询所有媒体库
+   * 获取恢复播放媒体列表
    * @returns
    */
-  public async loadMedia(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId
-    })
-    let items = this.filterItem(result.Items)
-    if (items) {
-      return items
-    }
-    return []
+  public getResumeItems(): Promise<Array<FinItem>> {
+    return this.requireApi().getResumeItems()
   }
 
-  public async loadFavourite(includeItemTypes?: Array<BaseItemKind>): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      filters: [ItemFilter.IsFavorite],
-      includeItemTypes: includeItemTypes,
-      fields: [ItemFields.Overview],
-      recursive: true
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
+  /**
+   * 获取接下来播放的媒体列表
+   * 注：主页和剧集中用
+   * @param seriesId
+   * @returns
+   */
+  public getNextUp(): Promise<Array<FinItem>> {
+    return this.requireApi().getNextUp()
   }
 
-  public async loadMediaList(id: string, types: Array<BaseItemKind>
-    , recursive: boolean, sortBy?: Array<ItemSortBy>, sortOrder?: Array<SortOrder>): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      parentId: id,
-      includeItemTypes: types,
-      recursive: recursive,
-      sortBy: sortBy,
-      sortOrder: sortOrder
-    })
-    return result.Items!
+  /**
+   * 获取媒体库列表
+   * @returns
+   */
+  public getLibraryList(): Promise<Array<FinItem>> {
+    return this.requireApi().getLibraryList()
   }
 
-  public loadMovie(id: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: id
-    })
+  /**
+   * 获取媒体库最近媒体
+   * @param id
+   * @returns
+   */
+  public getLibraryLatestMedia(id?: string): Promise<Array<FinItem>> {
+    return this.requireApi().getLatestItems(id)
   }
 
-  public loadShow(showId: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: showId
-    })
+  /**
+   * 获取指定媒体库中的媒体列表
+   * @param id 媒体库id
+   * @param types 媒体类型
+   * @param recursive 是否递归
+   * @returns
+   */
+  public getLibraryMediaList(id: string, types: Array<FinItemType>, recursive: boolean): Promise<Array<FinItem>> {
+    return this.requireApi().getItemList(id, types, recursive)
   }
 
-  public getPlaybackInfo(id: string): Promise<PlaybackInfoResponse> {
-    return this.jellyfin.getMediaInfoApi().getPlaybackInfo({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: id
-    })
+  /**
+   * 获取电影信息
+   * @param id 电影id
+   * @returns
+   */
+  public getMovie(id: string): Promise<FinItem> {
+    return this.requireApi().getMovie(id)
   }
 
-  public loadStreamUrl(id: string, sourceId: string): Promise<string> {
-    return this.jellyfin.getVideosApi().getVideoStreamUrl({
-      itemId: id,
-      static: true,
-      mediaSourceId: sourceId
-    })
+  /**
+   * 获取剧集信息
+   * @param id 剧集id
+   * @returns
+   */
+  public getShow(id: string): Promise<FinItem> {
+    return this.requireApi().getShow(id)
   }
 
-  public async getMediaSource(id: string, sourceInfo: MediaSourceInfo): Promise<string> {
-    let url: string | undefined | null
-    switch (sourceInfo.Protocol) {
-      case MediaProtocol.File:
-        url = await this.loadStreamUrl(id, sourceInfo.Id!)
-        break
-      case MediaProtocol.Http:
-        url = sourceInfo.Path
-        break
-    }
-    if (url) {
-      return url
-    }
-    throw new Error("Source not support.")
+  /**
+   * 获取剧集接下来播放的媒体列表
+   * @param seriesId 剧集id
+   * @returns
+   */
+  public getShowNextUp(id: string): Promise<Array<FinItem>> {
+    return this.requireApi().getNextUp(id)
   }
 
-  public async searchMedia(keyword: string): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo?.userInfo.userId,
-      searchTerm: keyword,
-      includeItemTypes: [BaseItemKind.Movie, BaseItemKind.Series, BaseItemKind.Episode],
-      recursive: true
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
+  /**
+   * 获取剧集的分季列表
+   * @param seriesId 剧集id
+   * @returns
+   */
+  public getSeasons(seriesId: string): Promise<Array<FinItem>> {
+    return this.requireApi().getSeasons(seriesId)
   }
 
-  public getUserItem(id: string): Promise<UserItemDataDto> {
-    return this.jellyfin.getItemsApi().getItemUserData({
-      itemId: id,
-      userId: this.activeInfo!.userInfo.userId
-    })
+  /**
+   * 获取剧集分集列表
+   * @param seriesId
+   * @param seasonId
+   * @returns
+   */
+  public getEpisodes(seriesId: string, seasonId: string): Promise<Array<FinItem>> {
+    return this.requireApi().getEpisodes(seriesId, seasonId)
+  }
+
+  /**
+   * 获取分集信息
+   * @param id 分集id
+   * @returns
+   */
+  public getEpisode(id: string): Promise<FinItem> {
+    return this.requireApi().getEpisode(id)
+  }
+
+  /**
+   * 获取收藏列表
+   * @param includeItemTypes
+   * @returns
+   */
+  public getFavourite(includeItemTypes?: Array<FinItemType>): Promise<Array<FinItem>> {
+    return this.requireApi().getFavourite(includeItemTypes)
+  }
+
+  /**
+   * 获取媒体数据源
+   * @param id
+   * @returns
+   */
+  public getMediaSource(id: string): Promise<FinItemSource> {
+    return this.requireApi().getItemSource(id)
+  }
+
+  /**
+   * 搜索媒体
+   * @param keyword
+   * @returns
+   */
+  public searchMedia(keyword: string): Promise<Array<FinItem>> {
+    return this.requireApi().search(keyword)
+  }
+
+  /**
+   * 获取媒体的用户数据
+   * @param id
+   * @returns
+   */
+  public getItemData(id: string): Promise<FinItemData> {
+    return this.requireApi().getItemData(id)
+  }
+
+  /**
+   * 播放开始
+   * @param id
+   * @returns
+   */
+  public onPlaybackStart(id: string): Promise<void> {
+    return this.requireApi().onPlaybackStart(id)
+  }
+
+  /**
+   * 播放进度
+   * @param id
+   * @param position
+   * @param playing
+   * @returns
+   */
+  public onPlaybackProgress(id: string, position: number, playing: boolean): Promise<void> {
+    return this.requireApi().onPlaybackProgress(id, position,playing)
+  }
+
+  /**
+   * 播放停止
+   * @param id
+   * @param position
+   * @returns
+   */
+  public onPlaybackStopped(id: string, position: number): Promise<void> {
+    return this.requireApi().onPlaybackStopped(id, position)
   }
 
 }

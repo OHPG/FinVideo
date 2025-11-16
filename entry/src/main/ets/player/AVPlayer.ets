@@ -1,5 +1,5 @@
 import { media } from "@kit.MediaKit";
-import { BaseItemDto } from "@ohpg/jellyfin";
+import { FinItem } from "@ohpg/fin-core";
 import { AbstractPlayer } from "./AbstractPlayer";
 
 /**
@@ -48,8 +48,8 @@ export class AVPlayer extends AbstractPlayer {
           this.avPlayer?.setSpeed(this.avSpeed)
         }
         // continue play
-        let percent = this.itemDto?.UserData?.PlayedPercentage
-        let ticks = this.itemDto?.UserData?.PlaybackPositionTicks
+        let percent = this.itemDto?.data?.playPercentage
+        let ticks = this.itemDto?.data?.playedPositionTicks
         if (ticks && percent && percent <= 98) {
           this.avPlayer?.seek(ticks / 10000)
         }
@@ -121,7 +121,7 @@ export class AVPlayer extends AbstractPlayer {
     return this.avPlayer?.height
   }
 
-  public async setData(url: string, item: BaseItemDto): Promise<void> {
+  public async setData(url: string, item: FinItem): Promise<void> {
     this.itemDto = item
     let avPlayer = await this.requireAvPlayer()
     avPlayer.url = url

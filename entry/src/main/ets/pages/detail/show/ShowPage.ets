@@ -65,7 +65,7 @@ struct ShowPage {
           seasonDto: info.seasons
         })
       }
-      if (info?.show && info.show.People && info.show.People.length > 0) {
+      if (info?.show && info.show.person && info.show.person.length > 0) {
         DetailFooter({itemDto: info?.show})
       }
     }

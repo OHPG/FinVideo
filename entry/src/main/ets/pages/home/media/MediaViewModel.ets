@@ -11,7 +11,7 @@ import { ListViewModel } from "../../common/ListViewModel";
 export class MediaViewModel extends ListViewModel {
 
   loadData(type: LoadType): Promise<void> {
-    return this.repository.loadMedia()
+    return this.repository.getLibraryList()
       .then((items) => {
         this.dataSource.initData(items)
       })

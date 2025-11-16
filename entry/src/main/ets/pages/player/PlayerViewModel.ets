@@ -1,4 +1,4 @@
-import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin";
+import { FinItem, FinItemType } from "@ohpg/fin-core";
 import { AppViewModel } from "../common/AppViewModel";
 import { PlayerArgs } from "./PlayerArgs";
 
@@ -16,28 +16,28 @@ export class PlayerViewModel extends AppViewModel {
   /**
    * 目标媒体
    */
-  itemDto?: BaseItemDto
+  itemDto?: FinItem
 
   /**
    * 媒体列表，剧集才有
    */
-  itemDtoArray?: Array<BaseItemDto>
+  itemDtoArray?: Array<FinItem>
 
   constructor(context: Context, args: PlayerArgs) {
     super(context)
     this.args = args
   }
 
-  async loadData(): Promise<BaseItemDto> {
+  async loadData(): Promise<FinItem> {
     if (this.itemDto) {
       return this.itemDto
     }
-    if (this.args.type === BaseItemKind.Movie) {
-      this.itemDto = await this.repository.loadMovie(this.args.id)
+    if (this.args.type === FinItemType.Movie) {
+      this.itemDto = await this.repository.getMovie(this.args.id)
 
-    } else if (this.args.type === BaseItemKind.Episode) {
+    } else if (this.args.type === FinItemType.Episode) {
       this.itemDto = await this.repository.getEpisode(this.args.id)
-      this.itemDtoArray = await this.repository.getEpisodes(this.itemDto.SeasonId!, this.itemDto.SeasonId!)
+      this.itemDtoArray = await this.repository.getEpisodes(this.itemDto.seasonId!, this.itemDto.seasonId!)
     } else {
       throw new Error("Unsupported type " + this.args.type)
     }

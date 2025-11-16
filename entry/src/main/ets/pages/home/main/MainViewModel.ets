@@ -22,7 +22,8 @@ export class MainViewModel extends ListViewModel {
       groupArray.push({
         type: "Continue",
         group: {
-          Name: "继续观看"
+          id: "",
+          name: "继续观看"
         },
         items: resumeItems
       })
@@ -32,15 +33,16 @@ export class MainViewModel extends ListViewModel {
       groupArray.push({
         type: "Next",
         group: {
-          Name: "接下来"
+          id: "",
+          name: "接下来"
         },
         items: nextUpItems
       })
     }
-    let normalItems = await this.repository.getMediaList()
+    let normalItems = await this.repository.getLibraryList()
     if (normalItems) {
       for (let item of normalItems) {
-        let items = await this.repository.getLatestMedia(item.Id)
+        let items = await this.repository.getLibraryLatestMedia(item.id)
         if (items && items.length > 0) {
           groupArray.push({
             type: "Normal",

@@ -1,5 +1,4 @@
-import { BaseItemDto, BaseItemKind, ImageType } from "@ohpg/jellyfin"
-import { Repository } from "../../data/Repository"
+import { FinItem, FinItemType } from "@ohpg/fin-core"
 import { CommonConstants } from "../../pages/common/CommonConstants"
 import { ShowEpisodeSheet } from "../../sheet/ShowEpisodeSheet"
 
@@ -7,20 +6,18 @@ import { ShowEpisodeSheet } from "../../sheet/ShowEpisodeSheet"
 @Component
 export struct EpisodeItem {
 
-  @StorageLink("Repository") repository?: Repository = undefined
-
-  @Require @State item?: BaseItemDto = undefined
+  @Require @State item?: FinItem = undefined
 
   @State progress: boolean = false
 
   aboutToReuse(params: Record<string, object>): void {
-    this.item = params['item']
+    this.item = params['item'] as FinItem
   }
 
   build() {
     Column({space: CommonConstants.SPACE_8}) {
       Stack({alignContent: Alignment.Bottom}) {
-        Image(this.repository?.buildImage(this.item!, ImageType.Primary))
+        Image(this.item?.image?.primary)
           .alt($r('app.media.alt'))
           .autoResize(true)
           .objectFit(ImageFit.Cover)
@@ -29,7 +26,7 @@ export struct EpisodeItem {
           .borderRadius($r('app.float.lg_border_radius'))
 
         if (this.progress) {
-          Progress({ value: this.item?.UserData?.PlayedPercentage, total: 100, type: ProgressType.Linear })
+          Progress({ value: this.item?.data?.playPercentage, total: 100, type: ProgressType.Linear })
             .margin({bottom: CommonConstants.SPACE_8})
             .width('90%')
         }
@@ -38,17 +35,17 @@ export struct EpisodeItem {
       .aspectRatio(1.5)
 
 
-      if (this.item?.Type === BaseItemKind.Episode) {
-        Text(this.item.SeriesName)
+      if (this.item?.type === FinItemType.Episode) {
+        Text(this.item.seriesName)
           .width(CommonConstants.FULL_PERCENT)
           .maxLines(1)
-        Text((this.item?.ParentIndexNumber && this.item?.IndexNumber)
-          ? `S${this.item.ParentIndexNumber}: E${this.item.IndexNumber} ${this.item.Name}`
-          : this.item?.Name)
+        Text((this.item?.parentIndex && this.item?.index)
+          ? `S${this.item.parentIndex}: E${this.item.index} ${this.item.name}`
+          : this.item?.name)
           .width(CommonConstants.FULL_PERCENT)
           .maxLines(1)
       } else {
-        Text(this.item?.Name)
+        Text(this.item?.name)
           .maxLines(1)
           .width(CommonConstants.FULL_PERCENT)
       }

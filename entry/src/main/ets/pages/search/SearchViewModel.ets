@@ -1,5 +1,4 @@
-import { LoadType } from "@ohpg/fin-core";
-import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin";
+import { FinItem, FinItemType, LoadType } from "@ohpg/fin-core";
 import { SectionInfo } from "../../entity/SectionInfo";
 import { ListViewModel } from "../common/ListViewModel";
 
@@ -22,34 +21,34 @@ export class SearchViewModel extends ListViewModel {
   async loadData(type: LoadType): Promise<void> {
     let items = await this.repository.searchMedia(this.word)
     let sectionList = new Array<SectionInfo>()
-    let movieList = new Array<BaseItemDto>()
-    let seriesList = new Array<BaseItemDto>()
-    let episodeList = new Array<BaseItemDto>()
+    let movieList = new Array<FinItem>()
+    let seriesList = new Array<FinItem>()
+    let episodeList = new Array<FinItem>()
     for (const item of items) {
-      if (item.Type === BaseItemKind.Movie) {
+      if (item.type === FinItemType.Movie) {
         movieList.push(item)
-      } else if (item.Type === BaseItemKind.Series) {
+      } else if (item.type === FinItemType.Series) {
         seriesList.push(item)
-      } else if (item.Type === BaseItemKind.Episode) {
+      } else if (item.type === FinItemType.Episode) {
         episodeList.push(item)
       }
     }
 
     if (movieList.length > 0) {
       sectionList.push({
-        type: BaseItemKind.Movie,
+        type: FinItemType.Movie,
         items: movieList
       })
     }
     if (seriesList.length > 0) {
       sectionList.push({
-        type: BaseItemKind.Series,
+        type: FinItemType.Series,
         items: seriesList
       })
     }
     if (episodeList.length > 0) {
       sectionList.push({
-        type: BaseItemKind.Episode,
+        type: FinItemType.Episode,
         items: episodeList
       })
     }

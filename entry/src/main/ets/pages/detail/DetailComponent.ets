@@ -1,18 +1,18 @@
 import { router } from "@kit.ArkUI"
-import { BaseItemDto, BaseItemKind, BaseItemPerson, ImageType, PersonKind } from "@ohpg/jellyfin"
 import { CommonConstants } from "../common/CommonConstants"
 import { DetailViewModel } from "./DetailViewModel"
 import { Repository } from "../../data/Repository"
 import LazyDataSource from "../common/LazyDataSource"
 import { PlayerArgs } from "../player/PlayerArgs"
-import { BreakpointSystem } from "@ohpg/fin-core"
+import { BreakpointSystem, FinItem, FinPerson } from "@ohpg/fin-core"
+import { FinItemType, FinPersonType } from "@ohpg/fin-core"
 
 @Component
 export struct DetailOperate {
 
   @LocalStorageLink("viewModel") viewModel?: DetailViewModel = undefined
 
-  @Link itemDto: BaseItemDto
+  @Link itemDto: FinItem
 
   @State collecting: boolean = false
 
@@ -85,9 +85,9 @@ export struct DetailOperate {
 
   private playOrNot() {
     let args: PlayerArgs = {
-      id: this.itemDto!.Id!,
-      name: this.itemDto!.Name!,
-      type: this.itemDto!.Type!
+      id: this.itemDto!.id!,
+      name: this.itemDto!.name!,
+      type: this.itemDto!.type!
     }
     router.pushUrl({url: "pages/player/PlayerPage", params: args})
   }
@@ -98,7 +98,7 @@ export struct DetailOperate {
       .then((finished) => {
         this.finishing = false
         this.finished = finished
-        this.itemDto!.UserData!.Played = finished
+        this.itemDto!.data!.played = finished
       })
       .catch((error: Error) => {
         this.finishing = false
@@ -111,7 +111,7 @@ export struct DetailOperate {
       .then((collected) => {
         this.collecting = false
         this.collected = collected
-        this.itemDto!.UserData!.IsFavorite = collected
+        this.itemDto!.data!.isFavorite = collected
       })
       .catch((error: Error) => {
         this.collecting = false
@@ -129,14 +129,14 @@ export struct DetailCover {
 
   @StorageLink("Repository") repository?: Repository = undefined
 
-  @Prop itemDto: BaseItemDto
+  @Prop itemDto: FinItem
 
   @StorageProp(BreakpointSystem.CURRENT_WIDTH_BREAKPOINT) currentWidthBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
 
   @StorageProp(BreakpointSystem.CURRENT_HEIGHT_BREAKPOINT) currentHeightBreakpoint: HeightBreakpoint = HeightBreakpoint.HEIGHT_SM
 
   build() {
-    Image(this.repository?.buildImage(this.itemDto, ImageType.Backdrop))
+    Image(this.itemDto.image?.backdrop)
       .alt($r('app.media.alt'))
       .objectFit(ImageFit.Cover)
       .autoResize(true)
@@ -151,7 +151,7 @@ export struct DetailHeader {
 
   @StorageLink("Repository") repository?: Repository = undefined
 
-  @Prop itemDto: BaseItemDto
+  @Prop itemDto: FinItem
 
   @State collecting: boolean = false
 
@@ -168,47 +168,47 @@ export struct DetailHeader {
   @State authors?: string = undefined
 
   aboutToAppear(): void {
-    this.genres = this.itemDto.Genres?.join(",")
-    this.actors = this.itemDto.People?.filter((people) => {
-      return people.Type === PersonKind.Director
+    this.genres = this.itemDto.genres?.join(",")
+    this.actors = this.itemDto.person?.filter((people) => {
+      return people.type === FinPersonType.Director
     })?.map((person) => {
-      return person.Name
+      return person.name
     })?.join(",")
-    this.authors = this.itemDto.People?.filter((people) => {
-      return people.Type === PersonKind.Writer
+    this.authors = this.itemDto.person?.filter((people) => {
+      return people.type === FinPersonType.Writer
     })?.map((people) => {
-      return people.Name
+      return people.name
     }).join(",")
   }
 
   build() {
     Column({space: CommonConstants.SPACE_12}) {
 
-      Text(this.itemDto.Name)
+      Text(this.itemDto.name)
         .fontSize($r('sys.float.Title_M'))
 
       Row({space: CommonConstants.SPACE_8}) {
-        Text(this.itemDto.ProductionYear?.toString())
+        Text(this.itemDto.productionYear?.toString())
 
-        Text(Math.round(((this.itemDto.RunTimeTicks!) / 600000000)) + "min")
+        Text(Math.round(((this.itemDto.runtimeTicks!) / 600000000)) + "min")
 
-        Text(this.itemDto.OfficialRating)
+        Text(this.itemDto.officialRating)
 
-        Text(this.itemDto.CommunityRating?.toString())
+        Text(this.itemDto.communityRating?.toString())
 
       }
 
       Row() {
-        Text(this.itemDto.MediaSources?.[0].MediaStreams?.[0].DisplayTitle)
+        Text(this.itemDto.sources?.[0]?.streams?.[0]?.displayTitle)
       }
 
-      if (this.itemDto.Type === BaseItemKind.Movie) {
+      if (this.itemDto.type === FinItemType.Movie) {
         DetailOperate({
           itemDto: this.itemDto
         })
       }
 
-      Text(this.itemDto.Overview)
+      Text(this.itemDto.overview)
 
       if (this.genres) {
         Row({space: CommonConstants.SPACE_8}) {
@@ -248,13 +248,13 @@ export struct DetailHeader {
 @Component
 export struct DetailFooter {
 
-  @Require itemDto?: BaseItemDto
+  @Require itemDto?: FinItem
 
-  private personDataSource: LazyDataSource<BaseItemPerson> = new LazyDataSource();
+  private personDataSource: LazyDataSource<FinPerson> = new LazyDataSource();
 
   aboutToAppear(): void {
-    if (this.itemDto?.People) {
-      this.personDataSource.appendArrayData(this.itemDto.People)
+    if (this.itemDto?.person) {
+      this.personDataSource.appendArrayData(this.itemDto.person)
     }
   }
 
@@ -267,7 +267,7 @@ export struct DetailFooter {
         })
 
       List({space: CommonConstants.SPACE_12}) {
-        LazyForEach(this.personDataSource, (person: BaseItemPerson, index) => {
+        LazyForEach(this.personDataSource, (person: FinPerson, index) => {
           ListItem() {
             PersonItem({item: person})
           }
@@ -295,26 +295,26 @@ struct PersonItem {
 
   @StorageLink("Repository") repository?: Repository = undefined
 
-  @Require @State item?: BaseItemPerson = undefined
+  @Require @State item?: FinPerson = undefined
 
   aboutToReuse(params: Record<string, object>): void {
-    this.item = params['item']
+    this.item = params['item'] as FinPerson
   }
 
   build() {
     Column() {
-      Image(this.repository?.buildPersonImage(this.item!, ImageType.Primary))
+      Image(this.item?.image?.primary)
         .alt($r('app.media.alt'))
         .borderRadius($r('app.float.lg_border_radius'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
         .width(120)
         .height(180)
-      Text(this.item?.Name)
+      Text(this.item?.name)
         .maxLines(1)
         .ellipsisMode(EllipsisMode.END)
         .height(20)
-      Text(this.item?.Role)
+      Text(this.item?.role)
         .maxLines(1)
         .ellipsisMode(EllipsisMode.END)
         .height(20)

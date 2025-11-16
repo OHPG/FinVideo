@@ -1,7 +1,7 @@
 import { media } from "@kit.MediaKit";
-import { BaseItemDto } from "@ohpg/jellyfin";
 import { Repository } from "../data/Repository";
 import { ErrorCallback } from "@kit.BasicServicesKit";
+import { FinItem } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -18,7 +18,7 @@ export abstract class AbstractPlayer {
 
   private reportingPlayback: boolean = false
 
-  protected itemDto?: BaseItemDto
+  protected itemDto?: FinItem
 
   protected lastPosition = 0
 
@@ -53,7 +53,7 @@ export abstract class AbstractPlayer {
    * @param item
    * @returns
    */
-  public abstract setData(url: string, item: BaseItemDto): Promise<void>
+  public abstract setData(url: string, item: FinItem): Promise<void>
 
   /**
    * Get video width
@@ -182,7 +182,7 @@ export abstract class AbstractPlayer {
     }
     // console.log("AbstractController: reportPlaybackStart " + this.itemDto.Id)
     this.reportingPlayback = true
-    this.repository.onPlaybackStart(this.itemDto.Id!)
+    this.repository.onPlaybackStart(this.itemDto.id!)
       .then(() => {
         this.reportingPlayback = false
         // console.log("AbstractController: reportPlaybackStart success.")
@@ -200,7 +200,7 @@ export abstract class AbstractPlayer {
     this.reportingPlayback = true
     this.lastPosition = this.getPosition() * 10000
     // console.log("AbstractController: reportPlaybackUpdate " + this.itemDto.Id + ", position = " + this.lastPosition)
-    this.repository.onPlaybackUpdate(this.itemDto.Id!, this.lastPosition, this.lastState === 'playing')
+    this.repository.onPlaybackProgress(this.itemDto.id!, this.lastPosition, this.lastState === 'playing')
       .then(() => {
         this.reportingPlayback = false
         // console.log("AbstractController: reportPlaybackUpdate success.")
@@ -217,7 +217,7 @@ export abstract class AbstractPlayer {
     }
     this.reportingPlayback = true
     // console.log("AbstractController: reportPlaybackStop " + this.itemDto.Id)
-    this.repository.onPlaybackStop(this.itemDto.Id!, this.lastPosition)
+    this.repository.onPlaybackStopped(this.itemDto.id!, this.lastPosition)
       .then(() => {
         this.reportingPlayback = false
         // console.log("AbstractController: reportPlaybackStop success.")

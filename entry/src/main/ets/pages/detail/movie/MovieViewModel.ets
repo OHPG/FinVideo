@@ -14,8 +14,8 @@ export class MovieViewModel extends DetailViewModel implements SimpleRepository 
   async loadData(type: LoadType): Promise<Object> {
     // await this.getUserItem()
     try {
-      let movieDto = await this.repository.loadMovie(this.args.id)
-      this.userItemDto = movieDto.UserData
+      let movieDto = await this.repository.getMovie(this.args.id)
+      this.userItemDto = movieDto.data
       return movieDto
     } catch (error) {
       throw error as Error

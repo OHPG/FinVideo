@@ -1,4 +1,4 @@
-import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin";
+import { FinItem, FinItemType } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -9,8 +9,8 @@ import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin";
  */
 export interface SectionInfo {
 
-  type: BaseItemKind
+  type: FinItemType
 
-  items?: Array<BaseItemDto>
+  items?: Array<FinItem>
 
 }

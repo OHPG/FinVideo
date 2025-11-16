@@ -1,4 +1,3 @@
-import { BaseItemDto } from '@ohpg/jellyfin';
 import { CommonConstants } from '../../common/CommonConstants';
 import { MainViewModel } from './MainViewModel';
 import { ListRefreshView } from '@ohpg/fin-framework';
@@ -7,6 +6,7 @@ import { CategoryToolBar } from '../../../widget/bar/CategoryToolBar';
 import { MediaItem } from '../../../widget/media/MediaItem';
 import { EpisodeItem } from '../../../widget/media/EpisodeItem';
 import { GroupInfo } from '../../../entity/GroupInfo';
+import { FinItem } from '@ohpg/fin-core';
 
 /**
  * @Author peerless2012
@@ -72,7 +72,7 @@ struct MainNormalGroup {
       CategoryToolBar({item: this.item})
       // list
       List({space: CommonConstants.SPACE_12}) {
-        ForEach(this.item?.items, (item: BaseItemDto) => {
+        ForEach(this.item?.items, (item: FinItem) => {
           ListItem() {
             if (this.item?.type === "Normal") {
               MediaItem({item: item, itemWidth: 140})

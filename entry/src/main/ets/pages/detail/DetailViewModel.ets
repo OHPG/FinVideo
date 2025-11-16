@@ -1,6 +1,6 @@
-import { UserItemDataDto } from "@ohpg/jellyfin";
-import { AppViewModel } from "../common/AppViewModel";
 import { DetailArgs } from "./DetailArgs";
+import { FinItemData } from "@ohpg/fin-core";
+import { AppViewModel } from "../common/AppViewModel";
 
 /**
  * @Author peerless2012
@@ -13,15 +13,15 @@ export class DetailViewModel extends AppViewModel {
 
   protected readonly args: DetailArgs
 
-  protected userItemDto?: UserItemDataDto = undefined
+  protected userItemDto?: FinItemData = undefined
 
   constructor(context: Context, args: DetailArgs) {
     super(context)
     this.args = args
   }
 
-  protected getUserItem(): Promise<UserItemDataDto> {
-    return this.repository.getUserItem(this.args.id)
+  protected getUserItem(): Promise<FinItemData> {
+    return this.repository.getItemData(this.args.id)
       .then((dto) => {
         this.userItemDto = dto
         return dto
@@ -29,29 +29,33 @@ export class DetailViewModel extends AppViewModel {
   }
 
   isFinished(): boolean {
-    return this.userItemDto?.Played === true
+    return this.userItemDto?.played === true
   }
 
   async finishOrNot(): Promise<boolean> {
-    if (this.userItemDto?.Played) {
-      this.userItemDto = await this.repository.unmarkPlayed(this.args.id)
+    if (this.userItemDto?.played) {
+      await this.repository.markUnplayedItem(this.args.id)
+      this.userItemDto.played = false
     } else {
-      this.userItemDto = await this.repository.markPlayed(this.args.id)
+      await this.repository.markPlayedItem(this.args.id)
+      this.userItemDto!.played = true
     }
-    return this.userItemDto!.Played!
+    return this.userItemDto!.played!
   }
 
   isFavourite(): boolean {
-    return this.userItemDto?.IsFavorite === true
+    return this.userItemDto?.isFavorite === true
   }
 
   async favouriteOrNot(): Promise<boolean> {
-    if (this.userItemDto?.IsFavorite) {
-      this.userItemDto = await this.repository.unmarkFavorite(this.args.id)
+    if (this.userItemDto?.isFavorite) {
+      await this.repository.unmarkFavoriteItem(this.args.id)
+      this.userItemDto.isFavorite = false
     } else {
-      this.userItemDto = await this.repository.markFavorite(this.args.id)
+      await this.repository.markFavoriteItem(this.args.id)
+      this.userItemDto!.isFavorite = true
     }
-    return this.userItemDto!.IsFavorite!
+    return this.userItemDto!.isFavorite!
   }
 
 }

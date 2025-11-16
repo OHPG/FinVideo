@@ -1,4 +1,4 @@
-import { BaseItemKind } from "@ohpg/jellyfin";
+import { FinItemType } from "@ohpg/fin-core";
 import { DetailArgs } from "../detail/DetailArgs";
 
 /**
@@ -10,6 +10,6 @@ import { DetailArgs } from "../detail/DetailArgs";
  */
 export interface PlayerArgs extends DetailArgs {
 
-  type: BaseItemKind
+  type: FinItemType
 
 }

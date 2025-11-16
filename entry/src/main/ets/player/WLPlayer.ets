@@ -1,4 +1,3 @@
-import { BaseItemDto } from "@ohpg/jellyfin";
 import {
   WlAudioInterruptHint,
   WlAudioInterruptType,
@@ -7,6 +6,7 @@ import {
 import { AbstractPlayer } from "./AbstractPlayer";
 import { media } from "@kit.MediaKit";
 import { WlTrackInfoBean } from "libwlmedia/src/main/ets/com/ywl5320/wlmedia/bean/WlTrackInfoBean";
+import { FinItem } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -60,8 +60,8 @@ export class WLPlayer extends AbstractPlayer {
         }
         this.onStateChanged('prepared', media.StateChangeReason.BACKGROUND)
         // continue play
-        let percent = this.itemDto?.UserData?.PlayedPercentage
-        let ticks = this.itemDto?.UserData?.PlaybackPositionTicks
+        let percent = this.itemDto?.data?.playPercentage
+        let ticks = this.itemDto?.data?.playedPositionTicks
         if (ticks && percent && percent <= 98) {
           this.wlPlayer.seek(ticks / (10000 * 1000))
         }
@@ -141,7 +141,7 @@ export class WLPlayer extends AbstractPlayer {
     return this.uniqueNum;
   }
 
-  public async setData(url: string, item: BaseItemDto): Promise<void> {
+  public async setData(url: string, item: FinItem): Promise<void> {
     this.itemDto = item
     this.wlPlayer.setSource(url)
     this.onStateChanged('initialized', media.StateChangeReason.BACKGROUND)

@@ -11,6 +11,10 @@ import { AppViewModel } from './AppViewModel'
  */
 export abstract class ListViewModel extends AppViewModel implements RefreshRepository {
 
+  hasMore(): boolean {
+    return false
+  }
+
   protected readonly dataSource = new RefreshDataSource();
 
   getDataSource(): RefreshDataSource {

@@ -58,11 +58,11 @@
     },
     {
       "name": "core",
-      "srcPath": "../FinCore/lib_core"
+      "srcPath": "../FinFramework/lib_core"
     },
     {
       "name": "framework",
-      "srcPath": "../FinCore/lib_framework"
+      "srcPath": "../FinFramework/lib_framework"
     },
     {
       "name": "network",

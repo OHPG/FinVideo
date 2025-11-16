@@ -1,4 +1,3 @@
-import { BaseItemDto, BaseItemKind } from "@ohpg/jellyfin"
 import { CommonConstants } from "../../common/CommonConstants"
 import { FavouriteViewModel } from "./FavouriteViewModel"
 import { ListRefreshView } from "@ohpg/fin-framework"
@@ -7,6 +6,7 @@ import { CategoryToolBar } from "../../../widget/bar/CategoryToolBar"
 import { EpisodeItem } from "../../../widget/media/EpisodeItem"
 import { MediaItem } from "../../../widget/media/MediaItem"
 import { GroupInfo } from "../../../entity/GroupInfo"
+import { FinItem, FinItemType } from "@ohpg/fin-core"
 
 /**
  * @Author peerless2012
@@ -73,9 +73,9 @@ struct FavouriteGroup {
       })
       // list
       List({space: 8}) {
-        ForEach(this.item?.items, (item: BaseItemDto) => {
+        ForEach(this.item?.items, (item: FinItem) => {
           ListItem() {
-            if (item.Type === BaseItemKind.Episode) {
+            if (item.type === FinItemType.Episode) {
               EpisodeItem({item: item})
             } else {
               MediaItem({item: item, itemWidth: 140})

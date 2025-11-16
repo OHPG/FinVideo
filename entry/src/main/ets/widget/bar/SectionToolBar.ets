@@ -1,5 +1,5 @@
+import { FinItemType } from "@ohpg/fin-core";
 import { CommonConstants } from "@ohpg/fin-framework";
-import { BaseItemKind } from "@ohpg/jellyfin";
 import { SectionInfo } from "../../entity/SectionInfo";
 
 @Component
@@ -11,13 +11,13 @@ export struct SectionToolBar {
 
   aboutToAppear(): void {
     switch (this.item?.type) {
-      case BaseItemKind.Movie:
+      case FinItemType.Movie:
         this.sectionTitle = "电影"
         break
-      case BaseItemKind.Series:
+      case FinItemType.Series:
         this.sectionTitle = "剧集"
         break
-      case BaseItemKind.Episode:
+      case FinItemType.Episode:
         this.sectionTitle = "集"
         break
     }

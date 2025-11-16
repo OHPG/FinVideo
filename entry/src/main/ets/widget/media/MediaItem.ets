@@ -1,25 +1,22 @@
-import { BaseItemDto, ImageType } from "@ohpg/jellyfin"
-import { Repository } from "../../data/Repository"
-import { CommonConstants } from "../../pages/common/CommonConstants"
+import { FinItem } from "@ohpg/fin-core"
 import { MediaRouter } from "../../pages/common/MediaRouter"
+import { CommonConstants } from "../../pages/common/CommonConstants"
 
 @Reusable
 @Component
 export struct MediaItem {
 
-  @StorageLink("Repository") repository?: Repository = undefined
-
-  @Require @State item?: BaseItemDto = undefined
+  @Require @State item?: FinItem = undefined
 
   @State itemWidth: string | number = CommonConstants.FULL_PERCENT
 
   aboutToReuse(params: Record<string, object>): void {
-    this.item = params['item']
+    this.item = params['item'] as FinItem
   }
 
   build() {
     Column({space: CommonConstants.SPACE_8}) {
-      Image(this.repository?.buildImage(this.item!, ImageType.Primary))
+      Image(this.item?.image?.primary)
         .alt($r('app.media.alt'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
@@ -27,7 +24,7 @@ export struct MediaItem {
         .borderRadius($r('app.float.lg_border_radius'))
         .aspectRatio(0.67)
 
-      Text(this.item?.Name)
+      Text(this.item?.name)
         .maxLines(1)
         .width(CommonConstants.FULL_PERCENT)
     }

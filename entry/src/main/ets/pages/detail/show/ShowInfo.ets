@@ -1,10 +1,10 @@
-import { BaseItemDto } from "@ohpg/jellyfin";
+import { FinItem } from "@ohpg/fin-core";
 
 export interface ShowInfo {
 
-  show: BaseItemDto
+  show: FinItem
 
-  nextUp?: BaseItemDto
+  nextUp?: FinItem
 
-  seasons?: Array<BaseItemDto>
+  seasons?: Array<FinItem>
 }

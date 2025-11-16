@@ -1,5 +1,4 @@
 import { media } from "@kit.MediaKit"
-import { BaseItemDto, MediaStreamType, VideoRange, VideoRangeType } from "@ohpg/jellyfin"
 import { AbstractPlayer } from "../../player/AbstractPlayer"
 import { ErrorCallback } from "@kit.BasicServicesKit"
 import { Repository } from "../../data/Repository"
@@ -7,6 +6,7 @@ import { AppPrefer } from "../../prefer/AppPrefer"
 import { PlayerImpl } from "../../player/PlayerImpl"
 import { WLPlayer } from "../../player/WLPlayer"
 import { AVPlayer } from "../../player/AVPlayer"
+import { FinItem } from "@ohpg/fin-core"
 
 /**
  * @Author peerless2012
@@ -129,25 +129,9 @@ export class XController extends XComponentController {
     }
   }
 
-  async setData(item: BaseItemDto): Promise<void> {
+  async setData(item: FinItem): Promise<void> {
     // 加载播放媒体源
-    let playbackInfo = await this.repository.getPlaybackInfo(item.Id!)
-
-    // 目前只支持首个
-    let source = playbackInfo.MediaSources?.[0]!
-
-    // 判断是否是hdr
-    let sdr = true
-    source.MediaStreams?.forEach((source) => {
-      if (source.Type === MediaStreamType.Video) {
-        if (source.VideoRangeType) {
-          sdr = source.VideoRangeType === VideoRangeType.Sdr
-            || source.VideoRangeType == VideoRangeType.Unknown
-        } else if (source.VideoRange) {
-          sdr = source.VideoRange !== VideoRange.Hdr
-        }
-      }
-    })
+    let source = await this.repository.getMediaSource(item.id)
 
     // 根据偏好和视频是否是hdr，决定调用的播放器
     let impl = this.appPrefer.getPlayerImpl()
@@ -157,7 +141,7 @@ export class XController extends XComponentController {
     } else if (impl === PlayerImpl.WL_MEDIA){
       implName = "WLMedia"
     } else {
-      implName = sdr ? "WLMedia" : "AVPlayer"
+      implName = source.sdr ? "WLMedia" : "AVPlayer"
     }
 
     // 创建或重置播放器
@@ -183,8 +167,7 @@ export class XController extends XComponentController {
     } else {
       await this.player.reset()
     }
-    let url = await this.repository.getMediaSource(item.Id!, source!)
-    await this.player.setData(url, item)
+    await this.player.setData(source.url, item)
   }
 
   onProgressChange(callback: Callback<number>) {

@@ -1,11 +1,10 @@
 import { GridAttr } from "@abner/refresh";
-import { BaseItemDto, ImageType } from "@ohpg/jellyfin";
 import { MediaViewModel } from "./MediaViewModel";
-import { Repository } from "../../../data/Repository"
 import { CommonConstants } from "../../common/CommonConstants";
 import { GridRefreshView } from "@ohpg/fin-framework";
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar";
 import { MediaRouter } from "../../common/MediaRouter";
+import { FinItem } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -20,9 +19,9 @@ export struct MediaComponent {
   private viewModel = new MediaViewModel(getContext())
 
   @Builder
-  mediaLibraryItem(item: BaseItemDto, index: number) {
+  mediaLibraryItem(item: Object, index: number) {
     MediaLibraryItem({
-      item: item
+      item: item as FinItem
     })
   }
 
@@ -62,17 +61,15 @@ export struct MediaComponent {
 @Component
 struct MediaLibraryItem {
 
-  @StorageLink("Repository") repository?: Repository = undefined
-
-  @Require @State item?: BaseItemDto = undefined
+  @Require @State item?: FinItem = undefined
 
   aboutToReuse(params: Record<string, object>): void {
-    this.item = params['item'] as BaseItemDto
+    this.item = params['item'] as FinItem
   }
 
   build() {
     Column({space: CommonConstants.SPACE_8}) {
-      Image(this.repository?.buildImage(this.item!, ImageType.Primary))
+      Image(this.item?.image?.primary)
         .alt($r('app.media.alt'))
         .autoResize(true)
         .objectFit(ImageFit.Cover)
@@ -80,7 +77,7 @@ struct MediaLibraryItem {
         .width('100%')
         .aspectRatio(1.5)
 
-      Text(this.item?.Name)
+      Text(this.item?.name)
         .width('100%')
         .maxLines(1)
     }

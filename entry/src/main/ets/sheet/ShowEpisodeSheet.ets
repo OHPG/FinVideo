@@ -1,8 +1,8 @@
 import { ComponentContent } from "@kit.ArkUI";
 import { ShowEpisodePage } from "../pages/detail/show/episode/ShowEpisodePage";
 import { Sheet } from "@ohpg/fin-framework";
-import { BaseItemDto } from "@ohpg/jellyfin";
 import { deviceInfo } from "@kit.BasicServicesKit";
+import { FinItem } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -13,9 +13,9 @@ import { deviceInfo } from "@kit.BasicServicesKit";
  */
 export class ShowEpisodeSheet extends Sheet {
 
-  private readonly args: BaseItemDto
+  private readonly args: FinItem
 
-  constructor(context: UIContext, args: BaseItemDto) {
+  constructor(context: UIContext, args: FinItem) {
     super(context)
     this.args = args
     this.options.width = deviceInfo.deviceType === 'phone' ? '100%' : "60%"
@@ -28,7 +28,7 @@ export class ShowEpisodeSheet extends Sheet {
 }
 
 @Builder
-function ShowEpisodeComponent(params: [BaseItemDto, LocalStorage]) {
+function ShowEpisodeComponent(params: [FinItem, LocalStorage]) {
   ShowEpisodePage({
     episodeDto: params[0],
     storage: params[1]

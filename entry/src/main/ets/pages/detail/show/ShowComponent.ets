@@ -1,11 +1,9 @@
-import { BaseItemDto, ImageType } from "@ohpg/jellyfin"
 import { CommonConstants } from "../../common/CommonConstants"
-import { Repository } from "../../../data/Repository"
 import { ShowSeasonArgs } from "./season/ShowSeasonArgs"
-import router from "@ohos.router"
-import { DetailArgs } from "../DetailArgs"
 import { ShowEpisodeSheet } from "../../../sheet/ShowEpisodeSheet"
-import { BreakpointSystem } from "@ohpg/fin-core"
+import { DetailArgs } from "../DetailArgs"
+import { FinItem } from "@ohpg/fin-core"
+import router from "@ohos.router"
 
 /**
  * @Author peerless2012
@@ -17,15 +15,13 @@ import { BreakpointSystem } from "@ohpg/fin-core"
 @Component
 export struct ShowNextUp {
 
-  @StorageLink("Repository") repository?: Repository = undefined
-
-  @Require nextDto?: BaseItemDto
+  @Require nextDto?: FinItem
 
   build() {
     Column({space: CommonConstants.SPACE_12}) {
       Text("接下来")
         .fontSize($r('sys.float.Title_S'))
-      Image(this.repository?.buildImage(this.nextDto!, ImageType.Primary))
+      Image(this.nextDto?.image?.primary)
         .alt($r('app.media.alt'))
         .autoResize(true)
         .objectFit(ImageFit.Cover)
@@ -36,7 +32,7 @@ export struct ShowNextUp {
           let sheet = new ShowEpisodeSheet(this.getUIContext(), this.nextDto!)
           sheet.show()
         })
-      Text(this.nextDto?.Name)
+      Text(this.nextDto?.name)
     }
     .margin({
       left: CommonConstants.SPACE_16,
@@ -50,7 +46,7 @@ export struct ShowNextUp {
 @Component
 export struct ShowSeasons {
 
-  @Prop seasonDto?: Array<BaseItemDto> = undefined
+  @Prop seasonDto?: Array<FinItem> = undefined
 
   @Prop args: DetailArgs
 
@@ -63,7 +59,7 @@ export struct ShowSeasons {
           right: CommonConstants.SPACE_16
         })
       List({space: CommonConstants.SPACE_12}) {
-        ForEach(this.seasonDto, (dto: BaseItemDto) => {
+        ForEach(this.seasonDto, (dto: FinItem) => {
           ListItem() {
             ShowSeasonItem({
               args: this.args,
@@ -88,26 +84,24 @@ export struct ShowSeasons {
 @Reusable
 struct ShowSeasonItem {
 
-  @StorageLink("Repository") repository?: Repository = undefined
-
   @Require args?: DetailArgs
 
-  @Require @State item?: BaseItemDto = undefined
+  @Require @State item?: FinItem = undefined
 
   aboutToReuse(params: Record<string, object>): void {
-    this.item = params['item']
+    this.item = params['item'] as FinItem
   }
 
   build() {
     Column() {
-      Image(this.repository?.buildImage(this.item!, ImageType.Primary))
+      Image(this.item?.image?.primary)
         .alt($r('app.media.alt'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
         .borderRadius($r('app.float.lg_border_radius'))
         .width(CommonConstants.ITEM_WIDTH)
         .aspectRatio(CommonConstants.ITEM_RATIO)
-      Text(this.item?.Name)
+      Text(this.item?.name)
     }
     .width(CommonConstants.ITEM_WIDTH)
     .height(CommonConstants.ITEM_HEIGHT)
@@ -115,7 +109,7 @@ struct ShowSeasonItem {
       let args: ShowSeasonArgs = {
         id: this.args!.id,
         name: this.args!.name,
-        seasonId: this.item!.Id!
+        seasonId: this.item!.id!
       }
       router.push({
         url: "pages/detail/show/season/ShowSeasonPage",

@@ -1,4 +1,4 @@
-import { BaseItemDto } from "@ohpg/jellyfin";
+import { FinItem } from "@ohpg/fin-core";
 import { DetailViewModel } from "../../DetailViewModel";
 
 /**
@@ -10,12 +10,12 @@ import { DetailViewModel } from "../../DetailViewModel";
  */
 export class ShowEpisodeViewModel extends DetailViewModel {
 
-  constructor(context: Context, args: BaseItemDto) {
+  constructor(context: Context, args: FinItem) {
     super(context, {
-      id: args.Id!,
-      name: args.Name!
+      id: args.id!,
+      name: args.name!
     })
-    this.userItemDto = args.UserData
+    this.userItemDto = args.data
   }
 
 }
