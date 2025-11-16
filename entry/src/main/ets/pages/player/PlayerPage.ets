@@ -859,11 +859,12 @@ struct PlayerPage {
     let speedModeArray = [media.PlaybackSpeed.SPEED_FORWARD_0_50_X
       , media.PlaybackSpeed.SPEED_FORWARD_0_75_X
       , media.PlaybackSpeed.SPEED_FORWARD_1_00_X
+      , media.PlaybackSpeed.SPEED_FORWARD_1_25_X
       , media.PlaybackSpeed.SPEED_FORWARD_1_50_X
       , media.PlaybackSpeed.SPEED_FORWARD_1_75_X
       , media.PlaybackSpeed.SPEED_FORWARD_2_00_X
       , media.PlaybackSpeed.SPEED_FORWARD_3_00_X]
-    let speedNameArray = ["0.5x", "0.75x", "1.0x", "1.5x", "1.75x", "2.0x", "3.0x"]
+    let speedNameArray = ["0.5x", "0.75x", "1.0x", "1.25x", "1.5x", "1.75x", "2.0x", "3.0x"]
     let speedDialog = new OptionDialog(this.getUIContext())
     let currentSpeed = this.videoController.player!.getSpeed()
     speedDialog.setTitle($r('app.string.player_select_speed_title'))
