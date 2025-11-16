@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "org.ohpg.fin.video",
     "vendor": "example",
-    "versionCode": 300,
-    "versionName": "0.3.0",
+    "versionCode": 301,
+    "versionName": "0.3.1",
     "icon": "$media:logo",
     "label": "$string:app_name"
   }
