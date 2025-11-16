@@ -1,4 +1,4 @@
-import { FinItem, FinItemData, FinItemType, FinPage } from "@ohpg/fin-core";
+import { FinItem, FinItemData, FinItemType, FinPage, ServerType } from "@ohpg/fin-core";
 import { FinRepository } from "@ohpg/fin-framework";
 import { FinVideoApi } from "../api/FinVideoApi";
 import { FinVideoApiFactory } from "../api/FinVideoApiFactory";
@@ -15,6 +15,10 @@ export class Repository extends FinRepository {
 
   constructor(context: Context) {
     super(context, new FinVideoApiFactory(context))
+  }
+
+  public getSupportServer(): ServerType {
+    return ServerType.JELLYFIN
   }
 
   protected requireApi(): FinVideoApi {

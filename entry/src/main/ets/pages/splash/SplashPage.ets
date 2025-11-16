@@ -1,5 +1,4 @@
 import { router } from '@kit.ArkUI'
-import { ServerType } from '@ohpg/fin-core'
 import { FinRouter } from '@ohpg/fin-framework'
 import { PrivacyDialog } from '@ohpg/fin-framework'
 import { Repository } from '../../data/Repository'
@@ -59,7 +58,7 @@ struct SplashPage {
     if (activeInfo) {
       router.replaceUrl({url: 'pages/home/HomePage'})
     } else {
-      FinRouter.auth(this.getUIContext(), ServerType.JELLYFIN, true)
+      FinRouter.auth(this.getUIContext(), true)
     }
   }
 
