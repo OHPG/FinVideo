@@ -1,4 +1,4 @@
-import { FinCollectionType, FinItemType, LoadType } from "@ohpg/fin-core";
+import { FinCollectionType, FinItemType, FinPage, LoadType } from "@ohpg/fin-core";
 import { ListViewModel } from "../common/ListViewModel";
 import { MediaListArgs } from "./MediaListArgs";
 
@@ -13,9 +13,15 @@ export class MediaListVewModel extends ListViewModel {
 
   private readonly args: MediaListArgs
 
+  private lastPage?: FinPage
+
   constructor(args: MediaListArgs, context: Context) {
     super(context)
     this.args = args
+  }
+
+  hasMore(): boolean {
+    return this.lastPage?.more ? true : false
   }
 
   async loadData(type: LoadType): Promise<void> {
@@ -32,8 +38,19 @@ export class MediaListVewModel extends ListViewModel {
         recursive = false
         break
     }
-    let items = await this.repository.getLibraryMediaList(this.args.id, types, recursive)
-    this.dataSource.initData(items)
+    if (type !== "More") {
+      this.lastPage = undefined
+    }
+    let page = await this.repository.getLibraryMediaList(this.args.id
+      , types
+      , recursive
+      , this.lastPage ? this.lastPage.cur + this.lastPage.items.length : 0)
+    if (type === "More") {
+      this.dataSource.pushDataArray(page.items)
+    } else {
+      this.dataSource.initData(page.items)
+    }
+    this.lastPage = page
   }
 
 }

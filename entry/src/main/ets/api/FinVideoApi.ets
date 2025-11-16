@@ -1,4 +1,4 @@
-import { FinItem, FinItemData, FinItemType } from "@ohpg/fin-core";
+import { FinItem, FinItemData, FinItemType, FinPage } from "@ohpg/fin-core";
 import { FinApi } from "@ohpg/fin-framework";
 import { FinItemSource } from "../entity/FinItemSource";
 import { FinPlaybackInfo } from "../entity/FinPlaybackInfo";
@@ -44,7 +44,7 @@ export interface FinVideoApi extends FinApi {
    * @param types
    * @returns
    */
-  getItemList(id: string, types: Array<FinItemType>, recursive: boolean): Promise<Array<FinItem>>
+  getItemList(id: string, types: Array<FinItemType>, recursive: boolean, index?: number): Promise<FinPage>
 
   /**
    * 获取电影

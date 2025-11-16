@@ -1,5 +1,6 @@
 import { ActiveInfo, FinAuthResult, FinItem, FinItemData,
   FinItemType,
+  FinPage,
   FinPublicSystemInfo, ServerType } from "@ohpg/fin-core";
 import { ClientInfo, DeviceInfo } from "@ohpg/network";
 import { FinItemSource } from "../../entity/FinItemSource";
@@ -21,7 +22,7 @@ export class EmbyFinApi implements FinVideoApi {
     this.context = context
   }
 
-  getItemList(id: string, types: FinItemType[], recursive: boolean): Promise<FinItem[]> {
+  getItemList(id: string, types: FinItemType[], recursive: boolean, index?: number): Promise<FinPage> {
     throw new Error("Method not implemented.");
   }
 

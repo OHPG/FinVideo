@@ -1,4 +1,4 @@
-import { FinItem, FinItemData, FinItemType } from "@ohpg/fin-core";
+import { FinItem, FinItemData, FinItemType, FinPage } from "@ohpg/fin-core";
 import { FinRepository } from "@ohpg/fin-framework";
 import { FinVideoApi } from "../api/FinVideoApi";
 import { FinVideoApiFactory } from "../api/FinVideoApiFactory";
@@ -63,8 +63,8 @@ export class Repository extends FinRepository {
    * @param recursive 是否递归
    * @returns
    */
-  public getLibraryMediaList(id: string, types: Array<FinItemType>, recursive: boolean): Promise<Array<FinItem>> {
-    return this.requireApi().getItemList(id, types, recursive)
+  public getLibraryMediaList(id: string, types: Array<FinItemType>, recursive: boolean, index?: number): Promise<FinPage> {
+    return this.requireApi().getItemList(id, types, recursive, index)
   }
 
   /**

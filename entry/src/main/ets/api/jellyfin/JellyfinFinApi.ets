@@ -2,7 +2,9 @@ import { ActiveInfo,
   FinAuthResult,
   FinItem,
   FinItemData,
-  FinItemType, FinPerson, FinPersonType, FinPublicSystemInfo,
+  FinItemType,
+  FinPage,
+  FinPerson, FinPersonType, FinPublicSystemInfo,
   ServerType } from "@ohpg/fin-core";
 import { ClientInfo, DeviceInfo } from "@ohpg/network";
 import { CollectionType, ImageType, ItemFilter, ItemSortBy,
@@ -145,6 +147,14 @@ export class JellyfinFinApi implements FinVideoApi {
     return finItems
   }
 
+  private resultToFinPage(result: BaseItemDtoQueryResult, index?: number): FinPage {
+    let finItems = new Array<FinItem>()
+    result.Items?.forEach((item) => finItems.push(this.itemToFinItem(item)))
+    let cur: number = result.StartIndex ? result.StartIndex : 0
+    let more: boolean = cur + finItems.length < (result.TotalRecordCount || 0) - 1
+    return {cur: cur, items: finItems, more: more}
+  }
+
   private filterItem(items?: Array<BaseItemDto> | null): Array<BaseItemDto> | undefined {
     let newItems: Array<BaseItemDto> | undefined
     items?.forEach((item) => {
@@ -223,15 +233,17 @@ export class JellyfinFinApi implements FinVideoApi {
     return this.itemsToFinItems(groups)
   }
 
-  async getItemList(id: string, types: FinItemType[], recursive: boolean): Promise<FinItem[]> {
+  async getItemList(id: string, types: FinItemType[], recursive: boolean, index?: number): Promise<FinPage> {
     let result = await this.jellyfin.getItemsApi().getItems({
       parentId: id,
       includeItemTypes: types as ESObject,
       recursive: recursive,
       sortBy: [ItemSortBy.DateCreated],
-      sortOrder: [SortOrder.Descending]
+      sortOrder: [SortOrder.Descending],
+      startIndex: index || 0,
+      limit: 20
     })
-    return this.resultToFinItems(result)
+    return this.resultToFinPage(result, index)
   }
 
   async getLatestItems(id?: string | undefined): Promise<FinItem[]> {
