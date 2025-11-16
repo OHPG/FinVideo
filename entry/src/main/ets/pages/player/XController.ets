@@ -39,6 +39,8 @@ export class XController extends XComponentController {
 
   private errorCallback?: ErrorCallback
 
+  private subCallback?: Callback<media.SubtitleInfo>
+
   constructor(context: Context) {
     super()
     this.context = context
@@ -164,6 +166,9 @@ export class XController extends XComponentController {
       this.player.onProgressChange((progress) => {
         this.progressCallback?.(progress)
       })
+      this.player.onSub((sub) => {
+        this.subCallback?.(sub)
+      })
     } else {
       await this.player.reset()
     }
@@ -192,6 +197,24 @@ export class XController extends XComponentController {
 
   offError() {
     this.errorCallback = undefined
+  }
+
+  /**
+   * Add subtitle callback
+   * @param type
+   * @param callback
+   */
+  onSub(callback: Callback<media.SubtitleInfo>): void {
+    this.subCallback = callback
+  }
+
+  /**
+   * Remove subtitle callback
+   * @param type
+   * @param callback
+   */
+  offSub(callback?: Callback<media.SubtitleInfo>): void {
+    this.subCallback = undefined
   }
 
   release() {

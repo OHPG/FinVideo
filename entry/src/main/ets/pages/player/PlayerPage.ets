@@ -31,6 +31,8 @@ struct PlayerPage {
 
   @State itemDto?: FinItem = undefined
 
+  @State avSub?: string = undefined
+
   @State canSkipPre: boolean = false
 
   @State canSkipNext: boolean = false
@@ -143,6 +145,9 @@ struct PlayerPage {
       this.loading = false
       promptAction.showToast({message: "播放失败，" + error.code + "：" + error.message})
     })
+    this.videoController.onSub((sub) => {
+      this.avSub = sub.text
+    })
     this.initData()
   }
 
@@ -191,6 +196,21 @@ struct PlayerPage {
         type: XComponentType.SURFACE,
         controller: this.videoController
       })
+        .width(CommonConstants.FULL_PERCENT)
+        .height(CommonConstants.FULL_PERCENT)
+
+      // sub
+      Text(this.avSub)
+        .fontColor(Color.White)
+        // https://developer.huawei.com/consumer/cn/doc/design-guides/font-0000001828772001#section107781129418
+        .fontSize(20)
+        .textShadow({
+          radius: 5,
+          color: Color.Black,
+        })
+        .padding(32)
+        .align(Alignment.Bottom)
+        .textAlign(TextAlign.Center)
         .width(CommonConstants.FULL_PERCENT)
         .height(CommonConstants.FULL_PERCENT)
 

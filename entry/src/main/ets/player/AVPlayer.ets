@@ -21,6 +21,8 @@ export class AVPlayer extends AbstractPlayer {
 
   private surfaceId?: string
 
+  private subDelayId: number = 0
+
   constructor(context: Context) {
     super(context);
   }
@@ -77,6 +79,22 @@ export class AVPlayer extends AbstractPlayer {
     this.avPlayer.on('error', (error) => {
       // console.log("VideoController: onError error = " + JSON.stringify(error))
       this.errorCallback?.(error)
+    })
+    this.avPlayer.on('subtitleUpdate', (sub) => {
+      // console.log("VideoController: onSub  = " + JSON.stringify(sub))
+      if (this.subDelayId) {
+        clearTimeout(this.subDelayId)
+        this.subDelayId = 0
+      }
+      this.subCallback?.(sub)
+      if (sub.duration) {
+        this.subDelayId = setTimeout(() => {
+        this.subCallback?.({
+          text: undefined
+        })
+        this.subDelayId = 0
+        }, sub.duration)
+      }
     })
     return this.avPlayer
   }
