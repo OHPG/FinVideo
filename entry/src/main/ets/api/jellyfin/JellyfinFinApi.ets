@@ -66,7 +66,13 @@ export class JellyfinFinApi implements FinVideoApi {
 
   private buildImage(dto: BaseItemDto, type: ImageType): string {
     let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
-    imageUri = imageUri.addEncodedSegment(`items/${dto.Id!}/Images/${type}`)
+    let id = dto.Id!
+    if (dto.Type === BaseItemKind.Season) {
+      if (!dto.ImageTags || Object.keys(dto.ImageTags).length <= 0) {
+        id = dto.SeriesId!
+      }
+    }
+    imageUri = imageUri.addEncodedSegment(`items/${id}/Images/${type}`)
     return imageUri.toString()
   }
 
