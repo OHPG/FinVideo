@@ -53,7 +53,7 @@ export class AVPlayer extends AbstractPlayer {
         let percent = this.itemDto?.data?.playPercentage
         let ticks = this.itemDto?.data?.playedPositionTicks
         if (ticks && percent && percent <= 98) {
-          this.avPlayer?.seek(ticks / 10000)
+          this.avPlayer?.seek(ticks)
         }
         this.avPlayer?.play()
       }

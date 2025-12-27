@@ -104,7 +104,7 @@ export class JellyfinFinApi implements FinVideoApi {
       overview: item.Overview!,
       seriesName: item.SeriesName || undefined,
       seasonId: item.SeasonId || undefined,
-      runtimeTicks: item.RunTimeTicks!,
+      runtimeTicks: item.RunTimeTicks ? item.RunTimeTicks / 10000 : undefined,
       image: {
         primary: this.buildImage(item, ImageType.Primary),
         backdrop: this.buildImage(item, ImageType.Backdrop)

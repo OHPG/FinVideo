@@ -63,7 +63,7 @@ export class WLPlayer extends AbstractPlayer {
         let percent = this.itemDto?.data?.playPercentage
         let ticks = this.itemDto?.data?.playedPositionTicks
         if (ticks && percent && percent <= 98) {
-          this.wlPlayer.seek(ticks / (10000 * 1000))
+          this.wlPlayer.seek(ticks / 1000)
         }
         this.wlPlayer?.start();
       },
