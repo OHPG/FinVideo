@@ -8,11 +8,11 @@
   "dependencies": {
     // https://ohpm.openharmony.cn/#/cn/detail/@abner%2Frefresh
     "@abner/refresh": "1.4.3",
-    "@ohpg/network": 'file:../../FinSdk/network',
-    "@ohpg/emby": 'file:../../FinSdk/emby',
-    "@ohpg/jellyfin": 'file:../../FinSdk/jellyfin',
-    "@ohpg/fin-core": 'file:../../FinFramework/lib_core',
-    "@ohpg/fin-framework": 'file:../../FinFramework/lib_framework',
+    "@ohpg/network": 'file:../sdk/network',
+    "@ohpg/emby": 'file:../sdk/emby',
+    "@ohpg/jellyfin": 'file:../sdk/jellyfin',
+    "@ohpg/fin-core": 'file:../framewrok/lib_core',
+    "@ohpg/fin-framework": 'file:../framewrok/lib_framework',
     "libwlmedia": "file:libs/libwlmedia.har"
   }
 }

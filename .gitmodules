@@ -1,0 +1,6 @@
+[submodule "sdk"]
+	path = sdk
+	url = https://github.com/OHPG/FinSdk.git
+[submodule "framewrok"]
+	path = framewrok
+	url = https://github.com/OHPG/FinFramework.git
