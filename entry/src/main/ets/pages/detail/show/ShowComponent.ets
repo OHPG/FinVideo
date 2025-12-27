@@ -93,7 +93,7 @@ struct ShowSeasonItem {
   }
 
   build() {
-    Column() {
+    Column({space: CommonConstants.SPACE_8}) {
       Image(this.item?.image?.primary)
         .alt($r('app.media.alt'))
         .objectFit(ImageFit.Cover)

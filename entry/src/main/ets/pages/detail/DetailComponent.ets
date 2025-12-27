@@ -187,19 +187,26 @@ export struct DetailHeader {
       Text(this.itemDto.name)
         .fontSize($r('sys.float.Title_M'))
 
-      Row({space: CommonConstants.SPACE_8}) {
-        Text(this.itemDto.productionYear?.toString())
+      if (this.itemDto.productionYear || this.itemDto.runtimeTicks
+        || this.itemDto.officialRating || this.itemDto.communityRating) {
+        Row({space: CommonConstants.SPACE_8}) {
 
-        Text(Math.round(((this.itemDto.runtimeTicks!) / 600000000)) + "min")
+          if (this.itemDto.productionYear) {
+            Text(this.itemDto.productionYear.toString())
+          }
 
-        Text(this.itemDto.officialRating)
+          if (this.itemDto.runtimeTicks) {
+            Text(Math.round(((this.itemDto.runtimeTicks) / 60000)) + "min")
+          }
 
-        Text(this.itemDto.communityRating?.toString())
+          if (this.itemDto.officialRating) {
+            Text(this.itemDto.officialRating)
+          }
 
-      }
-
-      Row() {
-        Text(this.itemDto.sources?.[0]?.streams?.[0]?.displayTitle)
+          if (this.itemDto.communityRating) {
+            Text(this.itemDto.communityRating.toString())
+          }
+        }
       }
 
       if (this.itemDto.type === FinItemType.Movie) {
