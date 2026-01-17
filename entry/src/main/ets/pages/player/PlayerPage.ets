@@ -399,8 +399,10 @@ struct PlayerPage {
             // forward & backward
             TapGesture({ count: 2 })
               .onAction((event) => {
+                let fingerEvent = event.fingerList[0]
+                if (!fingerEvent) return
                 let width = event.target.area.width as number
-                let x = event.fingerList[0].localX as number
+                let x = fingerEvent.localX as number
                 if (x > width / 2) {
                   this.forward()
                 } else {
