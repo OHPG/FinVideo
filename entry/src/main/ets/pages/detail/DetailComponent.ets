@@ -136,7 +136,7 @@ export struct DetailCover {
   @StorageProp(BreakpointSystem.CURRENT_HEIGHT_BREAKPOINT) currentHeightBreakpoint: HeightBreakpoint = HeightBreakpoint.HEIGHT_SM
 
   build() {
-    Image(this.itemDto.image?.backdrop)
+    Image(this.itemDto?.image?.backdrop)
       .alt($r('app.media.alt'))
       .objectFit(ImageFit.Cover)
       .autoResize(true)
