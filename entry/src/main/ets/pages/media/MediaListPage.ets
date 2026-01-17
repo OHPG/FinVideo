@@ -6,6 +6,7 @@ import { GridRefreshView } from '@ohpg/fin-framework'
 import { ToolBar } from '@ohpg/fin-framework'
 import { MediaItem } from '../../widget/media/MediaItem'
 import { FinItem } from '@ohpg/fin-core'
+import { SortMenu } from '../../widget/menu/SortMenu'
 
 @Entry
 @Component
@@ -27,7 +28,9 @@ struct MediaListPage {
 
       ToolBar({
         title: this.args.name
-      })
+      }) {
+        SortMenu()
+      }
 
       GridRefreshView({
         source: this.viewModel,

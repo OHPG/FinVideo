@@ -65,6 +65,34 @@
       "value": "地址"
     },
     {
+      "name": "prefer_interface",
+      "value": "界面"
+    },
+    {
+      "name": "interface_page_size",
+      "value": "分页大小"
+    },
+    {
+      "name": "menu_sort_by_name",
+      "value": "名称"
+    },
+    {
+      "name": "menu_sort_by_sort_name",
+      "value": "排序名称"
+    },
+    {
+      "name": "menu_sort_by_time",
+      "value": "入库时间"
+    },
+    {
+      "name": "menu_sort_order_asc",
+      "value": "正序"
+    },
+    {
+      "name": "menu_sort_order_desc",
+      "value": "倒序"
+    },
+    {
       "name": "prefer_video",
       "value": "播放器"
     },

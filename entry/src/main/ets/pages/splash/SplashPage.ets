@@ -16,9 +16,7 @@ struct SplashPage {
 
   aboutToAppear(): void {
     if (this.appPrefer.isPrivacyGrant()) {
-      setTimeout(() => {
-        this.enterHomeOrAddServer()
-      }, 1000)
+      this.initAndWait()
     } else {
       let resourceManager = getContext().resourceManager
       let privacyUrl = resourceManager.getStringSync($r('app.string.privacy'))
@@ -26,9 +24,7 @@ struct SplashPage {
       this.privacyDialog.setPrivacyCallback(() => {
         this.appPrefer.setPrivacyGrant()
         this.privacyDialog.dismiss(true)
-        setTimeout(() => {
-          this.enterHomeOrAddServer()
-        }, 1000)
+        this.initAndWait()
       })
       this.privacyDialog.show()
     }
@@ -51,6 +47,17 @@ struct SplashPage {
   onBackPress(): boolean | void {
     // Avoid back press
     return true
+  }
+
+  private async initAndWait() {
+    try {
+      let repository: Repository = AppStorage.get(Repository.REPOSITORY)!
+      await repository.init()
+    } catch (error) {
+    }
+    setTimeout(() => {
+      this.enterHomeOrAddServer()
+    }, 1000)
   }
 
   private enterHomeOrAddServer() {

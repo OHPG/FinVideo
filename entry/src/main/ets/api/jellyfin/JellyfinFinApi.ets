@@ -18,6 +18,7 @@ import { FinVideoApi } from "../FinVideoApi";
 import { uri } from "@kit.ArkTS";
 import { BaseItemDtoQueryResult } from "@ohpg/jellyfin/src/main/ets/model/BaseItemDtoQueryResult";
 import { FinItemSource } from "../../entity/FinItemSource";
+import { AppConfig } from "../../config/AppConfig";
 
 /**
  * @Author peerless2012
@@ -29,6 +30,8 @@ import { FinItemSource } from "../../entity/FinItemSource";
 export class JellyfinFinApi implements FinVideoApi {
 
   private readonly context: Context
+
+  private readonly appConfig: AppConfig
 
   private readonly emptyArray = []
 
@@ -46,6 +49,7 @@ export class JellyfinFinApi implements FinVideoApi {
 
   constructor(context: Context, clientInfo: ClientInfo, deviceInfo: DeviceInfo) {
     this.context = context
+    this.appConfig = AppStorage.get(AppConfig.CONFIG)!
     this.jellyfin = new Jellyfin(clientInfo, deviceInfo)
     this.jellyfinTmp = new Jellyfin(clientInfo, deviceInfo)
   }
@@ -244,10 +248,10 @@ export class JellyfinFinApi implements FinVideoApi {
       parentId: id,
       includeItemTypes: types as ESObject,
       recursive: recursive,
-      sortBy: [ItemSortBy.DateCreated],
-      sortOrder: [SortOrder.Descending],
+      sortBy: [this.appConfig.sortBy as ESObject as ItemSortBy],
+      sortOrder: [this.appConfig.sortOrder as ESObject as SortOrder],
       startIndex: index || 0,
-      limit: 20
+      limit: this.appConfig.pageSize
     })
     return this.resultToFinPage(result, index)
   }

@@ -78,6 +78,10 @@ export struct PreferComponent {
         FinRouter.editUser(this.getUIContext())
       })
 
+      this.preferItemBuilder($r('sys.symbol.satellite_map_fill'), $r('app.string.prefer_interface'), () => {
+        router.push({url: "pages/interface/InterfacePage"})
+      })
+
       this.preferItemBuilder($r('sys.symbol.play_video'), $r('app.string.prefer_video'), () => {
         router.push({url: "pages/setting/VideoSettingPage"})
       })
