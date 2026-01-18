@@ -1,12 +1,15 @@
 import { FinItem } from "@ohpg/fin-core"
 import { Repository } from "../../../../data/Repository"
 import { CommonConstants } from "../../../common/CommonConstants"
+import { PlayerArgs } from "../../../player/PlayerArgs"
 import { DetailOperate } from "../../DetailComponent"
 import { ShowEpisodeViewModel } from "./ShowEpisodeViewModel"
 
 @Preview
 @Component
 export struct ShowEpisodePage {
+
+  @Require callback: Callback<PlayerArgs>
 
   @Prop storage: LocalStorage
 
@@ -49,7 +52,8 @@ export struct ShowEpisodePage {
             Blank()
 
             DetailOperate({
-              itemDto: this.episodeDto
+              itemDto: this.episodeDto,
+              callback: this.callback
             }, this.storage)
           }
           .layoutWeight(1)

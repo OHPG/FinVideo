@@ -6,11 +6,14 @@ import LazyDataSource from "../common/LazyDataSource"
 import { PlayerArgs } from "../player/PlayerArgs"
 import { BreakpointSystem, FinItem, FinPerson } from "@ohpg/fin-core"
 import { FinItemType, FinPersonType } from "@ohpg/fin-core"
+import { AppRouter } from "../../router/AppRouter"
 
 @Component
 export struct DetailOperate {
 
   @LocalStorageLink("viewModel") viewModel?: DetailViewModel = undefined
+
+  @Require callback: Callback<PlayerArgs>
 
   @Link itemDto: FinItem
 
@@ -89,7 +92,7 @@ export struct DetailOperate {
       name: this.itemDto!.name!,
       type: this.itemDto!.type!
     }
-    router.pushUrl({url: "pages/player/PlayerPage", params: args})
+    this.callback?.(args)
   }
 
   private finishOrNot() {
@@ -211,7 +214,10 @@ export struct DetailHeader {
 
       if (this.itemDto.type === FinItemType.Movie) {
         DetailOperate({
-          itemDto: this.itemDto
+          itemDto: this.itemDto,
+          callback: (args) => {
+            AppRouter.goToPlayer(this.getUIContext(), args)
+          }
         })
       }
 
