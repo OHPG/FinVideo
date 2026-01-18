@@ -559,7 +559,7 @@ struct PlayerPage {
               })
 
             Text(this.itemDto ? this.itemDto.name : this.args.name)
-              .fontSize($r('sys.float.titlebar_title_secondary_size'))
+              .fontSize($r('sys.float.titlebar_title_tertiary_size'))
               .fontColor($r('sys.color.font_on_primary'))
               .layoutWeight(1)
 
