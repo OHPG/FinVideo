@@ -1,7 +1,8 @@
 import { window } from '@kit.ArkUI'
 import { AppPrefer } from '../../prefer/AppPrefer'
 import { CommonConstants, ToolBar } from '@ohpg/fin-framework'
-import { WebTool } from '@ohpg/fin-core'
+import { MarketUtil, WebTool } from '@ohpg/fin-core'
+import { common } from '@kit.AbilityKit'
 
 @Entry
 @Component
@@ -11,28 +12,24 @@ struct VideoSettingPage {
 
   private appPrefer: AppPrefer = AppStorage.get(AppPrefer.PREFER)!
 
-  private implDescArray = [
-    $r('app.string.player_impl_auto_desc'),
-    $r('app.string.player_impl_system_desc'),
-    $r('app.string.player_impl_wl_desc')
+  private voDescArray = [
+    $r('app.string.player_video_vo_embed_desc'),
+    $r('app.string.player_video_vo_gpu_desc')
   ]
 
-  private implSelectionArray: Array<SelectOption> = [
+  private voSelectionArray: Array<SelectOption> = [
     {
-      value: $r('app.string.player_impl_auto')
+      value: $r('app.string.player_video_vo_embed')
     },
     {
-      value: $r('app.string.player_impl_system')
-    },
-    {
-      value: $r('app.string.player_impl_wl')
+      value: $r('app.string.player_video_vo_gpu')
     }
   ]
 
-  @State implIndex: number = 0
+  @State voIndex: number = 0
 
   aboutToAppear(): void {
-    this.implIndex = this.appPrefer.getPlayerImpl()
+    this.voIndex = this.appPrefer.getPlayerVo()
   }
 
   build() {
@@ -46,15 +43,15 @@ struct VideoSettingPage {
         SymbolGlyph($r('sys.symbol.play_hexagon_fill'))
           .fontSize(24)
           .fontColor([$r('sys.color.ohos_id_color_text_primary')])
-        Text($r('app.string.prefer_video'))
+        Text($r('app.string.prefer_video_vo'))
           .fontSize(18)
           .fontColor($r('sys.color.ohos_id_color_text_primary'))
         Blank()
-        Select(this.implSelectionArray)
-          .value(this.implSelectionArray[this.implIndex].value)
+        Select(this.voSelectionArray)
+          .value(this.voSelectionArray[this.voIndex].value)
           .onSelect((index) => {
-            this.implIndex = index
-            this.appPrefer.setPlayerImpl(index)
+            this.voIndex = index
+            this.appPrefer.setPlayerVo(index)
           })
       }
       .width(CommonConstants.FULL_PERCENT)
@@ -64,7 +61,7 @@ struct VideoSettingPage {
         right: CommonConstants.SPACE_16
       })
 
-      Text(this.implDescArray[this.implIndex])
+      Text(this.voDescArray[this.voIndex])
         .fontSize(14)
         .textAlign(TextAlign.Start)
         .fontColor($r('sys.color.ohos_id_color_text_secondary'))
@@ -80,13 +77,12 @@ struct VideoSettingPage {
         Span($r('app.string.player_video_thanks_01'))
           .fontSize(14)
           .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-        Span($r('app.string.player_impl_wl'))
+        Span("FinPlayer")
           .fontSize(14)
           .fontColor($r('sys.color.ohos_id_color_component_activated'))
           .onClick(() => {
-            WebTool.openBrowser(getContext()
-              , getContext().resourceManager
-                .getStringSync($r('app.string.player_impl_wl_url')))
+            MarketUtil.gotoMarket(this.getUIContext().getHostContext()! as common.UIAbilityContext
+              , "org.ohpg.fin.player")
           })
         Span($r('app.string.player_video_thanks_02'))
           .fontSize(14)

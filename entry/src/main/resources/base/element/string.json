@@ -17,6 +17,10 @@
       "value": "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1574177343973381056"
     },
     {
+      "name": "global_operation_busy",
+      "value": "操作太频繁了，请稍后重试。"
+    },
+    {
       "name": "more",
       "value": "更多"
     },
@@ -97,40 +101,32 @@
       "value": "播放器"
     },
     {
-      "name": "player_impl_auto",
-      "value": "Auto"
+      "name": "prefer_video_vo",
+      "value": "渲染模式"
     },
     {
-      "name": "player_impl_auto_desc",
-      "value": "* 当播放HDR视频时，使用AVPlayer。\n* 当播放普通视频时，使用WLMedia。"
+      "name": "player_video_vo_embed",
+      "value": "直接"
     },
     {
-      "name": "player_impl_system",
-      "value": "AVPlayer"
+      "name": "player_video_vo_embed_desc",
+      "value": "直接模式。\n\n优点：\n* 支持HDR。\n* 支持普通srt、ass等文本字幕。\n\n缺点：\n* 硬解不支持时黑屏。\n* 不支持pgs等图形字幕。\n* 杜比（P5）颜色异常。"
     },
     {
-      "name": "player_impl_system_desc",
-      "value": "优点：\n* 支持HDR。\n\n缺点：\n* 支持视频、音频、字幕格式有限。"
+      "name": "player_video_vo_gpu",
+      "value": "稳定"
     },
     {
-      "name": "player_impl_wl",
-      "value": "WLMedia"
-    },
-    {
-      "name": "player_impl_wl_url",
-      "value": "https://github.com/ywl5320/wlmedia"
-    },
-    {
-      "name": "player_impl_wl_desc",
-      "value": "优点：\n* 支持绝大数的视频、音频和字幕格式。\n\n缺点：\n* 不支持HDR/DV。"
+      "name": "player_video_vo_gpu_desc",
+      "value": "稳定模式。\n\n优点：\n* 支持所有格式。\n* 支持所有字幕。\n\n缺点：\n* 不支持HDR，所有内容以SDR方式渲染。\n* 杜比（P5）颜色异常。"
     },
     {
       "name": "player_video_thanks_01",
-      "value": "特别感谢"
+      "value": "本项目播放器由"
     },
     {
       "name": "player_video_thanks_02",
-      "value": "对本项目提供播放器支持。"
+      "value": "提供支持支持。"
     },
     {
       "name": "prefer_about",

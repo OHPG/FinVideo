@@ -1,6 +1,6 @@
 import { preferences } from "@kit.ArkData"
 import { FinPageSize, FinSortBy, FinSortOrder } from "@ohpg/fin-core"
-import { PlayerImpl } from "../player/PlayerImpl"
+import { avSession } from "@kit.AVSessionKit"
 
 /**
  * @Author peerless2012
@@ -15,7 +15,11 @@ export class AppPrefer {
 
   private static readonly KEY_PRIVACY_GRANT = "privacy_grant"
 
-  private static readonly KEY_PLAYER_IMPL = "player_impl"
+  private static readonly KEY_PLAYER_VO = "player_vo"
+
+  private static readonly KEY_PLAYER_LOOP_MODE = "player_loop_mode"
+
+  private static readonly KEY_PLAYER_BACK_PLAY = "player_back_play"
 
   private static readonly KEY_SORT_ORDER = "sort_order"
 
@@ -41,15 +45,39 @@ export class AppPrefer {
     this.preference.flush()
   }
 
-  public getPlayerImpl(): PlayerImpl {
-    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_IMPL)) {
-      return this.preference.getSync(AppPrefer.KEY_PLAYER_IMPL, 0) as number
+  public getPlayerVo(): number {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_VO)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_VO, 0) as number
     }
-    return 0
+    return 1
   }
 
-  public setPlayerImpl(impl: PlayerImpl) {
-    this.preference.putSync(AppPrefer.KEY_PLAYER_IMPL, impl)
+  public setPlayerVo(vo: number) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_VO, vo)
+    this.preference.flush()
+  }
+
+  public getPlayerBackPlay(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_BACK_PLAY)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_BACK_PLAY, false) as boolean
+    }
+    return false
+  }
+
+  public setPlayerBackPlay(backPlay: boolean) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_BACK_PLAY, backPlay)
+  }
+
+  public getPlayerLoopMode(): avSession.LoopMode {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_LOOP_MODE)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_LOOP_MODE
+        , avSession.LoopMode.LOOP_MODE_SEQUENCE) as avSession.LoopMode
+    }
+    return avSession.LoopMode.LOOP_MODE_SEQUENCE
+  }
+
+  public setPlayerLoopMode(mode: avSession.LoopMode) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_LOOP_MODE, mode)
     this.preference.flush()
   }
 
@@ -89,5 +117,8 @@ export class AppPrefer {
     this.preference.flush()
   }
 
+  public flush() {
+    this.preference.flush()
+  }
 
 }
