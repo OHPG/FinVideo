@@ -4,8 +4,8 @@ import { AvoidAreaSystem } from '@ohpg/fin-core'
 import { CommonConstants } from '../common/CommonConstants'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { KeyCode } from '@kit.InputKit'
-import { AVPlayerView, MediaControl } from '@ohpg/player'
-import { AppPlayer } from '../../player/AppPlayer'
+import { AVPlayerView } from '@ohpg/player'
+import { AppMediaControl } from '../../player/AppMediaControl'
 
 @Entry
 @Component
@@ -13,9 +13,7 @@ struct PlayerPage {
   
   private currenWindow = AppStorage.get<window.Window>(AvoidAreaSystem.CURRENT_WINDOW)!
 
-  private readonly avControl: MediaControl = AppStorage.get(AppPlayer.MEDIA_CONTROL)!
-
-  private readonly appPlayer: AppPlayer = AppStorage.get(AppPlayer.APP_PLAYER)!
+  private readonly appMediaControl: AppMediaControl = AppStorage.get(AppMediaControl.MEDIA_CONTROL)!
 
   private windowStatusCallback?: Callback<WindowStatusType> = undefined
 
@@ -56,8 +54,8 @@ struct PlayerPage {
   build() {
     Stack() {
       AVPlayerView({
-        control: this.avControl,
-        config: this.appPlayer.getPlayerConfig()
+        control: this.appMediaControl.getMediaControl(),
+        config: this.appMediaControl.getPlayerConfig()
       })
     }
     .onKeyEvent((event): Boolean => {

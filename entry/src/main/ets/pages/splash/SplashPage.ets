@@ -1,8 +1,8 @@
-import { router } from '@kit.ArkUI'
 import { FinRouter } from '@ohpg/fin-framework'
 import { PrivacyDialog } from '@ohpg/fin-framework'
 import { Repository } from '../../data/Repository'
 import { AppPrefer } from '../../prefer/AppPrefer'
+import { AppRouter } from '../../router/AppRouter'
 
 @Entry
 @Component
@@ -63,7 +63,7 @@ struct SplashPage {
   private enterHomeOrAddServer() {
     let activeInfo = this.repository?.getActiveInfo()
     if (activeInfo) {
-      router.replaceUrl({url: 'pages/home/HomePage'})
+      AppRouter.goToHome(this.getUIContext())
     } else {
       FinRouter.auth(this.getUIContext(), true)
     }

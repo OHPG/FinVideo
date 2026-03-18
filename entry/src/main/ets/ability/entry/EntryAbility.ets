@@ -4,12 +4,15 @@ import { window } from '@kit.ArkUI';
 import { BreakpointSystem } from '@ohpg/fin-core';
 import { AvoidAreaSystem } from '@ohpg/fin-core';
 import { DeviceUtil } from '@ohpg/fin-framework';
+import { AppMediaControl } from '../../player/AppMediaControl';
 
 export default class EntryAbility extends UIAbility {
 
   private breakpointSystem: BreakpointSystem = new BreakpointSystem();
 
   private avoidAreaSystem: AvoidAreaSystem = new AvoidAreaSystem();
+
+  private appMediaControl?: AppMediaControl
 
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
@@ -31,6 +34,8 @@ export default class EntryAbility extends UIAbility {
         hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
       }
+      this.appMediaControl = new AppMediaControl(window.getUIContext())
+      AppStorage.setOrCreate(AppMediaControl.MEDIA_CONTROL, this.appMediaControl)
       this.breakpointSystem.register(window);
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });

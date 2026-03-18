@@ -2,7 +2,7 @@ import { FinItem, FinItemType } from "@ohpg/fin-core";
 import { FinRepository, ProgressDialog } from "@ohpg/fin-framework";
 import { Repository } from "../data/Repository";
 import { PlayerArgs } from "../pages/player/PlayerArgs";
-import { AppPlayer } from "../player/AppPlayer";
+import { AppMediaControl } from "../player/AppMediaControl";
 
 /**
  * @Author peerless2012
@@ -14,13 +14,21 @@ import { AppPlayer } from "../player/AppPlayer";
 export class AppRouter {
 
   /**
+   * 跳转到主页
+   * @param context
+   */
+  public static goToHome(context: UIContext) {
+    context.getRouter().replaceUrl({url: "pages/home/HomePage"})
+  }
+
+  /**
    * 跳转到播放页
    * @param context
    * @param args
    */
   public static async goToPlayer(context: UIContext, args: PlayerArgs) {
-    let appPlayer: AppPlayer = AppStorage.get(AppPlayer.APP_PLAYER)!
-    if (appPlayer?.hasPlayerInstance()) {
+    let appMediaControl: AppMediaControl = AppStorage.get(AppMediaControl.MEDIA_CONTROL)!
+    if (appMediaControl?.hasPlayerInstance()) {
       context.getPromptAction().showToast({message: $r('app.string.global_operation_busy')})
       return
     }
@@ -42,7 +50,7 @@ export class AppRouter {
       } else {
         throw new Error("Unsupported type " + args.type)
       }
-      appPlayer.playAll(itemDtoArray, itemIndex)
+      appMediaControl.playAll(itemDtoArray, itemIndex)
     } catch (e) {
       context.getPromptAction().showToast({message: e["message"] || "加载出错。"})
       throw e as Error

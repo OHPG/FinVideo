@@ -412,11 +412,11 @@ export class JellyfinFinApi implements FinVideoApi {
   }
 
   async onPlaybackProgress(id: string, position: number, playing: boolean): Promise<void> {
-    await this.jellyfin.getPlayStateApi().onPlaybackProgress({itemId: id, positionTicks: position, isPaused: !playing})
+    await this.jellyfin.getPlayStateApi().onPlaybackProgress({itemId: id, positionTicks: position * 10000, isPaused: !playing})
   }
 
   async onPlaybackStopped(id: string, position: number): Promise<void> {
-    await this.jellyfin.getPlayStateApi().onPlaybackStopped({itemId: id, positionTicks: position})
+    await this.jellyfin.getPlayStateApi().onPlaybackStopped({itemId: id, positionTicks: position * 10000})
   }
 
   async release(): Promise<void> {

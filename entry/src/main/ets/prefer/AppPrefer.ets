@@ -21,6 +21,12 @@ export class AppPrefer {
 
   private static readonly KEY_PLAYER_BACK_PLAY = "player_back_play"
 
+  private static readonly KEY_PLAYER_FAST_FORWARD = "player_fast_forward"
+
+  private static readonly KEY_PLAYER_FAST_REWIND = "player_fast_rewind"
+
+  private static readonly KEY_PLAYER_HW_DECODE = "player_hw_decode"
+
   private static readonly KEY_SORT_ORDER = "sort_order"
 
   private static readonly KEY_SORT_BY = "sort_by"
@@ -79,6 +85,39 @@ export class AppPrefer {
   public setPlayerLoopMode(mode: avSession.LoopMode) {
     this.preference.putSync(AppPrefer.KEY_PLAYER_LOOP_MODE, mode)
     this.preference.flush()
+  }
+
+  public setPlayerFastForward(forward: number) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_FAST_FORWARD, forward)
+  }
+
+  public getPlayerFastForward(): number {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_FAST_FORWARD)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_FAST_FORWARD, 30) as number
+    }
+    return 30
+  }
+
+  public setPlayerFastRewind(rewind: number) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_FAST_REWIND, rewind)
+  }
+
+  public getPlayerFastRewind(): number {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_FAST_REWIND)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_FAST_REWIND, 15) as number
+    }
+    return 15
+  }
+
+  public isHWDecode(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_HW_DECODE)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_HW_DECODE, true) as boolean
+    }
+    return true
+  }
+
+  public setHWDecode(hwDecode: boolean) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_HW_DECODE, hwDecode)
   }
 
   public getSortOrder(): FinSortOrder {
