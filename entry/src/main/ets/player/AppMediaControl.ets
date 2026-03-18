@@ -1,4 +1,4 @@
-import { FinItem } from "@ohpg/fin-core"
+import { FinItem, FinItemType } from "@ohpg/fin-core"
 import { AVPlayer, AVPlayerConfig, MediaControl, avSessionExt } from "@ohpg/player"
 import { AppPrefer } from "../prefer/AppPrefer"
 import observer from '@ohos.arkui.observer';
@@ -183,7 +183,6 @@ export class AppMediaControl {
    * @returns
    */
   public async destroyPlayer(): Promise<void> {
-    AppStorage.delete(AppMediaControl.MEDIA_CONTROL)
     try {
       this.mediaControl?.offMetadataChange(this.metadataCallback)
       this.mediaControl?.offPlaybackStateChange(this.playbackStateCallback)
@@ -239,7 +238,7 @@ export class AppMediaControl {
           title: item.name,
           description: item.overview,
           mediaUri: item.id,
-          mediaImage: item.image?.backdrop,
+          mediaImage: item.type === FinItemType.Episode ? item.image?.primary : item.image?.backdrop,
           mediaType: "video",
           startPosition: item.playbackPositionTicks,
           duration: item.runtimeTicks,

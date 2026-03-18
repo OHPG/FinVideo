@@ -49,6 +49,7 @@ struct VideoSettingPage {
         Blank()
         Select(this.voSelectionArray)
           .value(this.voSelectionArray[this.voIndex].value)
+          .selected(this.voIndex)
           .onSelect((index) => {
             this.voIndex = index
             this.appPrefer.setPlayerVo(index)
