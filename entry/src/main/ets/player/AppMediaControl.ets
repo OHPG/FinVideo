@@ -238,9 +238,10 @@ export class AppMediaControl {
           title: item.name,
           description: item.overview,
           mediaUri: item.id,
-          mediaImage: item.type === FinItemType.Episode ? item.image?.primary : item.image?.backdrop,
+          mediaImage: item.type === FinItemType.Episode
+            ? item.image?.primary : item.image?.backdrop,
           mediaType: "video",
-          startPosition: item.playbackPositionTicks,
+          startPosition: item.data?.playedPositionTicks,
           duration: item.runtimeTicks,
           extras: extra
         }
@@ -288,16 +289,22 @@ export class AppMediaControl {
 
   private reportPlaybackStart() {
     if (!this.mediaControl || !this.metadata) return
-    // console.log("AppMediaControl: reportPlaybackStart " + this.itemDto.Id)
+    if (BuildProfile.DEBUG) {
+      console.log("AppMediaControl: reportPlaybackStart " + this.metadata.assetId)
+    }
     this.reportingPlayback = true
     this.repository.onPlaybackStart(this.metadata.assetId)
       .then(() => {
         this.reportingPlayback = false
-        // console.log("AppMediaControl: reportPlaybackStart success.")
+        if (BuildProfile.DEBUG) {
+          console.log("AppMediaControl: reportPlaybackStart success.")
+        }
       })
       .catch((error: Error) => {
         this.reportingPlayback = false
-        // console.warn("AppMediaControl: reportPlaybackStart fail " + JSON.stringify(error))
+        if (BuildProfile.DEBUG) {
+          console.warn("AppMediaControl: reportPlaybackStart fail " + JSON.stringify(error))
+        }
       })
   }
 
@@ -305,30 +312,42 @@ export class AppMediaControl {
     if (!this.mediaControl || !this.metadata || this.reportingPlayback || !this.progress) return
     this.reportingPlayback = true
     this.reportPosition = this.progress
-    // console.log("AppMediaControl: reportPlaybackUpdate " + this.itemDto.Id + ", position = " + this.lastPosition)
+    if (BuildProfile.DEBUG) {
+      console.log("AppMediaControl: reportPlaybackUpdate " + this.metadata.assetId + ", position = " + this.reportPosition)
+    }
     this.repository.onPlaybackProgress(this.metadata.assetId, this.reportPosition, this.mediaControl?.isPlaying())
       .then(() => {
         this.reportingPlayback = false
-        // console.log("AppMediaControl: reportPlaybackUpdate success.")
+        if (BuildProfile.DEBUG) {
+          console.log("AppMediaControl: reportPlaybackUpdate success.")
+        }
       })
       .catch((error: Error) => {
         this.reportingPlayback = false
-        // console.warn("AppMediaControl: reportPlaybackUpdate fail " + JSON.stringify(error))
+        if (BuildProfile.DEBUG) {
+          console.warn("AppMediaControl: reportPlaybackUpdate fail " + JSON.stringify(error))
+        }
       })
   }
 
   private reportPlaybackStop() {
     if (!this.mediaControl || !this.metadata) return
     this.reportingPlayback = true
-    // console.log("AppMediaControl: reportPlaybackStop " + this.itemDto.Id)
+    if (BuildProfile.DEBUG) {
+      console.log("AppMediaControl: reportPlaybackStop " + this.metadata.assetId)
+    }
     this.repository.onPlaybackStopped(this.metadata.assetId, this.reportPosition)
       .then(() => {
         this.reportingPlayback = false
-        // console.log("AppMediaControl: reportPlaybackStop success.")
+        if (BuildProfile.DEBUG) {
+          console.log("AppMediaControl: reportPlaybackStop success.")
+        }
       })
       .catch((error: Error) => {
         this.reportingPlayback = false
-        // console.warn("AppMediaControl: reportPlaybackStop fail " + JSON.stringify(error))
+        if (BuildProfile.DEBUG) {
+          console.warn("AppMediaControl: reportPlaybackStop fail " + JSON.stringify(error))
+        }
       })
   }
 

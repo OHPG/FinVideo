@@ -79,7 +79,7 @@ struct VideoSettingPage {
           .fontSize(14)
           .fontColor($r('sys.color.ohos_id_color_text_secondary'))
         Span("FinPlayer")
-          .fontSize(14)
+          .fontSize(18)
           .fontColor($r('sys.color.ohos_id_color_component_activated'))
           .onClick(() => {
             MarketUtil.gotoMarket(this.getUIContext().getHostContext()! as common.UIAbilityContext
