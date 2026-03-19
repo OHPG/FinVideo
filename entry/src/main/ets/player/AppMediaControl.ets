@@ -38,6 +38,8 @@ export class AppMediaControl {
 
   private duration?: number
 
+  private state?: avSession.PlaybackState
+
   private progress?: number
 
   private shouldResumePlay = false
@@ -86,28 +88,22 @@ export class AppMediaControl {
   }
 
   private playbackStateCallback: Callback<avSession.AVPlaybackState> = async (state) => {
-    // 上报进度
     this.progress = state.position?.elapsedTime
     this.duration = state.duration
-    let reportState = false
-    if (this.progress && (this.reportPosition === undefined || Math.abs(this.progress - this.reportPosition) > 5000)) {
-      reportState = true
-    }
+    this.state = state.state
+    this.reportPlayback()
     switch (state.state) {
       case avSession.PlaybackState.PLAYBACK_STATE_PREPARE:
         this.duration = state.duration!
         this.applyState()
-        this.reportPlaybackStart()
         break
       case avSession.PlaybackState.PLAYBACK_STATE_PLAY:
-        if (reportState) this.reportPlaybackUpdate()
         // 在播放时，更新进度
         if (this.avMediaDescription) {
           this.avMediaDescription.startPosition = this.progress
         }
         break
       case avSession.PlaybackState.PLAYBACK_STATE_PAUSE:
-        if (reportState) this.reportPlaybackUpdate()
         break
       case avSession.PlaybackState.PLAYBACK_STATE_COMPLETED:
         this.skipNextOrExit()
@@ -336,12 +332,39 @@ export class AppMediaControl {
       })
   }
 
-  private reportPlaybackUpdate() {
-    if (!this.mediaControl || !this.avMetadata || this.reportingPlayback || !this.progress) return
+  private lastState?: avSession.PlaybackState
+
+  private reportPlayback() {
+    let stateChanged = this.state !== this.lastState
+    this.lastState = this.state
+    switch (this.state) {
+      case avSession.PlaybackState.PLAYBACK_STATE_PREPARE:
+        this.reportPlaybackStart()
+        break
+      case avSession.PlaybackState.PLAYBACK_STATE_PLAY:
+        this.reportPlaybackUpdate(stateChanged)
+        break
+      case avSession.PlaybackState.PLAYBACK_STATE_PAUSE:
+        this.reportPlaybackUpdate(stateChanged)
+        break
+      case avSession.PlaybackState.PLAYBACK_STATE_STOP:
+      case avSession.PlaybackState.PLAYBACK_STATE_COMPLETED:
+      case avSession.PlaybackState.PLAYBACK_STATE_ERROR:
+        this.reportPlaybackStop()
+        break
+    }
+  }
+
+  private reportPlaybackUpdate(force?: boolean) {
+    if (!this.mediaControl || !this.avMetadata || !this.progress) return
+    if (!force && Math.abs(this.progress - (this.reportPosition || 0)) < 5000) {
+      return
+    }
     this.reportingPlayback = true
     this.reportPosition = this.progress
     if (BuildProfile.DEBUG) {
-      console.log("AppMediaControl: reportPlaybackUpdate " + this.avMetadata.assetId + ", position = " + this.reportPosition)
+      console.log("AppMediaControl: reportPlaybackUpdate " + this.avMetadata.assetId
+        + ", position = " + this.reportPosition + ", playing = " + this.mediaControl.isPlaying())
     }
     this.repository.onPlaybackProgress(this.avMetadata.assetId, this.reportPosition, this.mediaControl?.isPlaying())
       .then(() => {
