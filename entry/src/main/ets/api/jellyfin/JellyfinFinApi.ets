@@ -19,6 +19,7 @@ import { uri } from "@kit.ArkTS";
 import { BaseItemDtoQueryResult } from "@ohpg/jellyfin/src/main/ets/model/BaseItemDtoQueryResult";
 import { FinItemSource } from "../../entity/FinItemSource";
 import { AppConfig } from "../../config/AppConfig";
+import { FinSubSource } from "../../entity/FinSubSource";
 
 /**
  * @Author peerless2012
@@ -363,8 +364,28 @@ export class JellyfinFinApi implements FinVideoApi {
         url = source.Path
         break
     }
+
+    const subSources = source.MediaStreams?.filter(stream =>
+      stream.Type === MediaStreamType.Subtitle && stream.IsExternal
+    ).map(sub => {
+      let subUrl: string;
+      if (sub.Path?.startsWith('http')) {
+        subUrl = sub.Path;
+      } else {
+        subUrl = `${this.activeInfo!.addressInfo.address}/Videos/${id}/${source.Id}/Subtitles/${sub.Index}/Stream.${sub.Codec}`;
+      }
+      let subSource: FinSubSource = {
+        title: sub.Title || undefined,
+        index: sub.Index || undefined,
+        force: sub.IsForced || undefined,
+        default: sub.IsDefault,
+        url: subUrl
+      }
+      return subSource
+    });
+
     if (url) {
-      return {url: url, sdr: sdr}
+      return {url: url, sdr: sdr, sub: subSources}
     }
     throw new Error("Source not support.")
   }

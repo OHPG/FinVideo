@@ -1,5 +1,5 @@
 import { FinItem, FinItemType } from "@ohpg/fin-core"
-import { AVPlayer, AVPlayerConfig, MediaControl, avSessionExt } from "@ohpg/player"
+import { AVPlayerConfig, MediaControl, avSessionExt } from "@ohpg/player"
 import { AppPrefer } from "../prefer/AppPrefer"
 import observer from '@ohos.arkui.observer';
 import { avSession } from "@kit.AVSessionKit";
@@ -7,6 +7,7 @@ import { common } from "@kit.AbilityKit";
 import BuildProfile from 'BuildProfile';
 import { AppPlayer } from "./AppPlayer";
 import { Repository } from "../data/Repository";
+import { media } from "@kit.MediaKit";
 
 /**
  * @Author peerless2012
@@ -27,7 +28,7 @@ export class AppMediaControl {
 
   private mediaControl?: MediaControl
 
-  private mediaPlayer?: AVPlayer
+  private mediaPlayer?: AppPlayer
 
   private mediaConfig?: AVPlayerConfig
 
@@ -95,12 +96,7 @@ export class AppMediaControl {
     switch (state.state) {
       case avSession.PlaybackState.PLAYBACK_STATE_PREPARE:
         this.duration = state.duration!
-        // 有历史记录，并且未完成
-        if (this.avMediaDescription?.startPosition
-          && this.duration - this.avMediaDescription.startPosition > 1000) {
-          this.mediaPlayer?.seek(this.avMediaDescription.startPosition)
-        }
-        this.mediaPlayer?.start()
+        this.applyState()
         this.reportPlaybackStart()
         break
       case avSession.PlaybackState.PLAYBACK_STATE_PLAY:
@@ -214,6 +210,30 @@ export class AppMediaControl {
       }
     } finally {
       this.mediaPlayer = undefined
+    }
+  }
+
+  private async applyState() {
+    // 有历史记录，并且未完成
+    await this.applySub()
+    if (this.avMediaDescription?.startPosition && this.duration
+      && this.duration - this.avMediaDescription.startPosition > 1000) {
+      this.mediaPlayer?.seek(this.avMediaDescription.startPosition)
+    }
+    this.mediaPlayer?.start()
+  }
+
+  private async applySub() {
+    let subs = this.mediaPlayer?.getAppSource()?.sub
+    if (!this.mediaPlayer || !subs || subs.length <= 0) return
+    let curSub = await this.mediaPlayer.getCurrentTrack(media.MediaType.MEDIA_TYPE_SUBTITLE)
+    for (const sub of subs) {
+      await this.mediaPlayer.addSubtitle(sub.url)
+    }
+    if (curSub <= 0) {
+      let index = subs.findIndex((sub) => sub.force || sub.default ? true : false)
+      let subIndex = index >= 0 ? index + 1 : 1
+      await this.mediaPlayer.selectTrack(media.MediaType.MEDIA_TYPE_SUBTITLE, subIndex)
     }
   }
 
