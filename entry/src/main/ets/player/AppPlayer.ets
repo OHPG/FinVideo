@@ -1,4 +1,5 @@
 import { MpvPlayer } from "@ohpg/mpv";
+import { AVRenderType } from "@ohpg/player";
 import { Repository } from "../data/Repository";
 import { FinItemSource } from "../entity/FinItemSource";
 
@@ -15,8 +16,8 @@ export class AppPlayer extends MpvPlayer {
 
   private appSource?: FinItemSource
 
-  constructor(context: Context) {
-    super(context)
+  constructor(context: Context, type: AVRenderType) {
+    super(context, type)
     this.repository = AppStorage.get(Repository.REPOSITORY)!
   }
 

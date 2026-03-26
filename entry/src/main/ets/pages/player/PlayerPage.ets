@@ -23,7 +23,6 @@ struct PlayerPage {
 
   aboutToAppear(): void {
     DeviceUtil.restoreUserBrightness()
-    this.currenWindow.setWindowSystemBarEnable([])
     let orientation = display.getDefaultDisplaySync().orientation
     if (orientation == display.Orientation.LANDSCAPE
       || orientation === display.Orientation.LANDSCAPE_INVERTED) {
@@ -88,7 +87,6 @@ struct PlayerPage {
     if (this.windowStatusCallback) {
       this.currenWindow.off("windowStatusChange", this.windowStatusCallback)
     }
-    this.currenWindow.setWindowSystemBarEnable(['status', 'navigation'])
     if (this.preferOrientation !== undefined) {
       this.currenWindow.setPreferredOrientation(this.preferOrientation)
     }
