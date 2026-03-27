@@ -135,22 +135,12 @@ export class AppMediaControl {
   }
 
   private initPlayer() {
-    this.mediaPlayer = new AppPlayer(this.context.getHostContext()!)
+    let vo = this.appPrefer!.getPlayerVo()
+    this.mediaPlayer = new AppPlayer(this.context.getHostContext()!, vo)
     this.mediaControl = new MediaControl(this.context.getHostContext()!, this.mediaPlayer)
     this.mediaControl.onPlaybackStateChange(this.playbackStateCallback)
     this.mediaControl.onMetadataChange(this.metadataCallback)
     this.mediaControl.queue.setMode(this.appPrefer.getPlayerLoopMode())
-    let vo = this.appPrefer!.getPlayerVo()
-    if (vo > 0) {
-      this.mediaPlayer.setOptions('option', "vo", "gpu")
-    } else {
-      this.mediaPlayer.setOptions('option', "vo", "ohcodec_embed")
-    }
-    this.mediaPlayer.setOptions('option', "hwdec", "auto")
-    this.mediaPlayer.setOptions('option', "profile", "fast")
-    this.mediaPlayer.setOptions('option', "video-sync", "audio")
-    this.mediaPlayer.setOptions('option', "vd-lavc-fast", "yes")
-    this.mediaPlayer.setOptions('option', "vd-lavc-skiploopfilter", "nokey")
 
     // log
     this.mediaPlayer.setOptions('option', "terminal", "yes")
