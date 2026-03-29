@@ -1,5 +1,6 @@
 import { EmbyFinApi } from "./emby/EmbyFinApi";
 import { JellyfinFinApi } from "./jellyfin/JellyfinFinApi";
+import { PlexFinApi } from "./plex/PlexFinApi";
 import { ApiFactory, CoreApi, ServerType } from "@ohpg/fin-core";
 
 /**
@@ -20,6 +21,8 @@ export class FinVideoApiFactory extends ApiFactory {
       return new JellyfinFinApi(this.context, this.clientInfo, this.deviceInfo) as ESObject as T
     } else if (serverType === ServerType.EMBY) {
       return new EmbyFinApi(this.context, this.clientInfo, this.deviceInfo) as ESObject as T
+    } else if (serverType === ServerType.PLEX) {
+      return new PlexFinApi(this.context, this.clientInfo, this.deviceInfo) as ESObject as T
     }
     throw new Error(serverType + " not implemented.");
   }

@@ -69,6 +69,10 @@
       "srcPath": "./sdk/emby"
     },
     {
+      "name": "plex",
+      "srcPath": "./sdk/plex"
+    },
+    {
       "name": "core",
       "srcPath": "./framewrok/lib_core"
     },

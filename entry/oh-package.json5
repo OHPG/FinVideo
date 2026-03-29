@@ -13,6 +13,7 @@
     "@ohpg/network": 'file:../sdk/network',
     "@ohpg/emby": 'file:../sdk/emby',
     "@ohpg/jellyfin": 'file:../sdk/jellyfin',
+    "@ohpg/plex": 'file:../sdk/plex',
     "@ohpg/fin-core": 'file:../framewrok/lib_core',
     "@ohpg/fin-framework": 'file:../framewrok/lib_framework',
   }
