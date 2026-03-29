@@ -21,6 +21,8 @@ struct PlayerPage {
 
   @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
+  private keyEventSet: Set<Callback<KeyEvent, boolean>> = new Set()
+
   aboutToAppear(): void {
     DeviceUtil.restoreUserBrightness()
     let orientation = display.getDefaultDisplaySync().orientation
@@ -54,7 +56,8 @@ struct PlayerPage {
     Stack() {
       AVPlayerView({
         control: this.appMediaControl.getMediaControl(),
-        config: this.appMediaControl.getPlayerConfig()
+        config: this.appMediaControl.getPlayerConfig(),
+        keyEvent: this.keyEventSet
       })
     }
     .onKeyEvent((event): Boolean => {
@@ -66,6 +69,10 @@ struct PlayerPage {
   }
 
   private onPageKeyEvent(event: KeyEvent): boolean {
+    for (const callback of this.keyEventSet) {
+      let result = callback(event)
+      if (result) return true
+    }
     if (event.type == KeyType.Up) {
       if (event.keyCode === KeyCode.KEYCODE_ESCAPE) {
         let windowStatus = this.currenWindow.getWindowStatus()
@@ -80,10 +87,11 @@ struct PlayerPage {
         }
       }
     }
-    return true
+    return event.keyCode === KeyCode.KEYCODE_ESCAPE || event.keyCode === KeyCode.KEYCODE_ENTER
   }
 
   aboutToDisappear(): void {
+    this.keyEventSet.clear()
     if (this.windowStatusCallback) {
       this.currenWindow.off("windowStatusChange", this.windowStatusCallback)
     }

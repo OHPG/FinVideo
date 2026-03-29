@@ -125,6 +125,14 @@
       "value": "稳定模式。\n\n优点：\n* 支持所有格式。\n* 支持所有字幕。\n\n缺点：\n* 不支持HDR，所有内容以SDR方式渲染。\n* 杜比（P5）颜色异常。"
     },
     {
+      "name": "player_video_vo_gpu_next",
+      "value": "专业"
+    },
+    {
+      "name": "player_video_vo_gpu_next_desc",
+      "value": "专业模式。\n\n优点：\n* 支持所有格式。\n* 支持所有字幕。\n* 支持HDR。\n* 支持杜比视界（包括P5）。\n\n注意：\n* 杜比视界（尤其是P5）建议用【硬解+】解码模式。"
+    },
+    {
       "name": "player_video_thanks_01",
       "value": "本项目播放器由"
     },

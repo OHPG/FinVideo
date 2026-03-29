@@ -14,7 +14,8 @@ struct VideoSettingPage {
 
   private voDescArray = [
     $r('app.string.player_video_vo_embed_desc'),
-    $r('app.string.player_video_vo_gpu_desc')
+    $r('app.string.player_video_vo_gpu_desc'),
+    $r('app.string.player_video_vo_gpu_next_desc')
   ]
 
   private voSelectionArray: Array<SelectOption> = [
@@ -23,10 +24,13 @@ struct VideoSettingPage {
     },
     {
       value: $r('app.string.player_video_vo_gpu')
-    }
+    },
+    {
+      value: $r('app.string.player_video_vo_gpu_next')
+    },
   ]
 
-  @State voIndex: number = 0
+  @State voIndex: number = 1
 
   aboutToAppear(): void {
     this.voIndex = this.appPrefer.getPlayerVo()
