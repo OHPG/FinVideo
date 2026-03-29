@@ -47,6 +47,10 @@ export struct PreferComponent {
 
       Column({ space: CommonConstants.SPACE_12}) {
         Row() {
+          Text($r('app.string.prefer_current_type'))
+          Text(this.activeInfo?.serverInfo.serverType)
+        }
+        Row() {
           Text($r('app.string.prefer_current_server'))
           Text(this.activeInfo?.serverInfo.serverName)
         }

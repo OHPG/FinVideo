@@ -17,8 +17,8 @@ export class Repository extends FinRepository {
     super(context, new FinVideoApiFactory(context))
   }
 
-  public getSupportServer(): ServerType {
-    return ServerType.JELLYFIN
+  public getSupportServer(): Array<ServerType> {
+    return [ServerType.JELLYFIN, ServerType.EMBY]
   }
 
   protected requireApi(): FinVideoApi {

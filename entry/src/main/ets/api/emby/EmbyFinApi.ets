@@ -1,11 +1,22 @@
 import { ActiveInfo, FinAuthResult, FinItem, FinItemData,
   FinItemType,
   FinPage,
-  FinPublicSystemInfo, ServerType } from "@ohpg/fin-core";
+  FinPerson, FinPersonType, FinPublicSystemInfo,
+  ServerType } from "@ohpg/fin-core";
 import { ClientInfo, DeviceInfo } from "@ohpg/network";
-import { FinItemSource } from "../../entity/FinItemSource";
-import { FinPlaybackInfo } from "../../entity/FinPlaybackInfo";
+import { CollectionType, ImageType, ItemFilter, ItemSortBy,
+  MediaProtocol,
+  MediaStreamType,
+  SortOrder,
+  UserItemDataDto,
+  VideoRange } from "@ohpg/emby";
+import { BaseItemDto, BaseItemKind, BaseItemPerson, ItemFields, Emby } from "@ohpg/emby";
 import { FinVideoApi } from "../FinVideoApi";
+import { uri } from "@kit.ArkTS";
+import { BaseItemDtoQueryResult } from "@ohpg/emby/src/main/ets/model/BaseItemDtoQueryResult";
+import { FinItemSource } from "../../entity/FinItemSource";
+import { AppConfig } from "../../config/AppConfig";
+import { FinSubSource } from "../../entity/FinSubSource";
 
 /**
  * @Author peerless2012
@@ -18,123 +29,421 @@ export class EmbyFinApi implements FinVideoApi {
 
   private readonly context: Context
 
+  private readonly appConfig: AppConfig
+
+  private activeInfo?: ActiveInfo
+
+  private emby: Emby
+
+  private embyTmp: Emby
+
+  private lastMediaSourceId?: string
+
+  private lastPlaySessionId?: string
+
   constructor(context: Context, clientInfo: ClientInfo, deviceInfo: DeviceInfo) {
     this.context = context
-  }
-
-  getItemList(id: string, types: FinItemType[], recursive: boolean, index?: number): Promise<FinPage> {
-    throw new Error("Method not implemented.");
-  }
-
-  getMovie(id: string): Promise<FinItem> {
-    throw new Error("Method not implemented.");
-  }
-
-  getShow(id: string): Promise<FinItem> {
-    throw new Error("Method not implemented.");
-  }
-
-  getItemSource(id: string): Promise<FinItemSource> {
-    throw new Error("Method not implemented.");
-  }
-
-  getFavourite(types?: FinItemType[] | undefined): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
-  }
-
-  getLibraryList(): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
-  }
-
-  getLatestItems(id?: string | undefined): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
+    this.appConfig = AppStorage.get(AppConfig.CONFIG)!
+    this.emby = new Emby(clientInfo, deviceInfo)
+    this.embyTmp = new Emby(clientInfo, deviceInfo)
   }
 
   getApiType(): ServerType {
-    throw new Error("Method not implemented.");
+    return ServerType.EMBY
   }
 
   updateAddress(address: string): void {
-    throw new Error("Method not implemented.");
+    this.emby.selectServer({ address: address })
   }
 
   updateActiveInfo(activeInfo: ActiveInfo): void {
-    throw new Error("Method not implemented.");
+    this.activeInfo = activeInfo
+    this.emby.selectServer({ address: activeInfo.addressInfo.address })
+    this.emby.selectUser({ id: activeInfo.userInfo.userId, token: activeInfo.userInfo.accessToken })
   }
 
-  getSystemInfo(url?: string | undefined): Promise<FinPublicSystemInfo> {
-    throw new Error("Method not implemented.");
+  private buildImage(dto: BaseItemDto, type: ImageType): string {
+    let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
+    let id = dto.Id!
+    if (dto.Type === BaseItemKind.Season) {
+      if (!dto.ImageTags || Object.keys(dto.ImageTags).length <= 0) {
+        id = dto.SeriesId!
+      }
+    }
+    imageUri = imageUri.addEncodedSegment(`Items/${id}/Images/${type}`)
+    return imageUri.toString()
   }
 
-  auth(name: string, psw?: string | undefined, url?: string | undefined): Promise<FinAuthResult> {
-    throw new Error("Method not implemented.");
+  private buildPersonImage(person: BaseItemPerson, type: ImageType): string {
+    let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
+    imageUri = imageUri.addEncodedSegment(`Items/${person.Id!}/Images/${type}`)
+    return imageUri.toString()
   }
 
-  release(): Promise<void> {
-    throw new Error("Method not implemented.");
+  private itemDataToFinItemData(itemData?: UserItemDataDto): FinItemData | undefined {
+    if (!itemData) return undefined
+    let finItemData: FinItemData = {
+      rating: itemData.Rating!,
+      playPercentage: itemData.PlayedPercentage!,
+      unplayedItemCount: itemData.UnplayedItemCount!,
+      playedPositionTicks: itemData.PlaybackPositionTicks
+        ? itemData.PlaybackPositionTicks / 10000
+        : undefined,
+      playCount: itemData.PlayCount!,
+      isFavorite: itemData.IsFavorite,
+      lastPlayDate: itemData.LastPlayedDate!,
+      played: itemData.Played
+    }
+    return finItemData
   }
 
-  getResumeItems(): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
+  private itemToFinItem(item: BaseItemDto): FinItem {
+    let finItem: FinItem = {
+      id: item.Id!,
+      name: item.Name!,
+      path: item.Path!,
+      type: item.Type! as ESObject as FinItemType,
+      originalTitle: item.OriginalTitle!,
+      overview: item.Overview!,
+      seriesName: item.SeriesName || undefined,
+      seasonId: item.SeasonId || undefined,
+      runtimeTicks: item.RunTimeTicks ? item.RunTimeTicks / 10000 : undefined,
+      image: {
+        primary: this.buildImage(item, ImageType.Primary),
+        backdrop: this.buildImage(item, ImageType.Backdrop)
+      },
+      data: this.itemDataToFinItemData(item.UserData),
+      genres: item.Genres || undefined,
+      parentIndex: item.ParentIndexNumber || undefined,
+      index: item.IndexNumber || undefined,
+      collectionType: item.CollectionType ? item.CollectionType as ESObject : undefined
+    }
+
+    if (item.People) {
+      let finPerson = new Array<FinPerson>()
+      item.People?.forEach((person) => {
+        finPerson.push({
+          id: person.Id!,
+          name: person.Name!,
+          role: person.Role!,
+          type: person.Type as ESObject as FinPersonType,
+          image: {
+            primary: this.buildPersonImage(person, ImageType.Primary)
+          }
+        })
+      })
+      finItem.person = finPerson
+    }
+    return finItem
   }
 
-  getNextUp(seriesId?: string | undefined): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
+  private itemsToFinItems(items?: Array<BaseItemDto>): Array<FinItem> {
+    let finItems = new Array<FinItem>()
+    items?.forEach((item) => finItems.push(this.itemToFinItem(item)))
+    return finItems
   }
 
-  getSeasons(seriesId: string): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
+  private resultToFinItems(result: BaseItemDtoQueryResult): Array<FinItem> {
+    let finItems = new Array<FinItem>()
+    result.Items?.forEach((item) => finItems.push(this.itemToFinItem(item)))
+    return finItems
   }
 
-  getEpisodes(seriesId: string, seasonId: string): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
+  private resultToFinPage(result: BaseItemDtoQueryResult, index?: number): FinPage {
+    let finItems = new Array<FinItem>()
+    result.Items?.forEach((item) => finItems.push(this.itemToFinItem(item)))
+    let cur: number = result.StartIndex ? result.StartIndex : 0
+    let more: boolean = cur + finItems.length < (result.TotalRecordCount || 0) - 1
+    return { cur: cur, items: finItems, more: more }
   }
 
-  getEpisode(episodeId: string): Promise<FinItem> {
-    throw new Error("Method not implemented.");
+  private filterItem(items?: Array<BaseItemDto> | null): Array<BaseItemDto> | undefined {
+    let newItems: Array<BaseItemDto> | undefined
+    items?.forEach((item) => {
+      let type = item.CollectionType
+      if (type == CollectionType.Tvshows
+        || type === CollectionType.Movies
+        || type === undefined) {
+        if (newItems == undefined) {
+          newItems = new Array()
+        }
+        newItems.push(item)
+      }
+    })
+    return newItems
   }
 
-  getPublicSystemInfo(url: string): Promise<FinPublicSystemInfo> {
-    throw new Error("Method not implemented.");
+  async getPublicSystemInfo(url: string): Promise<FinPublicSystemInfo> {
+    this.embyTmp.selectServer({ address: url })
+    let info = await this.embyTmp.getSystemApi().getPublicSystemInfo()
+    return { Id: info.Id, ServerName: info.ServerName, Version: info.Version, StartupWizardCompleted: true }
   }
 
-  authenticateUserByName(name: string, psw?: string | undefined): Promise<FinAuthResult> {
-    throw new Error("Method not implemented.");
+  public async getSystemInfo(url?: string): Promise<FinPublicSystemInfo> {
+    if (url) {
+      this.embyTmp.selectServer({ address: url })
+    } else {
+      this.embyTmp.selectServer({ address: this.activeInfo!.addressInfo.address })
+    }
+    this.embyTmp.selectUser({ id: this.activeInfo!.userInfo.userId, token: this.activeInfo!.userInfo.accessToken })
+    let info = await this.embyTmp.getSystemApi().getSystemInfo()
+    return { Id: info.Id, ServerName: info.ServerName, Version: info.Version, StartupWizardCompleted: true }
   }
 
-  getItemData(id: string): Promise<FinItemData> {
-    throw new Error("Method not implemented.");
+  async auth(name: string, psw?: string | undefined, url?: string | undefined): Promise<FinAuthResult> {
+    if (url) {
+      this.embyTmp.selectServer({ address: url })
+    } else {
+      this.embyTmp.selectServer({ address: this.activeInfo!.addressInfo.address })
+    }
+    let authResult = await this.embyTmp.getUserApi().authenticateUserByName({ Username: name, Pw: psw })
+    return {
+      UserName: authResult.User?.Name,
+      UserId: authResult.User?.Id,
+      AccessToken: authResult.AccessToken
+    }
   }
 
-  search(keyword: string): Promise<FinItem[]> {
-    throw new Error("Method not implemented.");
+  async getResumeItems(): Promise<Array<FinItem>> {
+    let result = await this.emby.getItemsApi().getResumeItems({
+      userId: this.activeInfo!.userInfo.userId,
+      includeItemTypes: [BaseItemKind.Movie, BaseItemKind.Episode],
+      fields: [ItemFields.Overview],
+      limit: 12,
+    })
+    return this.resultToFinItems(result)
   }
 
-  markFavoriteItem(id: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async getNextUp(seriesId?: string | undefined): Promise<Array<FinItem>> {
+    let result = await this.emby.getTvShowsApi().getNextUp({
+      userId: this.activeInfo!.userInfo.userId,
+      seriesId: seriesId,
+      enableResumable: false,
+      fields: [ItemFields.Overview],
+      limit: 12
+    })
+    return this.resultToFinItems(result)
   }
 
-  unmarkFavoriteItem(id: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async getLibraryList(): Promise<FinItem[]> {
+    let result = await this.emby.getUserViewsApi().getUserViews({
+      userId: this.activeInfo!.userInfo.userId
+    })
+    let groups = this.filterItem(result.Items)
+    return this.itemsToFinItems(groups)
   }
 
-  markPlayedItem(id: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async getItemList(id: string, types: FinItemType[], recursive: boolean, index?: number): Promise<FinPage> {
+    let result = await this.emby.getItemsApi().getItems({
+      userId: this.activeInfo!.userInfo.userId,
+      parentId: id,
+      includeItemTypes: types as ESObject,
+      recursive: recursive,
+      sortBy: [this.appConfig.sortBy as ESObject as ItemSortBy],
+      sortOrder: [this.appConfig.sortOrder as ESObject as SortOrder],
+      startIndex: index || 0,
+      limit: this.appConfig.pageSize
+    })
+    return this.resultToFinPage(result, index)
   }
 
-  markUnplayedItem(id: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async getLatestItems(id?: string | undefined): Promise<FinItem[]> {
+    let result = await this.emby.getUserLibraryApi().getLatestMedia({
+      userId: this.activeInfo!.userInfo.userId,
+      includeItemTypes: [BaseItemKind.Series, BaseItemKind.Movie],
+      parentId: id,
+      limit: 12
+    })
+    return this.itemsToFinItems(result)
   }
 
-  onPlaybackStart(id: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async getMovie(id: string): Promise<FinItem> {
+    let item = await this.emby.getUserLibraryApi().getItem({
+      userId: this.activeInfo!.userInfo.userId,
+      itemId: id
+    })
+    return this.itemToFinItem(item)
   }
 
-  onPlaybackProgress(id: string, position: number, playing: boolean): Promise<void> {
-    throw new Error("Method not implemented.");
+  async getShow(id: string): Promise<FinItem> {
+    let item = await this.emby.getUserLibraryApi().getItem({
+      userId: this.activeInfo!.userInfo.userId,
+      itemId: id
+    })
+    return this.itemToFinItem(item)
   }
 
-  onPlaybackStopped(id: string, position: number): Promise<void> {
-    throw new Error("Method not implemented.");
+  async getSeasons(seriesId: string): Promise<Array<FinItem>> {
+    let result = await this.emby.getTvShowsApi().getSeasons({
+      userId: this.activeInfo!.userInfo.userId,
+      seriesId: seriesId
+    })
+    return this.resultToFinItems(result)
+  }
+
+  async getEpisodes(seriesId: string, seasonId: string): Promise<Array<FinItem>> {
+    let result = await this.emby.getTvShowsApi().getEpisodes({
+      userId: this.activeInfo!.userInfo.userId,
+      seriesId: seriesId,
+      seasonId: seasonId,
+      fields: [ItemFields.Overview, ItemFields.ParentId]
+    })
+    return this.resultToFinItems(result)
+  }
+
+  async getEpisode(episodeId: string): Promise<FinItem> {
+    let item = await this.emby.getUserLibraryApi().getItem({
+      userId: this.activeInfo!.userInfo.userId,
+      itemId: episodeId
+    })
+    return this.itemToFinItem(item)
+  }
+
+  async getItemData(id: string): Promise<FinItemData> {
+    let itemData = await this.emby.getItemsApi().getItemUserData({
+      itemId: id,
+      userId: this.activeInfo!.userInfo.userId
+    })
+    return this.itemDataToFinItemData(itemData)!
+  }
+
+  async getFavourite(types?: FinItemType[] | undefined): Promise<FinItem[]> {
+    let result = await this.emby.getItemsApi().getItems({
+      userId: this.activeInfo!.userInfo.userId,
+      filters: [ItemFilter.IsFavorite],
+      includeItemTypes: types as ESObject,
+      fields: [ItemFields.Overview],
+      recursive: true
+    })
+    return this.resultToFinItems(result)
+  }
+
+  async getItemSource(id: string): Promise<FinItemSource> {
+    let playbackInfo = await this.emby.getMediaInfoApi().getPlaybackInfo({
+      userId: this.activeInfo!.userInfo.userId,
+      itemId: id
+    })
+
+    let source = playbackInfo.MediaSources?.[0]!
+    this.lastMediaSourceId = source.Id || undefined
+    this.lastPlaySessionId = playbackInfo.PlaySessionId || undefined
+
+    // 判断是否是hdr
+    let sdr = true
+    source.MediaStreams?.forEach((stream) => {
+      if (stream.Type === MediaStreamType.Video) {
+        if (stream.VideoRange) {
+          sdr = stream.VideoRange !== VideoRange.Hdr
+        }
+      }
+    })
+
+    let url: string | undefined | null
+    switch (source.Protocol) {
+      case MediaProtocol.File:
+        url = await this.emby.getVideosApi().getVideoStreamUrl({
+          itemId: id,
+          static: true,
+          mediaSourceId: source.Id!,
+          api_key: this.activeInfo!.userInfo.accessToken
+        })
+        break
+      case MediaProtocol.Http:
+        url = source.Path
+        break
+    }
+
+    const subSources = source.MediaStreams?.filter(stream =>
+      stream.Type === MediaStreamType.Subtitle && stream.IsExternal
+    ).map(sub => {
+      let subUrl: string;
+      if (sub.Path?.startsWith('http')) {
+        subUrl = sub.Path;
+      } else {
+        subUrl = `${this.activeInfo!.addressInfo.address}/Videos/${id}/${source.Id}/Subtitles/${sub.Index}/Stream.${sub.Codec}`;
+      }
+      let subSource: FinSubSource = {
+        title: sub.Title || undefined,
+        index: sub.Index || undefined,
+        force: sub.IsForced || undefined,
+        default: sub.IsDefault,
+        url: subUrl
+      }
+      return subSource
+    });
+
+    if (url) {
+      return { url: url, sdr: sdr, sub: subSources }
+    }
+    throw new Error("Source not support.")
+  }
+
+  async search(keyword: string): Promise<FinItem[]> {
+    let result = await this.emby.getItemsApi().getItems({
+      userId: this.activeInfo?.userInfo.userId,
+      searchTerm: keyword,
+      includeItemTypes: [BaseItemKind.Movie, BaseItemKind.Series, BaseItemKind.Episode],
+      recursive: true
+    })
+    return this.resultToFinItems(result)
+  }
+
+  async markFavoriteItem(id: string): Promise<void> {
+    await this.emby.getUserLibraryApi().markFavoriteItem({
+      itemId: id,
+      userId: this.activeInfo!.userInfo.userId
+    })
+  }
+
+  async unmarkFavoriteItem(id: string): Promise<void> {
+    await this.emby.getUserLibraryApi().unmarkFavoriteItem({
+      itemId: id,
+      userId: this.activeInfo!.userInfo.userId
+    })
+  }
+
+  async markPlayedItem(id: string): Promise<void> {
+    await this.emby.getPlayStateApi().markPlayedItem({
+      itemId: id,
+      userId: this.activeInfo!.userInfo.userId
+    })
+  }
+
+  async markUnplayedItem(id: string): Promise<void> {
+    await this.emby.getPlayStateApi().markUnplayedItem({
+      itemId: id,
+      userId: this.activeInfo!.userInfo.userId
+    })
+  }
+
+  async onPlaybackStart(id: string): Promise<void> {
+    await this.emby.getPlayStateApi().onPlaybackStart({
+      itemId: id,
+      mediaSourceId: this.lastMediaSourceId || id,
+      playSessionId: this.lastPlaySessionId || ''
+    })
+  }
+
+  async onPlaybackProgress(id: string, position: number, playing: boolean): Promise<void> {
+    await this.emby.getPlayStateApi().onPlaybackProgress({
+      itemId: id,
+      mediaSourceId: this.lastMediaSourceId || id,
+      playSessionId: this.lastPlaySessionId || '',
+      positionTicks: position * 10000,
+      isPaused: !playing
+    })
+  }
+
+  async onPlaybackStopped(id: string, position: number): Promise<void> {
+    await this.emby.getPlayStateApi().onPlaybackStopped({
+      itemId: id,
+      mediaSourceId: this.lastMediaSourceId || id,
+      playSessionId: this.lastPlaySessionId || '',
+      positionTicks: position * 10000
+    })
+  }
+
+  async release(): Promise<void> {
+    this.emby.apiClient.release()
   }
 }

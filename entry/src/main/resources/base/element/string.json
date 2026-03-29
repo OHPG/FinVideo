@@ -45,6 +45,10 @@
       "value": "设置"
     },
     {
+      "name": "prefer_current_type",
+      "value": "类型："
+    },
+    {
       "name": "prefer_current_server",
       "value": "服务器："
     },
