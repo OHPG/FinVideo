@@ -19,7 +19,38 @@
   ],
   "targets": [
     {
-      "name": "default"
+      "name": "default",
+      "config": {
+        "buildOption": {
+          "arkOptions": {
+            "buildProfileFields": {
+              "productName": "mpv"
+            }
+          }
+        }
+      },
+      "source": {
+        "sourceRoots": [
+          "./src/mpv"
+        ]
+      }
+    },
+    {
+      "name": "system",
+      "config": {
+        "buildOption": {
+          "arkOptions": {
+            "buildProfileFields": {
+              "productName": "system"
+            }
+          }
+        }
+      },
+      "source": {
+        "sourceRoots": [
+          "./src/system"
+        ]
+      }
     },
     {
       "name": "ohosTest",

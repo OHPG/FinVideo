@@ -4,18 +4,55 @@
       {
         "name": "default",
         "signingConfig": "default",
+        "targetSdkVersion": "6.0.0(20)",
         "compatibleSdkVersion": "5.0.3(15)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {
             "caseSensitiveCheck": true,
             "useNormalizedOHMUrl": true
+          },
+          "nativeLib": {
+            "debugSymbol": {
+              "strip": true
+            },
+            "filter": {
+              "excludes": [
+                "**/armeabi-v7a/*.so",
+                "**/x86_64/*.so"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "tiny",
+        "signingConfig": "default",
+        "targetSdkVersion": "6.0.0(20)",
+        "compatibleSdkVersion": "5.0.3(15)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          },
+          "nativeLib": {
+            "debugSymbol": {
+              "strip": true
+            },
+            "filter": {
+              "excludes": [
+                "**/armeabi-v7a/*.so",
+                "**/x86_64/*.so"
+              ]
+            }
           }
         }
       },
       {
         "name": "publish",
         "signingConfig": "publish",
+        "targetSdkVersion": "6.0.0(20)",
         "compatibleSdkVersion": "5.0.3(15)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
@@ -26,6 +63,7 @@
           "nativeLib": {
             "filter": {
               "excludes": [
+                "**/armeabi-v7a/*.so",
                 "**/x86_64/*.so"
               ]
             }
@@ -52,6 +90,12 @@
           "applyToProducts": [
             "default",
             "publish"
+          ]
+        },
+        {
+          "name": "system",
+          "applyToProducts": [
+            "tiny",
           ]
         }
       ]

@@ -1,5 +1,5 @@
-import { MpvPlayer } from "@ohpg/mpv";
 import { AVRenderType } from "@ohpg/player";
+import { ProxyPlayer } from "entry/ProxyPlayer";
 import { Repository } from "../data/Repository";
 import { FinItemSource } from "../entity/FinItemSource";
 
@@ -10,7 +10,7 @@ import { FinItemSource } from "../entity/FinItemSource";
  * @Version V1.0
  * @Description 应用自定义播放器
  */
-export class AppPlayer extends MpvPlayer {
+export class AppPlayer extends ProxyPlayer {
 
   private readonly repository: Repository
 
