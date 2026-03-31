@@ -1,10 +1,11 @@
 # FinVideo
-`FinVideo`是一款在`HarmonyOS NEXT`上的`Jellyfin`视频播放器。
+`FinVideo`是一款在`HarmonyOS NEXT`上的`Jellyfin``Emby`、`Plex`的视频播放器。
 
 ## 主要功能
 * 支持多服务器、多地址、多用户。
 * 支持视频播放、手势控制、倍速。
-* 支持音轨、字幕轨。
+* 支持HDR、杜比视界等。
+* 支持卷大多数音轨、字幕轨。
 * 支持夜间模式。
 * 自适应布局，适配手机、平板等设备。
 
@@ -42,4 +43,4 @@ OHPG（OpenHarmony PlayGround）是一个开放组织，旨在为HarmonyOS系统
 FinVideo名称及图标，均受版权保护。
 
 ## 特别鸣谢
-* [wlmedia](https://github.com/ywl5320/wlmedia) 赞助本项目的播放器功能。
+* [FinPlayer](https://appgallery.huawei.com/app/detail?id=org.ohpg.fin.player&channelId=SHARE&source=appshare) 为本项目的播放器支持。
