@@ -109,6 +109,106 @@
       "value": "渲染模式"
     },
     {
+      "name": "prefer_video_history",
+      "value": "保存播放历史"
+    },
+    {
+      "name": "prefer_video_auto_next",
+      "value": "自动播放下一个"
+    },
+    {
+      "name": "prefer_video_background_play",
+      "value": "后台播放"
+    },
+    {
+      "name": "prefer_video_auto_pip",
+      "value": "自动小窗播放"
+    },
+    {
+      "name": "prefer_video_rotation",
+      "value": "默认屏幕方向"
+    },
+    {
+      "name": "prefer_video_rotation_keep",
+      "value": "跟随窗口"
+    },
+    {
+      "name": "prefer_video_rotation_portrait",
+      "value": "强制竖屏"
+    },
+    {
+      "name": "prefer_video_rotation_landscape",
+      "value": "强制横屏"
+    },
+    {
+      "name": "prefer_video_rotation_video",
+      "value": "跟随视频"
+    },
+    {
+      "name": "prefer_video_rotation_fast_rewind",
+      "value": "快退时长"
+    },
+    {
+      "name": "prefer_video_rotation_fast_forward",
+      "value": "快进时长"
+    },
+    {
+      "name": "prefer_video_rotation_fast_suffix",
+      "value": "%s秒"
+    },
+    {
+      "name": "prefer_video_rotation_fast_5",
+      "value": "5秒"
+    },
+    {
+      "name": "prefer_video_rotation_fast_10",
+      "value": "10秒"
+    },
+    {
+      "name": "prefer_video_rotation_fast_15",
+      "value": "15秒"
+    },
+    {
+      "name": "prefer_video_rotation_fast_30",
+      "value": "30秒"
+    },
+    {
+      "name": "prefer_video_rotation_fast_45",
+      "value": "45秒"
+    },
+    {
+      "name": "prefer_video_rotation_fast_60",
+      "value": "60秒"
+    },
+    {
+      "name": "prefer_video_codec_prefer",
+      "value": "首选解码"
+    },
+    {
+      "name": "prefer_video_codec_hw",
+      "value": "硬解"
+    },
+    {
+      "name": "prefer_video_codec_hw_plus",
+      "value": "硬解+"
+    },
+    {
+      "name": "prefer_video_codec_sw",
+      "value": "软解"
+    },
+    {
+      "name": "prefer_audio_spdif",
+      "value": "音频直通"
+    },
+    {
+      "name": "player_gesture_dc_forward_rewind",
+      "value": "双击快进/快退"
+    },
+    {
+      "name": "player_gesture_dc_volume_brightness",
+      "value": "滑动调节音量/亮度"
+    },
+    {
       "name": "player_video_vo_embed",
       "value": "直接"
     },
@@ -195,6 +295,90 @@
     {
       "name": "player_subtitle_track_title",
       "value": "选择字幕"
+    },
+    {
+      "name": "player_error_with_code",
+      "value": "播放失败，%d：%s"
+    },
+    {
+      "name": "player_error_generic",
+      "value": "播放失败"
+    },
+    {
+      "name": "gesture_guide_double_click_left",
+      "value": "双击左侧"
+    },
+    {
+      "name": "gesture_guide_double_click_left_comment",
+      "value": "快退"
+    },
+    {
+      "name": "gesture_guide_double_click_center",
+      "value": "双击中间"
+    },
+    {
+      "name": "gesture_guide_double_click_center_comment",
+      "value": "播放/暂停"
+    },
+    {
+      "name": "gesture_guide_double_click_right",
+      "value": "双击右侧"
+    },
+    {
+      "name": "gesture_guide_double_click_right_comment",
+      "value": "快进"
+    },
+    {
+      "name": "gesture_guide_scroll_left",
+      "value": "上下滑动左侧"
+    },
+    {
+      "name": "gesture_guide_scroll_left_comment",
+      "value": "亮度"
+    },
+    {
+      "name": "gesture_guide_swipe",
+      "value": "左右滑动"
+    },
+    {
+      "name": "gesture_guide_swipe_comment",
+      "value": "进度"
+    },
+    {
+      "name": "gesture_guide_scroll_right",
+      "value": "上下滑动右侧"
+    },
+    {
+      "name": "gesture_guide_scroll_right_comment",
+      "value": "音量"
+    },
+    {
+      "name": "gesture_guide_long_press",
+      "value": "长按屏幕"
+    },
+    {
+      "name": "gesture_guide_long_press_comment",
+      "value": "调整倍速"
+    },
+    {
+      "name": "gesture_guide_pinch",
+      "value": "双指捏合"
+    },
+    {
+      "name": "gesture_guide_pinch_comment",
+      "value": "画面还原"
+    },
+    {
+      "name": "gesture_guide_stretch",
+      "value": "双指张开"
+    },
+    {
+      "name": "gesture_guide_stretch_comment",
+      "value": "画面裁剪"
+    },
+    {
+      "name": "gesture_guide_finish",
+      "value": "我知道了"
     }
   ]
 }

@@ -35,7 +35,7 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       this.appMediaControl = new AppMediaControl(window.getUIContext())
-      AppStorage.setOrCreate(AppMediaControl.MEDIA_CONTROL, this.appMediaControl)
+      AppStorage.setOrCreate(AppMediaControl.MEDIA_CONTROL_KEY, this.appMediaControl)
       this.breakpointSystem.register(window);
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });

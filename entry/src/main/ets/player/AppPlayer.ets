@@ -1,23 +1,16 @@
-import { AVRenderType } from "@ohpg/player";
-import { ProxyPlayer } from "entry/ProxyPlayer";
-import { Repository } from "../data/Repository";
-import { FinItemSource } from "../entity/FinItemSource";
+import { AVCodecType, AVRenderType } from '@ohpg/player'
+import { ProxyPlayer } from 'entry/ProxyPlayer'
+import { Repository } from '../data/Repository'
+import { FinItemSource } from '../entity/FinItemSource'
 
-/**
- * @Author peerless2012
- * @Email peerless2012@126.com
- * @DateTime 2026/3/19 21:36
- * @Version V1.0
- * @Description 应用自定义播放器
- */
 export class AppPlayer extends ProxyPlayer {
 
   private readonly repository: Repository
 
   private appSource?: FinItemSource
 
-  constructor(context: Context, type: AVRenderType) {
-    super(context, type)
+  constructor(context: Context, type: AVRenderType, codecPrefer?: AVCodecType) {
+    super(context, type, codecPrefer)
     this.repository = AppStorage.get(Repository.REPOSITORY)!
   }
 

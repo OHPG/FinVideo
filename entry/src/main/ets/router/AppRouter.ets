@@ -1,64 +1,53 @@
-import { FinItem, FinItemType } from "@ohpg/fin-core";
-import { FinRepository, ProgressDialog } from "@ohpg/fin-framework";
-import { Repository } from "../data/Repository";
-import { PlayerArgs } from "../pages/player/PlayerArgs";
-import { AppMediaControl } from "../player/AppMediaControl";
+import { FinItem, FinItemType } from '@ohpg/fin-core'
+import { FinRepository, ProgressDialog } from '@ohpg/fin-framework'
+import { Repository } from '../data/Repository'
+import { PlayerArgs } from '../pages/player/PlayerArgs'
+import { AppMediaControl } from '../player/AppMediaControl'
 
-/**
- * @Author peerless2012
- * @Email peerless2012@126.com
- * @DateTime 2026/1/18 22:50
- * @Version V1.0
- * @Description
- */
 export class AppRouter {
 
-  /**
-   * 跳转到主页
-   * @param context
-   */
   public static goToHome(context: UIContext) {
-    context.getRouter().replaceUrl({url: "pages/home/HomePage"})
+    context.getRouter().replaceUrl({ url: 'pages/home/HomePage' })
   }
 
-  /**
-   * 跳转到播放页
-   * @param context
-   * @param args
-   */
-  public static async goToPlayer(context: UIContext, args: PlayerArgs) {
-    let appMediaControl: AppMediaControl = AppStorage.get(AppMediaControl.MEDIA_CONTROL)!
-    if (appMediaControl?.hasPlayerInstance()) {
-      context.getPromptAction().showToast({message: $r('app.string.global_operation_busy')})
-      return
-    }
-    let dialog = new ProgressDialog(context)
-    await dialog.show()
-    try {
-      let repository: Repository = AppStorage.get(FinRepository.REPOSITORY)!;
-      let itemDtoArray: Array<FinItem>;
-      let itemIndex: number = 0
-      if (args.type === FinItemType.Movie) {
-        let itemDto: FinItem = await repository.getMovie(args.id)
-        itemDtoArray = new Array()
-        itemDtoArray.push(itemDto)
-      } else if (args.type === FinItemType.Episode) {
-        let itemDto = await repository.getEpisode(args.id)
-        itemDtoArray = await repository.getEpisodes(itemDto.seasonId!, itemDto.seasonId!)
-        itemIndex = itemDtoArray.findIndex((item) => item.id === args.id)
-        itemIndex = itemIndex < 0 ? 0 : itemIndex
-      } else {
-        throw new Error("Unsupported type " + args.type)
+  public static async goToPlayer(context: UIContext, args?: PlayerArgs) {
+    if (args) {
+      let appMediaControl: AppMediaControl = AppStorage.get(AppMediaControl.MEDIA_CONTROL_KEY)!
+      if (appMediaControl?.hasPlayerInstance() && !appMediaControl.getPip()?.isInPiP()) {
+        context.getPromptAction().showToast({ message: $r('app.string.global_operation_busy') })
+        return
       }
-      appMediaControl.playAll(itemDtoArray, itemIndex)
-    } catch (e) {
-      context.getPromptAction().showToast({message: e["message"] || "加载出错。"})
-      throw e as Error
-    }
-    finally {
+      let dialog = new ProgressDialog(context)
+      await dialog.show()
+      let itemDtoArray: Array<FinItem>
+      let itemIndex: number = 0
+      try {
+        let repository: Repository = AppStorage.get(FinRepository.REPOSITORY)!
+        if (args.type === FinItemType.Movie) {
+          let itemDto: FinItem = await repository.getMovie(args.id)
+          itemDtoArray = new Array()
+          itemDtoArray.push(itemDto)
+        } else if (args.type === FinItemType.Episode) {
+          let itemDto = await repository.getEpisode(args.id)
+          itemDtoArray = await repository.getEpisodes(itemDto.seasonId!, itemDto.seasonId!)
+          itemIndex = itemDtoArray.findIndex((item) => item.id === args.id)
+          itemIndex = itemIndex < 0 ? 0 : itemIndex
+        } else {
+          throw new Error('Unsupported type ' + args.type)
+        }
+      } catch (e) {
+        context.getPromptAction().showToast({ message: (e as Error).message || '加载出错。' })
+        await dialog.dismiss(true)
+        return
+      }
       await dialog.dismiss(true)
+      if (!appMediaControl.playAll(itemDtoArray, itemIndex)) return
     }
-    context.getRouter().pushUrl({url: "pages/player/PlayerPage"})
+    context.getRouter().pushUrl({ url: 'pages/player/PlayerPage' })
+  }
+
+  public static goBack(context: UIContext) {
+    context.getRouter().back()
   }
 
 }

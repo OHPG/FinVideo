@@ -1,6 +1,7 @@
 import { preferences } from "@kit.ArkData"
 import { FinPageSize, FinSortBy, FinSortOrder } from "@ohpg/fin-core"
 import { avSession } from "@kit.AVSessionKit"
+import { RotationType } from "../enum/RotationType"
 
 /**
  * @Author peerless2012
@@ -26,6 +27,24 @@ export class AppPrefer {
   private static readonly KEY_PLAYER_FAST_REWIND = "player_fast_rewind"
 
   private static readonly KEY_PLAYER_HW_DECODE = "player_hw_decode"
+
+  private static readonly KEY_PLAYER_ROTATION = "player_rotation"
+
+  private static readonly KEY_GESTURE_DC_FR = "player_gesture_dc_fr"
+
+  private static readonly KEY_GESTURE_SL_VB = "player_gesture_sl_vb"
+
+  private static readonly KEY_GESTURE_GUIDE = "player_gesture_guide"
+
+  private static readonly KEY_AUTO_NEXT = "player_auto_next"
+
+  private static readonly KEY_AUTO_PIP = "player_auto_pip"
+
+  private static readonly KEY_CODEC_PREFER = "player_codec_prefer"
+
+  private static readonly KEY_AO_SPDIF = "player_spdif"
+
+  private static readonly KEY_HISTORY_ENABLE = "player_history_enable"
 
   private static readonly KEY_SORT_ORDER = "sort_order"
 
@@ -118,6 +137,106 @@ export class AppPrefer {
 
   public setHWDecode(hwDecode: boolean) {
     this.preference.putSync(AppPrefer.KEY_PLAYER_HW_DECODE, hwDecode)
+  }
+
+  public getPlayerRotation(): RotationType {
+    if (this.preference.hasSync(AppPrefer.KEY_PLAYER_ROTATION)) {
+      return this.preference.getSync(AppPrefer.KEY_PLAYER_ROTATION, 0) as number
+    }
+    return RotationType.FOLLOW_WINDOW
+  }
+
+  public setPlayerRotation(rotation: RotationType) {
+    this.preference.putSync(AppPrefer.KEY_PLAYER_ROTATION, rotation)
+  }
+
+  public getPlayerGestureDcFr(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_GESTURE_DC_FR)) {
+      return this.preference.getSync(AppPrefer.KEY_GESTURE_DC_FR, true) as boolean
+    }
+    return true
+  }
+
+  public setPlayerGestureDcFr(enabled: boolean) {
+    this.preference.putSync(AppPrefer.KEY_GESTURE_DC_FR, enabled)
+  }
+
+  public getPlayerGestureSlVb(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_GESTURE_SL_VB)) {
+      return this.preference.getSync(AppPrefer.KEY_GESTURE_SL_VB, true) as boolean
+    }
+    return true
+  }
+
+  public setPlayerGestureSlVb(enabled: boolean) {
+    this.preference.putSync(AppPrefer.KEY_GESTURE_SL_VB, enabled)
+  }
+
+  public isPlayerGestureGuideFinished(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_GESTURE_GUIDE)) {
+      return this.preference.getSync(AppPrefer.KEY_GESTURE_GUIDE, false) as boolean
+    }
+    return false
+  }
+
+  public setGestureGuideFinished(): void {
+    this.preference.putSync(AppPrefer.KEY_GESTURE_GUIDE, true)
+    this.preference.flush()
+  }
+
+  public getPlayerAutoNext(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_AUTO_NEXT)) {
+      return this.preference.getSync(AppPrefer.KEY_AUTO_NEXT, true) as boolean
+    }
+    return true
+  }
+
+  public setPlayerAutoNext(autoNext: boolean) {
+    this.preference.putSync(AppPrefer.KEY_AUTO_NEXT, autoNext)
+  }
+
+  public getPlayerAutoPip(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_AUTO_PIP)) {
+      return this.preference.getSync(AppPrefer.KEY_AUTO_PIP, false) as boolean
+    }
+    return false
+  }
+
+  public setPlayerAutoPip(autoPip: boolean) {
+    this.preference.putSync(AppPrefer.KEY_AUTO_PIP, autoPip)
+  }
+
+  public getCodecPrefer(): number {
+    if (this.preference.hasSync(AppPrefer.KEY_CODEC_PREFER)) {
+      return this.preference.getSync(AppPrefer.KEY_CODEC_PREFER, 1) as number
+    }
+    return 1
+  }
+
+  public setCodecPrefer(codec: number) {
+    this.preference.putSync(AppPrefer.KEY_CODEC_PREFER, codec)
+  }
+
+  public isAoSpdif(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_AO_SPDIF)) {
+      return this.preference.getSync(AppPrefer.KEY_AO_SPDIF, false) as boolean
+    }
+    return false
+  }
+
+  public setAoSpdif(spdif: boolean) {
+    this.preference.putSync(AppPrefer.KEY_AO_SPDIF, spdif)
+  }
+
+  public enableHistory(): boolean {
+    if (this.preference.hasSync(AppPrefer.KEY_HISTORY_ENABLE)) {
+      return this.preference.getSync(AppPrefer.KEY_HISTORY_ENABLE, true) as boolean
+    }
+    return true
+  }
+
+  public setHistoryEnable(enable: boolean) {
+    this.preference.putSync(AppPrefer.KEY_HISTORY_ENABLE, enable)
   }
 
   public getSortOrder(): FinSortOrder {

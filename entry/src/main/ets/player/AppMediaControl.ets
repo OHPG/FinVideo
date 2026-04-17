@@ -1,24 +1,21 @@
-import { FinItem, FinItemType } from "@ohpg/fin-core"
-import { AVPlayerConfig, MediaControl, avSessionExt } from "@ohpg/player"
-import { AppPrefer } from "../prefer/AppPrefer"
-import observer from '@ohos.arkui.observer';
-import { avSession } from "@kit.AVSessionKit";
-import { common } from "@kit.AbilityKit";
-import BuildProfile from 'BuildProfile';
-import { AppPlayer } from "./AppPlayer";
-import { Repository } from "../data/Repository";
-import { media } from "@kit.MediaKit";
+import { AVCodecType, AVPlayerConfig, MediaControl, MediaPip, avSessionExt } from '@ohpg/player'
+import { AppPrefer } from '../prefer/AppPrefer'
+import { AppPlayer } from './AppPlayer'
+import { FinItem, FinItemType } from '@ohpg/fin-core'
+import { Repository } from '../data/Repository'
+import { AppRouter } from '../router/AppRouter'
+import { avSession } from '@kit.AVSessionKit'
+import { common } from '@kit.AbilityKit'
+import { BusinessError } from '@kit.BasicServicesKit'
+import observer from '@ohos.arkui.observer'
+import BuildProfile from 'BuildProfile'
+import { media } from '@kit.MediaKit'
 
-/**
- * @Author peerless2012
- * @Email peerless2012@126.com
- * @DateTime 2026/3/17 11:52
- * @Version V1.0
- * @Description 
- */
 export class AppMediaControl {
 
-  public static readonly MEDIA_CONTROL = 'AppMediaControl'
+  public static readonly MEDIA_CONTROL_KEY = 'AppMediaControl'
+
+  public static readonly AV_CONTROL_KEY = 'MediaControl'
 
   private readonly context: UIContext
 
@@ -30,6 +27,8 @@ export class AppMediaControl {
 
   private mediaPlayer?: AppPlayer
 
+  private mediaPip?: MediaPip
+
   private mediaConfig?: AVPlayerConfig
 
   private avMetadata?: avSession.AVMetadata
@@ -37,8 +36,6 @@ export class AppMediaControl {
   private avMediaDescription?: avSession.AVMediaDescription
 
   private duration?: number
-
-  private state?: avSession.PlaybackState
 
   private progress?: number
 
@@ -48,32 +45,37 @@ export class AppMediaControl {
 
   private reportPosition?: number = undefined
 
+  /** replaceAndPlay 期间为 true，跳过 PiP 回调的路由操作
+   * TODO: FinPlayer SDK 更新后（MediaPip.stopPiP 内部已通过 stoppedByApi 跳过回调），移除此补丁及所有 suppressPipNav 相关逻辑
+   */
+  private suppressPipNav = false
+
   private routerCallback: Callback<observer.RouterPageInfo> = (pageInfo) => {
-    if (pageInfo.name !== "pages/player/PlayerPage") return
+    if (pageInfo.name !== 'pages/player/PlayerPage') return
     switch (pageInfo.state) {
-      case observer.RouterPageState.ABOUT_TO_APPEAR:
-        break
       case observer.RouterPageState.ABOUT_TO_DISAPPEAR:
         this.shouldResumePlay = false
         this.reportPlaybackStop()
         this.avMetadata = undefined
         this.avMediaDescription = undefined
         this.reportPosition = 0
-        this.destroyPlayer()
+        if (!this.mediaPip?.isInPiP() && !this.suppressPipNav) {
+          this.destroyPlayer()
+        }
         break
       case observer.RouterPageState.ON_PAGE_SHOW:
+        this.mediaPip?.restoreIfNeeded()
         if (this.shouldResumePlay) {
           this.mediaControl?.play()
         }
         this.shouldResumePlay = false
         break
       case observer.RouterPageState.ON_PAGE_HIDE:
+        if (this.mediaPip?.isActive()) return
         if (this.isPlaying() && !this.appPrefer.getPlayerBackPlay()) {
           this.mediaControl?.pause()
           this.shouldResumePlay = true
         }
-        break
-      case observer.RouterPageState.ON_BACK_PRESS:
         break
     }
   }
@@ -90,37 +92,36 @@ export class AppMediaControl {
   private playbackStateCallback: Callback<avSession.AVPlaybackState> = async (state) => {
     this.progress = state.position?.elapsedTime
     this.duration = state.duration
-    this.state = state.state
-    this.reportPlayback()
     switch (state.state) {
       case avSession.PlaybackState.PLAYBACK_STATE_PREPARE:
         this.duration = state.duration!
-        this.applyState()
+        await this.applyState()
         break
       case avSession.PlaybackState.PLAYBACK_STATE_PLAY:
-        // 在播放时，更新进度
         if (this.avMediaDescription) {
           this.avMediaDescription.startPosition = this.progress
         }
+        this.reportPlaybackUpdate(false)
         break
       case avSession.PlaybackState.PLAYBACK_STATE_PAUSE:
+        this.reportPlaybackUpdate(false)
         break
       case avSession.PlaybackState.PLAYBACK_STATE_COMPLETED:
         this.skipNextOrExit()
         break
       case avSession.PlaybackState.PLAYBACK_STATE_ERROR:
-        let error: BusinessError | undefined = state.extras?.["error"] as BusinessError;
+        let error: BusinessError | undefined = state.extras?.['error'] as BusinessError
         if (error) {
-          this.context.getPromptAction().showToast({message: "播放失败，" + error.code + "：" + error.message})
+          this.context.getPromptAction().showToast({ message: $r('app.string.player_error_with_code', error.code, error.message) })
         } else {
-          this.context.getPromptAction().showToast({message: "播放失败"})
+          this.context.getPromptAction().showToast({ message: $r('app.string.player_error_generic') })
         }
         break
     }
   }
 
-  private trackCallback: Callback<avSessionExt.AVTrackInfo> = (info) => {
-    // this.updateTrack(info)
+  private trackCallback: Callback<avSessionExt.AVTrackInfo> = (_info) => {
+    // reserved
   }
 
   private configCallback: Callback<void> = () => {
@@ -135,44 +136,74 @@ export class AppMediaControl {
   }
 
   private initPlayer() {
-    let vo = this.appPrefer!.getPlayerVo()
-    this.mediaPlayer = new AppPlayer(this.context.getHostContext()!, vo)
+    let vo = this.appPrefer.getPlayerVo()
+    this.mediaPlayer = new AppPlayer(
+      this.context.getHostContext()!,
+      vo,
+      this.appPrefer.getCodecPrefer() as AVCodecType
+    )
+
+    // 默认语言
+    this.mediaPlayer.setOptions('option', 'alang', 'zh')
+    this.mediaPlayer.setOptions('option', 'slang', 'zh')
+    // 字幕缩放模式
+    this.mediaPlayer.setOptions('option', 'sub-scale-by-window', 'true')
+    // 字幕大小
+    this.mediaPlayer.setOptions('option', 'sub-font-size', '60')
+    // 音频直通
+    this.mediaPlayer.setOptions('option', 'audio-spdif', this.appPrefer.isAoSpdif() ? 'ac3,eac3,dts-hd,truehd' : '')
+    // 解复用器缓冲
+    this.mediaPlayer.setOptions('option', 'demuxer-max-bytes', `${64 * 1024 * 1024}`)
+    this.mediaPlayer.setOptions('option', 'demuxer-max-back-bytes', `${32 * 1024 * 1024}`)
+    // 日志级别
+    this.mediaPlayer.setOptions('option', 'msg-level', `all=${BuildProfile.DEBUG ? 'debug' : 'warn'}`)
+
     this.mediaControl = new MediaControl(this.context.getHostContext()!, this.mediaPlayer)
     this.mediaControl.onPlaybackStateChange(this.playbackStateCallback)
     this.mediaControl.onMetadataChange(this.metadataCallback)
+    this.mediaControl.onTrackInfoChange(this.trackCallback)
+    this.mediaControl.setSkipInterval(this.appPrefer.getPlayerFastRewind(), this.appPrefer.getPlayerFastForward())
     this.mediaControl.queue.setMode(this.appPrefer.getPlayerLoopMode())
 
-    // log
-    this.mediaPlayer.setOptions('option', "terminal", "yes")
-    this.mediaPlayer.setOptions('option', "msg-level", "all=" + BuildProfile.DEBUG ? "debug" : "warn")
+    // 画中画
+    this.mediaPip = new MediaPip(this.context.getHostContext()!, this.mediaControl, (enter: boolean) => {
+      if (this.suppressPipNav) {
+        this.suppressPipNav = false
+        return
+      }
+      if (enter) {
+        AppRouter.goToPlayer(this.context)
+      } else {
+        AppRouter.goBack(this.context)
+      }
+    })
+    this.mediaPip.onClose(() => {
+      if (this.suppressPipNav) {
+        this.suppressPipNav = false
+        return
+      }
+      this.reportPlaybackStop()
+      this.destroyPlayer()
+    })
+    this.mediaPip.setAutoStartEnabled(this.appPrefer.getPlayerAutoPip())
 
-    // 默认语言
-    this.mediaPlayer.setOptions('option', "alang", "zh")
-    this.mediaPlayer.setOptions('option', "slang", "zh")
+    AppStorage.setOrCreate(AppMediaControl.AV_CONTROL_KEY, this.mediaControl)
 
-    // 字幕缩放模式
-    this.mediaPlayer.setOptions('option', "sub-scale-by-window", "true")
-    // 字幕大小
-    this.mediaPlayer.setOptions('option', "sub-font-size", "60")
-
-    // 防止切换媒体时花屏，但是会导致接收不到结束的回调。
-    // this.mediaPlayer.setOptions("property", "keep-open", true)
-    this.mediaPlayer.setOptions('option', "demuxer-max-bytes", `${64 * 1024 * 1024}`)
-    this.mediaPlayer.setOptions('option', "demuxer-max-back-bytes", `${32 * 1024 * 1024}`)
     this.mediaConfig = {
       loopMode: this.appPrefer.getPlayerLoopMode(),
       backgroundPlay: this.appPrefer.getPlayerBackPlay(),
       forwardStep: this.appPrefer.getPlayerFastForward(),
       backwardStep: this.appPrefer.getPlayerFastRewind(),
+      gestureConfig: {
+        dcForFR: this.appPrefer.getPlayerGestureDcFr(),
+        slForVB: this.appPrefer.getPlayerGestureSlVb()
+      },
       callback: this.configCallback
     }
   }
 
-  /**
-   * 重置
-   * @returns
-   */
   public async destroyPlayer(): Promise<void> {
+    AppStorage.delete(AppMediaControl.AV_CONTROL_KEY)
     try {
       this.mediaControl?.offMetadataChange(this.metadataCallback)
       this.mediaControl?.offPlaybackStateChange(this.playbackStateCallback)
@@ -181,18 +212,27 @@ export class AppMediaControl {
       await this.mediaControl?.release()
     } catch (e) {
       if (BuildProfile.DEBUG) {
-        console.error("AppPlayer destroy control " + JSON.stringify(e))
+        console.error('AppMediaControl destroy control ' + JSON.stringify(e))
       }
     } finally {
       this.mediaControl = undefined
     }
-
+    try {
+      await this.mediaPip?.reset()
+      await this.mediaPip?.release()
+    } catch (e) {
+      if (BuildProfile.DEBUG) {
+        console.error('AppMediaControl destroy pip ' + JSON.stringify(e))
+      }
+    } finally {
+      this.mediaPip = undefined
+    }
     try {
       await this.mediaPlayer?.reset()
       await this.mediaPlayer?.release()
     } catch (e) {
       if (BuildProfile.DEBUG) {
-        console.error("AppPlayer destroy player " + JSON.stringify(e))
+        console.error('AppMediaControl destroy player ' + JSON.stringify(e))
       }
     } finally {
       this.mediaPlayer = undefined
@@ -200,7 +240,6 @@ export class AppMediaControl {
   }
 
   private async applyState() {
-    // 有历史记录，并且未完成
     await this.applySub()
     if (this.avMediaDescription?.startPosition && this.duration
       && this.duration - this.avMediaDescription.startPosition > 1000) {
@@ -239,14 +278,67 @@ export class AppMediaControl {
     return this.mediaConfig
   }
 
-  public async playAll(items: Array<FinItem>, index: number = 0): Promise<void> {
+  public getPip(): MediaPip | undefined {
+    return this.mediaPip
+  }
+
+  /**
+   * 播放列表
+   * @returns true=可以播放，false=繁忙
+   */
+  public playAll(items: Array<FinItem>, index: number = 0): boolean {
+    if (this.mediaPlayer) {
+      if (this.mediaPip?.isInPiP()) {
+        this.replaceAndPlay(items, index)
+        return true
+      }
+      return false
+    }
     this.initPlayer()
-    // 构造列表
+    this.startPlay(items, index)
+    return true
+  }
+
+  private async startPlay(items: Array<FinItem>, index: number): Promise<void> {
+    let queueItemArray = this.buildQueueItems(items)
+    try {
+      await this.mediaControl!.session.setQueueItems(queueItemArray)
+      await this.mediaControl!.playItem(items[index].id)
+    } catch (e) {
+      if (BuildProfile.DEBUG) {
+        console.error('AppMediaControl startPlay ' + JSON.stringify(e))
+      }
+    }
+  }
+
+  private async replaceAndPlay(items: Array<FinItem>, index: number): Promise<void> {
+    this.suppressPipNav = true
+    this.reportPlaybackStop()
+    try {
+      await this.mediaControl!.stop()
+      let queueItemArray = this.buildQueueItems(items)
+      await this.mediaControl!.setQueueItems(queueItemArray)
+      await this.mediaControl!.playItem(items[index].id)
+    } catch (e) {
+      if (BuildProfile.DEBUG) {
+        console.error('AppMediaControl replaceAndPlay ' + JSON.stringify(e))
+      }
+    }
+    try {
+      await this.mediaPip?.stopPiP()
+    } catch (e) {
+      if (BuildProfile.DEBUG) {
+        console.error('AppMediaControl stopPiP ' + JSON.stringify(e))
+      }
+    }
+  }
+
+  private buildQueueItems(items: Array<FinItem>): Array<avSession.AVQueueItem> {
     let queueItemArray = new Array<avSession.AVQueueItem>()
-    items.forEach((item, index) => {
+    items.forEach((item: FinItem, i: number) => {
       let extra: Record<string, Object> = {}
       queueItemArray.push({
-        itemId: index,
+        itemId: i,
         description: {
           assetId: item.id,
           title: item.name,
@@ -254,42 +346,31 @@ export class AppMediaControl {
           mediaUri: item.id,
           mediaImage: item.type === FinItemType.Episode
             ? item.image?.primary : item.image?.backdrop,
-          mediaType: "video",
+          mediaType: 'video',
           startPosition: item.data?.playedPositionTicks,
           duration: item.runtimeTicks,
           extras: extra
         }
       })
     })
-    try {
-      await this.mediaControl!.session.setQueueItems(queueItemArray)
-      await this.mediaControl!.playItem(items[index].id)
-    } catch (e) {
-      console.error("xxx: " + JSON.stringify(e))
-    }
+    return queueItemArray
   }
 
   private skipNextOrExit() {
     if (!this.mediaControl) return
-    // 单曲循环，需要重新跳转到片头并播放
     if (this.mediaControl.queue.getMode() === avSession.LoopMode.LOOP_MODE_SINGLE) {
       this.mediaControl.seek(0)
       this.mediaControl.play()
       return
     }
-    // 上报停止播放状态
     this.reportPlaybackStop()
-
-    if (this.mediaControl.queue.canSkipNext()) {
+    if (this.appPrefer.getPlayerAutoNext() && this.mediaControl.queue.canSkipNext()) {
       this.mediaControl.next()
     } else {
       this.context.getRouter().back()
     }
   }
 
-  /**
-   * 更新配置
-   */
   public updateConfig() {
     if (!this.mediaConfig) return
     if (this.mediaConfig.backgroundPlay !== undefined) {
@@ -303,101 +384,32 @@ export class AppMediaControl {
 
   private reportPlaybackStart() {
     if (!this.mediaControl || !this.avMetadata) return
-    if (BuildProfile.DEBUG) {
-      console.log("AppMediaControl: reportPlaybackStart " + this.avMetadata.assetId)
-    }
     this.reportingPlayback = true
     this.repository.onPlaybackStart(this.avMetadata.assetId)
-      .then(() => {
-        this.reportingPlayback = false
-        if (BuildProfile.DEBUG) {
-          console.log("AppMediaControl: reportPlaybackStart success.")
-        }
-      })
-      .catch((error: Error) => {
-        this.reportingPlayback = false
-        if (BuildProfile.DEBUG) {
-          console.warn("AppMediaControl: reportPlaybackStart fail " + JSON.stringify(error))
-        }
-      })
+      .then(() => { this.reportingPlayback = false })
+      .catch((_e: Error) => { this.reportingPlayback = false })
   }
 
-  private lastState?: avSession.PlaybackState
-
-  private reportPlayback() {
-    let stateChanged = this.state !== this.lastState
-    this.lastState = this.state
-    switch (this.state) {
-      case avSession.PlaybackState.PLAYBACK_STATE_PREPARE:
-        this.reportPlaybackStart()
-        break
-      case avSession.PlaybackState.PLAYBACK_STATE_PLAY:
-        this.reportPlaybackUpdate(stateChanged)
-        break
-      case avSession.PlaybackState.PLAYBACK_STATE_PAUSE:
-        this.reportPlaybackUpdate(stateChanged)
-        break
-      case avSession.PlaybackState.PLAYBACK_STATE_STOP:
-      case avSession.PlaybackState.PLAYBACK_STATE_COMPLETED:
-      case avSession.PlaybackState.PLAYBACK_STATE_ERROR:
-        this.reportPlaybackStop()
-        break
-    }
-  }
-
-  private reportPlaybackUpdate(force?: boolean) {
+  private reportPlaybackUpdate(force: boolean) {
     if (!this.mediaControl || !this.avMetadata || !this.progress) return
-    if (!force && Math.abs(this.progress - (this.reportPosition || 0)) < 5000) {
-      return
-    }
+    if (!force && Math.abs(this.progress - (this.reportPosition || 0)) < 5000) return
     this.reportingPlayback = true
     this.reportPosition = this.progress
-    if (BuildProfile.DEBUG) {
-      console.log("AppMediaControl: reportPlaybackUpdate " + this.avMetadata.assetId
-        + ", position = " + this.reportPosition + ", playing = " + this.mediaControl.isPlaying())
-    }
-    this.repository.onPlaybackProgress(this.avMetadata.assetId, this.reportPosition, this.mediaControl?.isPlaying())
-      .then(() => {
-        this.reportingPlayback = false
-        if (BuildProfile.DEBUG) {
-          console.log("AppMediaControl: reportPlaybackUpdate success.")
-        }
-      })
-      .catch((error: Error) => {
-        this.reportingPlayback = false
-        if (BuildProfile.DEBUG) {
-          console.warn("AppMediaControl: reportPlaybackUpdate fail " + JSON.stringify(error))
-        }
-      })
+    this.repository.onPlaybackProgress(this.avMetadata.assetId, this.reportPosition, this.mediaControl.isPlaying())
+      .then(() => { this.reportingPlayback = false })
+      .catch((_e: Error) => { this.reportingPlayback = false })
   }
 
   private reportPlaybackStop() {
     if (!this.mediaControl || !this.avMetadata) return
     this.reportingPlayback = true
-    if (BuildProfile.DEBUG) {
-      console.log("AppMediaControl: reportPlaybackStop " + this.avMetadata.assetId)
-    }
     this.repository.onPlaybackStopped(this.avMetadata.assetId, this.reportPosition || 0)
-      .then(() => {
-        this.reportingPlayback = false
-        if (BuildProfile.DEBUG) {
-          console.log("AppMediaControl: reportPlaybackStop success.")
-        }
-      })
-      .catch((error: Error) => {
-        this.reportingPlayback = false
-        if (BuildProfile.DEBUG) {
-          console.warn("AppMediaControl: reportPlaybackStop fail " + JSON.stringify(error))
-        }
-      })
+      .then(() => { this.reportingPlayback = false })
+      .catch((_e: Error) => { this.reportingPlayback = false })
   }
 
-  /**
-   * 释放资源
-   * @returns
-   */
   public async release(): Promise<void> {
-    observer.off("routerPageUpdate", this.context.getHostContext() as common.UIAbilityContext, this.routerCallback)
+    observer.off('routerPageUpdate', this.context.getHostContext() as common.UIAbilityContext, this.routerCallback)
   }
 
 }

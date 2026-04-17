@@ -1,64 +1,133 @@
 import { display, window } from '@kit.ArkUI'
+import { deviceInfo } from '@kit.BasicServicesKit'
+import { KeyCode } from '@kit.InputKit'
+import { AVOrientation, AVPlayerView, MediaControl } from '@ohpg/player'
 import { DeviceUtil } from '@ohpg/fin-framework'
 import { AvoidAreaSystem } from '@ohpg/fin-core'
 import { CommonConstants } from '../common/CommonConstants'
-import { deviceInfo } from '@kit.BasicServicesKit'
-import { KeyCode } from '@kit.InputKit'
-import { AVPlayerView } from '@ohpg/player'
 import { AppMediaControl } from '../../player/AppMediaControl'
+import { AppPrefer } from '../../prefer/AppPrefer'
+import { RotationType } from '../../enum/RotationType'
+import { avSession } from '@kit.AVSessionKit'
+import { GestureGuide } from '../../widget/comp/GestureGuide'
 
 @Entry
 @Component
 struct PlayerPage {
-  
-  private currenWindow = AppStorage.get<window.Window>(AvoidAreaSystem.CURRENT_WINDOW)!
 
-  private readonly appMediaControl: AppMediaControl = AppStorage.get(AppMediaControl.MEDIA_CONTROL)!
+  private avControl?: MediaControl
+
+  private readonly currentWindow = AppStorage.get<window.Window>(AvoidAreaSystem.CURRENT_WINDOW)!
+
+  private appMediaControl?: AppMediaControl
+
+  @StorageLink('prefer') appPrefer?: AppPrefer = undefined
 
   private windowStatusCallback?: Callback<WindowStatusType> = undefined
 
-  private preferOrientation?: number
+  @StorageProp('currentAvoidArea') avoidArea?: window.AvoidArea = undefined
 
-  @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
+  private avOrientation?: AVOrientation
+
+  private prepared: boolean = false
 
   private keyEventSet: Set<Callback<KeyEvent, boolean>> = new Set()
 
+  @State gestureGuideFinished: boolean = false
+
+  private stateChangeCallback: Callback<avSession.AVPlaybackState> = (state) => {
+    this.updatePlaybackState(state)
+  }
+
   aboutToAppear(): void {
-    DeviceUtil.restoreUserBrightness()
-    let orientation = display.getDefaultDisplaySync().orientation
-    if (orientation == display.Orientation.LANDSCAPE
-      || orientation === display.Orientation.LANDSCAPE_INVERTED) {
-      this.preferOrientation = undefined
-    } else {
-      this.preferOrientation = this.currenWindow.getPreferredOrientation()
-      this.currenWindow.setPreferredOrientation(window.Orientation.AUTO_ROTATION_LANDSCAPE)
+    this.avControl = AppStorage.get<MediaControl>(AppMediaControl.AV_CONTROL_KEY)
+    this.appMediaControl = AppStorage.get<AppMediaControl>(AppMediaControl.MEDIA_CONTROL_KEY)
+
+    this.gestureGuideFinished = (this.appPrefer?.isPlayerGestureGuideFinished() ?? false)
+      || deviceInfo.deviceType === 'tv'
+
+    this.avOrientation = new AVOrientation(this.currentWindow)
+    this.avOrientation.save()
+
+    let userRotation = this.appPrefer?.getPlayerRotation()
+    if (userRotation === RotationType.FORCE_PORTRAIT) {
+      this.avOrientation.setOrientation(display.Orientation.PORTRAIT)
+    } else if (userRotation === RotationType.FORCE_LANDSCAPE) {
+      this.avOrientation.setOrientation(display.Orientation.LANDSCAPE)
+    } else if (userRotation === RotationType.FOLLOW_VIDEO) {
+      this.updateWindowOrientation()
     }
-    if (deviceInfo.deviceType === "2in1") {
+
+    if (deviceInfo.deviceType === '2in1') {
       this.update2in1Window()
-      this.windowStatusCallback = (type) => {
+      this.windowStatusCallback = (_type) => {
         this.update2in1Window()
       }
-      this.currenWindow.on("windowStatusChange", this.windowStatusCallback)
+      this.currentWindow.on('windowStatusChange', this.windowStatusCallback)
+    }
+
+    let state = this.avControl?.getPlaybackState()
+    if (state) {
+      this.updatePlaybackState(state)
+    }
+    this.avControl?.onPlaybackStateChange(this.stateChangeCallback)
+
+    DeviceUtil.restoreUserBrightness()
+  }
+
+  private updatePlaybackState(state: avSession.AVPlaybackState) {
+    let prepared = state.state
+      && state.state >= avSession.PlaybackState.PLAYBACK_STATE_PREPARE
+      && state.state <= avSession.PlaybackState.PLAYBACK_STATE_REWIND
+      ? true : false
+    if (this.prepared !== prepared) {
+      this.prepared = prepared
+      if (this.prepared) {
+        this.updateWindowOrientation()
+      }
     }
   }
 
-  /**
-   * 只有2合一才支持此共功能。
-   */
   private update2in1Window() {
-    if (deviceInfo.deviceType !== "2in1") return
-    if (this.currenWindow.getWindowStatus() === window.WindowStatusType.MAXIMIZE) {
-      this.currenWindow.maximize(window.MaximizePresentation.ENTER_IMMERSIVE)
+    if (deviceInfo.deviceType !== '2in1') return
+    if (this.currentWindow.getWindowStatus() === window.WindowStatusType.MAXIMIZE) {
+      this.currentWindow.maximize(window.MaximizePresentation.ENTER_IMMERSIVE)
+    }
+  }
+
+  private updateWindowOrientation() {
+    let userRotation = this.appPrefer?.getPlayerRotation()
+    if (userRotation !== RotationType.FOLLOW_VIDEO) return
+    if (!this.avControl?.isPrepared()) return
+    let width = this.avControl?.getWidth()
+    let height = this.avControl?.getHeight()
+    if (width && height) {
+      if (width > height) {
+        this.avOrientation?.setOrientation(display.Orientation.LANDSCAPE)
+      } else {
+        this.avOrientation?.setOrientation(display.Orientation.PORTRAIT)
+      }
     }
   }
 
   build() {
     Stack() {
       AVPlayerView({
-        control: this.appMediaControl.getMediaControl(),
-        config: this.appMediaControl.getPlayerConfig(),
+        control: this.avControl,
+        pip: this.appMediaControl?.getPip(),
+        config: this.appMediaControl?.getPlayerConfig(),
         keyEvent: this.keyEventSet
       })
+
+      Stack() {
+        GestureGuide({ callback: () => {
+          this.gestureGuideFinished = true
+          this.appPrefer?.setGestureGuideFinished()
+        }})
+      }
+      .visibility(this.gestureGuideFinished ? Visibility.None : Visibility.Visible)
+      .width(CommonConstants.FULL_PERCENT)
+      .height(CommonConstants.FULL_PERCENT)
     }
     .onKeyEvent((event): Boolean => {
       return this.onPageKeyEvent(event)
@@ -75,29 +144,33 @@ struct PlayerPage {
     }
     if (event.type == KeyType.Up) {
       if (event.keyCode === KeyCode.KEYCODE_ESCAPE) {
-        let windowStatus = this.currenWindow.getWindowStatus()
+        let windowStatus = this.currentWindow.getWindowStatus()
         if (windowStatus === window.WindowStatusType.FULL_SCREEN) {
-          this.currenWindow.recover()
-        } else {
-          // ignore
+          this.currentWindow.recover()
         }
       } else if (event.keyCode === KeyCode.KEYCODE_ENTER) {
-        if (deviceInfo.deviceType === "2in1") {
-          this.currenWindow.maximize(window.MaximizePresentation.ENTER_IMMERSIVE)
+        if (deviceInfo.deviceType === '2in1') {
+          this.currentWindow.maximize(window.MaximizePresentation.ENTER_IMMERSIVE)
         }
       }
     }
     return event.keyCode === KeyCode.KEYCODE_ESCAPE || event.keyCode === KeyCode.KEYCODE_ENTER
   }
 
+  onBackPress(): boolean | void {
+    if (!this.gestureGuideFinished) {
+      return true
+    }
+    return false
+  }
+
   aboutToDisappear(): void {
-    this.keyEventSet.clear()
+    this.avControl?.offPlaybackStateChange(this.stateChangeCallback)
     if (this.windowStatusCallback) {
-      this.currenWindow.off("windowStatusChange", this.windowStatusCallback)
+      this.currentWindow.off('windowStatusChange', this.windowStatusCallback)
     }
-    if (this.preferOrientation !== undefined) {
-      this.currenWindow.setPreferredOrientation(this.preferOrientation)
-    }
+    this.keyEventSet.clear()
+    this.avOrientation?.restore()
     DeviceUtil.restoreDefaultBrightness(getContext())
   }
 
