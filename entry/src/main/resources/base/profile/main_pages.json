@@ -5,6 +5,7 @@
     "pages/detail/movie/MoviePage",
     "pages/detail/show/ShowPage",
     "pages/detail/show/season/ShowSeasonPage",
+    "pages/detail/person/PersonPage",
     "pages/media/MediaListPage",
     "pages/favourite/FavouriteListPage",
     "pages/player/PlayerPage",

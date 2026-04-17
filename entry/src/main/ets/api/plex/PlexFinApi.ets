@@ -460,6 +460,11 @@ export class PlexFinApi implements FinVideoApi {
     return result
   }
 
+  async getPersonItems(_personId: string): Promise<FinItem[]> {
+    // Plex 不支持按 personId 查询相关作品
+    return []
+  }
+
   async markFavoriteItem(id: string): Promise<void> {
     // Plex does not have a favorites API
   }

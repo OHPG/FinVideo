@@ -112,6 +112,13 @@ export interface FinVideoApi extends FinApi {
   search(keyword: string): Promise<Array<FinItem>>
 
   /**
+   * 获取演职人员相关作品
+   * @param personId
+   * @returns
+   */
+  getPersonItems(personId: string): Promise<Array<FinItem>>
+
+  /**
    * 播放开始
    * @param id
    * @returns

@@ -379,6 +379,18 @@
     {
       "name": "gesture_guide_finish",
       "value": "我知道了"
+    },
+    {
+      "name": "person_related_works",
+      "value": "相关作品"
+    },
+    {
+      "name": "person_type_movie",
+      "value": "电影"
+    },
+    {
+      "name": "person_type_series",
+      "value": "剧集"
     }
   ]
 }

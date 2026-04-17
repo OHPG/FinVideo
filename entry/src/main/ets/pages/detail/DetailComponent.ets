@@ -335,6 +335,11 @@ struct PersonItem {
     .alignItems(HorizontalAlign.Start)
     .width(120)
     .height(220)
+    .onClick(() => {
+      if (this.item) {
+        AppRouter.goToPersonDetail(this.getUIContext(), this.item)
+      }
+    })
   }
 
 }

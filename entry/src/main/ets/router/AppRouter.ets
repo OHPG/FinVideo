@@ -1,8 +1,9 @@
-import { FinItem, FinItemType } from '@ohpg/fin-core'
+import { FinItem, FinItemType, FinPerson } from '@ohpg/fin-core'
 import { FinRepository, ProgressDialog } from '@ohpg/fin-framework'
 import { Repository } from '../data/Repository'
 import { PlayerArgs } from '../pages/player/PlayerArgs'
 import { AppMediaControl } from '../player/AppMediaControl'
+import { PersonArgs } from '../pages/detail/person/PersonArgs'
 
 export class AppRouter {
 
@@ -44,6 +45,16 @@ export class AppRouter {
       if (!appMediaControl.playAll(itemDtoArray, itemIndex)) return
     }
     context.getRouter().pushUrl({ url: 'pages/player/PlayerPage' })
+  }
+
+  public static goToPersonDetail(context: UIContext, person: FinPerson) {
+    let args: PersonArgs = {
+      id: person.id,
+      name: person.name,
+      role: person.role,
+      image: person.image?.primary
+    }
+    context.getRouter().pushUrl({ url: 'pages/detail/person/PersonPage', params: args })
   }
 
   public static goBack(context: UIContext) {
