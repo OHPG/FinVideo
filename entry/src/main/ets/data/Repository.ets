@@ -163,6 +163,15 @@ export class Repository extends FinRepository {
   }
 
   /**
+   * 获取演职人员详情
+   * @param personId
+   * @returns
+   */
+  public getPersonDetail(personId: string): Promise<FinItem> {
+    return this.requireApi().getPersonDetail(personId)
+  }
+
+  /**
    * 获取媒体的用户数据
    * @param id
    * @returns

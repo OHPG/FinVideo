@@ -391,6 +391,18 @@
     {
       "name": "person_type_series",
       "value": "剧集"
+    },
+    {
+      "name": "person_no_works",
+      "value": "暂无相关作品"
+    },
+    {
+      "name": "person_movies",
+      "value": "电影"
+    },
+    {
+      "name": "person_series",
+      "value": "剧集"
     }
   ]
 }

@@ -1,14 +1,10 @@
 import { window } from '@kit.ArkUI'
-import { BreakpointSystem, FinItem, FinItemType } from '@ohpg/fin-core'
+import { BreakpointSystem, FinItem } from '@ohpg/fin-core'
 import { ScrollRefreshView, ToolBar } from '@ohpg/fin-framework'
 import { CommonConstants } from '../../common/CommonConstants'
 import { MediaRouter } from '../../common/MediaRouter'
-import { AppRouter } from '../../../router/AppRouter'
-import { PlayerArgs } from '../../player/PlayerArgs'
 import { PersonArgs } from './PersonArgs'
 import { PersonData, PersonViewModel } from './PersonViewModel'
-import LazyDataSource from '../../common/LazyDataSource'
-import { ObservedArray } from '../../common/ObservedArray'
 
 @Entry
 @Component
@@ -23,83 +19,133 @@ struct PersonPage {
 
   private viewModel = new PersonViewModel(getContext(), this.args)
 
-  private itemDataSource: LazyDataSource<FinItem> = new LazyDataSource()
-
   private isPad(): boolean {
     return this.currentWidthBreakpoint >= WidthBreakpoint.WIDTH_MD
   }
 
   @Builder
   personContent(data?: PersonData) {
-    Column({ space: CommonConstants.SPACE_12 }) {
-      // 头像 + 信息
-      Row({ space: CommonConstants.SPACE_16 }) {
-        Image(data?.args.image)
-          .alt($r('app.media.alt'))
-          .objectFit(ImageFit.Cover)
-          .autoResize(true)
-          .width(120)
-          .height(180)
-          .borderRadius($r('app.float.lg_border_radius'))
+    Column() {
+      // 顶部头像区域 - 大图居中展示
+      this.heroSection(data)
 
-        Column({ space: CommonConstants.SPACE_8 }) {
-          Text(data?.args.name)
-            .fontSize($r('sys.float.Title_M'))
-            .fontWeight(FontWeight.Bold)
-            .maxLines(2)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-
-          Text(data?.args.role)
-            .fontSize($r('sys.float.Body_S'))
-            .fontColor($r('sys.color.font_secondary'))
-            .maxLines(1)
-            .visibility(data?.args.role ? Visibility.Visible : Visibility.None)
+      // 分类作品区域
+      Column({ space: CommonConstants.SPACE_16 }) {
+        // 电影分类
+        if (data?.movies && data.movies.length > 0) {
+          this.worksSection($r('app.string.person_movies'), data.movies)
         }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Start)
-        .justifyContent(FlexAlign.Center)
+
+        // 剧集分类
+        if (data?.series && data.series.length > 0) {
+          this.worksSection($r('app.string.person_series'), data.series)
+        }
+
+        // 无作品提示
+        if ((!data?.movies || data.movies.length === 0) && (!data?.series || data.series.length === 0)) {
+          Column() {
+            Text($r('app.string.person_no_works'))
+              .fontSize($r('sys.float.Body_L'))
+              .fontColor($r('sys.color.font_tertiary'))
+          }
+          .width(CommonConstants.FULL_PERCENT)
+          .height(120)
+          .justifyContent(FlexAlign.Center)
+        }
       }
-      .width(CommonConstants.FULL_PERCENT)
       .padding({
-        left: CommonConstants.SPACE_16,
-        right: CommonConstants.SPACE_16,
-        top: CommonConstants.SPACE_16
+        top: CommonConstants.SPACE_4,
+        bottom: px2vp(this.avoidArea?.bottomRect.height) + CommonConstants.SPACE_16
       })
-
-      // 相关作品标题
-      Text($r('app.string.person_related_works'))
-        .fontSize($r('sys.float.Title_S'))
-        .fontWeight(FontWeight.Bold)
-        .padding({ left: CommonConstants.SPACE_16, right: CommonConstants.SPACE_16 })
-        .visibility(data?.items && data.items.length > 0 ? Visibility.Visible : Visibility.None)
-
-      // 作品列表
-      this.itemGrid(data)
+      .width(CommonConstants.FULL_PERCENT)
     }
-    .padding({ bottom: px2vp(this.avoidArea?.bottomRect.height) })
     .width(CommonConstants.FULL_PERCENT)
     .alignItems(HorizontalAlign.Start)
   }
 
   @Builder
-  itemGrid(data?: PersonData) {
-    Column() {
+  heroSection(data?: PersonData) {
+    Column({ space: CommonConstants.SPACE_12 }) {
+      // 头像 - 居中大图
+      Image(data?.args.image)
+        .alt($r('app.media.alt'))
+        .objectFit(ImageFit.Cover)
+        .autoResize(true)
+        .width(this.isPad() ? 200 : 160)
+        .aspectRatio(0.75)
+        .borderRadius($r('app.float.lg_border_radius'))
+        .shadow({
+          radius: 20,
+          color: '#40000000',
+          offsetY: 8
+        })
+
+      // 名字
+      Text(data?.args.name)
+        .fontSize($r('sys.float.Title_L'))
+        .fontWeight(FontWeight.Bold)
+        .textAlign(TextAlign.Center)
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+      // 角色
+      Text(data?.args.role)
+        .fontSize($r('sys.float.Body_M'))
+        .fontColor($r('sys.color.font_secondary'))
+        .textAlign(TextAlign.Center)
+        .maxLines(1)
+        .visibility(data?.args.role ? Visibility.Visible : Visibility.None)
+
+      // 简介
+      Text(data?.overview)
+        .fontSize($r('sys.float.Body_M'))
+        .fontColor($r('sys.color.font_secondary'))
+        .maxLines(4)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .visibility(data?.overview ? Visibility.Visible : Visibility.None)
+    }
+    .width(CommonConstants.FULL_PERCENT)
+    .alignItems(HorizontalAlign.Center)
+    .padding({
+      left: CommonConstants.SPACE_16,
+      right: CommonConstants.SPACE_16,
+      top: px2vp(this.avoidArea?.topRect.height) + CommonConstants.SPACE_16,
+      bottom: CommonConstants.SPACE_8
+    })
+  }
+
+  @Builder
+  worksSection(title: ResourceStr, items: Array<FinItem>) {
+    Column({ space: CommonConstants.SPACE_12 }) {
+      // 分类标题
+      Row({ space: CommonConstants.SPACE_8 }) {
+        Text(title)
+          .fontSize($r('sys.float.Title_S'))
+          .fontWeight(FontWeight.Bold)
+
+        Text(items.length.toString())
+          .fontSize($r('sys.float.Body_S'))
+          .fontColor($r('sys.color.font_tertiary'))
+      }
+      .padding({ left: CommonConstants.SPACE_16, right: CommonConstants.SPACE_16 })
+
+      // 海报网格 - 横向滚动
       List({ space: CommonConstants.SPACE_12 }) {
-        LazyForEach(this.itemDataSource, (item: FinItem) => {
+        ForEach(items, (item: FinItem) => {
           ListItem() {
-            PersonMediaItem({ item: item })
+            PersonWorkCard({ item: item })
           }
         })
       }
-      .width(CommonConstants.FULL_PERCENT)
+      .listDirection(Axis.Horizontal)
+      .scrollBar(BarState.Off)
       .contentStartOffset(CommonConstants.SPACE_16)
       .contentEndOffset(CommonConstants.SPACE_16)
-      .scrollBar(BarState.Off)
-      .lanes(this.isPad() ? 2 : 1)
+      .width(CommonConstants.FULL_PERCENT)
+      .height(this.isPad() ? 280 : 240)
     }
+    .alignItems(HorizontalAlign.Start)
     .width(CommonConstants.FULL_PERCENT)
-    .layoutWeight(1)
-    .visibility(data?.items && data.items.length > 0 ? Visibility.Visible : Visibility.None)
   }
 
   build() {
@@ -107,11 +153,7 @@ struct PersonPage {
       ScrollRefreshView({
         source: this.viewModel,
         itemLayout: (info: ESObject) => {
-          let data = info as PersonData
-          if (data?.items) {
-            this.itemDataSource.pushArrayData(new ObservedArray<FinItem>(data.items))
-          }
-          this.personContent(data)
+          this.personContent(info as PersonData)
         }
       })
 
@@ -126,7 +168,7 @@ struct PersonPage {
 
 @Reusable
 @Component
-struct PersonMediaItem {
+struct PersonWorkCard {
 
   @Require @State item?: FinItem = undefined
 
@@ -135,73 +177,33 @@ struct PersonMediaItem {
   }
 
   build() {
-    Row({ space: CommonConstants.SPACE_12 }) {
-      Image(this.item?.image?.primary)
-        .alt($r('app.media.alt'))
-        .objectFit(ImageFit.Cover)
-        .autoResize(true)
-        .width(80)
-        .aspectRatio(CommonConstants.ITEM_RATIO)
-        .borderRadius($r('app.float.sm_border_radius'))
-
-      Column({ space: CommonConstants.SPACE_4 }) {
-        Text(this.item?.name)
-          .fontSize($r('sys.float.Body_L'))
-          .fontWeight(FontWeight.Medium)
-          .maxLines(2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-
-        Row({ space: CommonConstants.SPACE_8 }) {
-          Text(this.item?.productionYear)
-            .fontSize($r('sys.float.Body_S'))
-            .fontColor($r('sys.color.font_secondary'))
-            .visibility(this.item?.productionYear ? Visibility.Visible : Visibility.None)
-
-          Text(this.item?.type === FinItemType.Movie
-            ? $r('app.string.person_type_movie')
-            : $r('app.string.person_type_series'))
-            .fontSize($r('sys.float.Body_S'))
-            .fontColor($r('sys.color.font_tertiary'))
-        }
-
-        Text(this.item?.overview)
-          .fontSize($r('sys.float.Caption_M'))
-          .fontColor($r('sys.color.font_secondary'))
-          .maxLines(2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .visibility(this.item?.overview ? Visibility.Visible : Visibility.None)
+    Column({ space: CommonConstants.SPACE_4 }) {
+      Stack() {
+        Image(this.item?.image?.primary)
+          .alt($r('app.media.alt'))
+          .objectFit(ImageFit.Cover)
+          .autoResize(true)
+          .width(CommonConstants.ITEM_WIDTH)
+          .aspectRatio(CommonConstants.ITEM_RATIO)
+          .borderRadius($r('app.float.md_border_radius'))
       }
-      .layoutWeight(1)
-      .alignItems(HorizontalAlign.Start)
-      .justifyContent(FlexAlign.Center)
 
-      // 电影直接显示播放按钮
-      Button({ type: ButtonType.Circle }) {
-        SymbolGlyph($r('sys.symbol.play_fill'))
-          .fontColor([$r('sys.color.font_on_primary')])
-          .fontSize($r('sys.float.Body_L'))
-      }
-      .width(36)
-      .height(36)
-      .visibility(this.item?.type === FinItemType.Movie ? Visibility.Visible : Visibility.None)
-      .onClick(() => {
-        if (this.item) {
-          let args: PlayerArgs = {
-            id: this.item.id,
-            name: this.item.name,
-            type: this.item.type!
-          }
-          AppRouter.goToPlayer(this.getUIContext(), args)
-        }
-      })
+      // 标题
+      Text(this.item?.name)
+        .fontSize($r('sys.float.Body_S'))
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .width(CommonConstants.ITEM_WIDTH)
+
+      // 年份
+      Text(this.item?.productionYear)
+        .fontSize($r('sys.float.Body_S'))
+        .fontColor($r('sys.color.font_tertiary'))
+        .maxLines(1)
+        .visibility(this.item?.productionYear ? Visibility.Visible : Visibility.None)
+        .width(CommonConstants.ITEM_WIDTH)
     }
-    .width(CommonConstants.FULL_PERCENT)
-    .padding({
-      left: CommonConstants.SPACE_16,
-      right: CommonConstants.SPACE_16,
-      top: CommonConstants.SPACE_8,
-      bottom: CommonConstants.SPACE_8
-    })
+    .alignItems(HorizontalAlign.Start)
     .onClick(() => {
       if (this.item) {
         MediaRouter.openDetail(this.item)

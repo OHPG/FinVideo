@@ -401,6 +401,14 @@ export class EmbyFinApi implements FinVideoApi {
     return this.resultToFinItems(result)
   }
 
+  async getPersonDetail(personId: string): Promise<FinItem> {
+    let item = await this.emby.getUserLibraryApi().getItem({
+      userId: this.activeInfo!.userInfo.userId,
+      itemId: personId
+    })
+    return this.itemToFinItem(item)
+  }
+
   async markFavoriteItem(id: string): Promise<void> {
     await this.emby.getUserLibraryApi().markFavoriteItem({
       itemId: id,

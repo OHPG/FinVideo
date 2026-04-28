@@ -465,6 +465,11 @@ export class PlexFinApi implements FinVideoApi {
     return []
   }
 
+  async getPersonDetail(_personId: string): Promise<FinItem> {
+    // Plex 不支持获取演职人员详情
+    return { id: _personId, name: '' }
+  }
+
   async markFavoriteItem(id: string): Promise<void> {
     // Plex does not have a favorites API
   }

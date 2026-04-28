@@ -1,11 +1,14 @@
-import { FinItem, LoadType } from "@ohpg/fin-core"
+import { FinItem, FinItemType, LoadType } from "@ohpg/fin-core"
 import { SimpleRepository } from "@ohpg/fin-framework"
 import { AppViewModel } from "../../common/AppViewModel"
 import { PersonArgs } from "./PersonArgs"
 
 export interface PersonData {
   args: PersonArgs
+  overview?: string
   items: Array<FinItem>
+  movies: Array<FinItem>
+  series: Array<FinItem>
 }
 
 export class PersonViewModel extends AppViewModel implements SimpleRepository {
@@ -18,10 +21,20 @@ export class PersonViewModel extends AppViewModel implements SimpleRepository {
   }
 
   async loadData(type: LoadType): Promise<Object> {
-    let items = await this.repository.getPersonItems(this.args.id)
+    let results = await Promise.all([
+      this.repository.getPersonDetail(this.args.id),
+      this.repository.getPersonItems(this.args.id)
+    ])
+    let detail = results[0] as FinItem
+    let items = results[1] as Array<FinItem>
+    let movies = items.filter((item) => item.type === FinItemType.Movie)
+    let series = items.filter((item) => item.type === FinItemType.Series)
     let data: PersonData = {
       args: this.args,
-      items: items
+      overview: detail.overview,
+      items: items,
+      movies: movies,
+      series: series
     }
     return data
   }
