@@ -319,9 +319,36 @@ export class EmbyFinApi implements FinVideoApi {
   }
 
   async getItemSource(id: string): Promise<FinItemSource> {
-    let playbackInfo = await this.emby.getMediaInfoApi().getPlaybackInfo({
+    let playbackInfo = await this.emby.getMediaInfoApi().postPlaybackInfo({
       userId: this.activeInfo!.userInfo.userId,
-      itemId: id
+      itemId: id,
+      data: {
+        UserId: this.activeInfo!.userInfo.userId,
+        EnableDirectPlay: true,
+        EnableDirectStream: true,
+        EnableTranscoding: false,
+        IsPlayback: true,
+        AutoOpenLiveStream: true,
+        DeviceProfile: {
+          MaxStreamingBitrate: 120000000,
+          DirectPlayProfiles: [
+            { Container: 'mp4,m4v', AudioCodec: 'aac,mp3,ac3,eac3,flac,alac,dts,opus,truehd', VideoCodec: 'h264,hevc,vp9,av1', Type: 'Video' },
+            { Container: 'mkv', AudioCodec: 'aac,mp3,ac3,eac3,flac,alac,dts,opus,truehd', VideoCodec: 'h264,hevc,vp9,av1', Type: 'Video' },
+            { Container: 'avi', AudioCodec: 'aac,mp3,ac3', VideoCodec: 'h264,mpeg4', Type: 'Video' },
+            { Container: 'mov', AudioCodec: 'aac,mp3,ac3', VideoCodec: 'h264,hevc', Type: 'Video' },
+            { Container: 'ts,mpegts', AudioCodec: 'aac,mp3,ac3,eac3,dts', VideoCodec: 'h264,hevc', Type: 'Video' },
+            { Container: 'wmv,asf', AudioCodec: 'wma', VideoCodec: 'wmv3,vc1', Type: 'Video' }
+          ],
+          SubtitleProfiles: [
+            { Format: 'srt', Method: 'External' },
+            { Format: 'ass', Method: 'External' },
+            { Format: 'ssa', Method: 'External' },
+            { Format: 'vtt', Method: 'External' },
+            { Format: 'sub', Method: 'External' },
+            { Format: 'smi', Method: 'External' }
+          ]
+        }
+      }
     })
 
     let source = playbackInfo.MediaSources?.[0]!
@@ -341,12 +368,33 @@ export class EmbyFinApi implements FinVideoApi {
     let url: string | undefined | null
     switch (source.Protocol) {
       case MediaProtocol.File:
-        url = await this.emby.getVideosApi().getVideoStreamUrl({
-          itemId: id,
-          static: true,
-          mediaSourceId: source.Id!,
-          api_key: this.activeInfo!.userInfo.accessToken
-        })
+        // 优先使用服务端返回的直接播放地址
+        if (source.DirectStreamUrl) {
+          let directUrl = source.DirectStreamUrl
+          // 如果是相对路径，拼接服务器地址和 /emby 路径前缀
+          if (!directUrl.startsWith('http')) {
+            let base = this.activeInfo!.addressInfo.address
+            // Emby 视频流需要 /emby 路径前缀
+            if (!base.endsWith('/emby') && !directUrl.startsWith('/emby/')) {
+              directUrl = base + '/emby' + directUrl
+            } else {
+              directUrl = base + directUrl
+            }
+          }
+          // 服务端指示需要追加 api_key，但如果 URL 里已经有了就不重复追加
+          if (source.AddApiKeyToDirectStreamUrl && !directUrl.includes('api_key=')) {
+            let separator = directUrl.includes('?') ? '&' : '?'
+            directUrl = directUrl + separator + 'api_key=' + this.activeInfo!.userInfo.accessToken
+          }
+          url = directUrl
+        } else {
+          url = await this.emby.getVideosApi().getVideoStreamUrl({
+            itemId: id,
+            static: true,
+            mediaSourceId: source.Id!,
+            api_key: this.activeInfo!.userInfo.accessToken
+          })
+        }
         break
       case MediaProtocol.Http:
         url = source.Path
