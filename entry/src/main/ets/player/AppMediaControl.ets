@@ -1,4 +1,4 @@
-import { AVCodecType, AVPlayerConfig, MediaControl, MediaPip, avSessionExt } from '@ohpg/player'
+import { AVCodecType, AVConfigEvent, AVPlayerConfig, MediaControl, MediaPip, avSessionExt } from '@ohpg/player'
 import { AppPrefer } from '../prefer/AppPrefer'
 import { AppPlayer } from './AppPlayer'
 import { FinItem, FinItemType } from '@ohpg/fin-core'
@@ -45,11 +45,6 @@ export class AppMediaControl {
 
   private reportPosition?: number = undefined
 
-  /** replaceAndPlay 期间为 true，跳过 PiP 回调的路由操作
-   * TODO: FinPlayer SDK 更新后（MediaPip.stopPiP 内部已通过 stoppedByApi 跳过回调），移除此补丁及所有 suppressPipNav 相关逻辑
-   */
-  private suppressPipNav = false
-
   private routerCallback: Callback<observer.RouterPageInfo> = (pageInfo) => {
     if (pageInfo.name !== 'pages/player/PlayerPage') return
     switch (pageInfo.state) {
@@ -59,7 +54,7 @@ export class AppMediaControl {
         this.avMetadata = undefined
         this.avMediaDescription = undefined
         this.reportPosition = 0
-        if (!this.mediaPip?.isInPiP() && !this.suppressPipNav) {
+        if (!this.mediaPip?.isInPiP()) {
           this.destroyPlayer()
         }
         break
@@ -124,8 +119,18 @@ export class AppMediaControl {
     // reserved
   }
 
-  private configCallback: Callback<void> = () => {
-    this.updateConfig()
+  private configCallback: Callback<AVConfigEvent> = (event) => {
+    switch (event) {
+      case AVConfigEvent.SUB_STYLE:
+        this.updateSubStyle()
+        break
+      case AVConfigEvent.LOOP_MODE:
+      case AVConfigEvent.BACKGROUND_PLAY:
+      case AVConfigEvent.SUB_DELAY:
+      default:
+        this.updateConfig()
+        break
+    }
   }
 
   constructor(context: UIContext) {
@@ -148,8 +153,12 @@ export class AppMediaControl {
     this.mediaPlayer.setOptions('option', 'slang', 'zh')
     // 字幕缩放模式
     this.mediaPlayer.setOptions('option', 'sub-scale-by-window', 'true')
-    // 字幕大小
-    this.mediaPlayer.setOptions('option', 'sub-font-size', '60')
+    // 字幕样式（从用户配置读取）
+    this.mediaPlayer.setOptions('option', 'sub-font-size', this.appPrefer.getSubSize().toString())
+    this.mediaPlayer.setOptions('option', 'sub-color', this.appPrefer.getSubColor())
+    this.mediaPlayer.setOptions('option', 'sub-back-color', this.appPrefer.getSubShadowColor())
+    this.mediaPlayer.setOptions('option', 'sub-shadow-offset', this.appPrefer.getSubShadowRadius().toString())
+    this.mediaPlayer.setOptions('option', 'sub-pos', this.appPrefer.getSubVerticalPosition().toString())
     // 音频直通
     this.mediaPlayer.setOptions('option', 'audio-spdif', this.appPrefer.isAoSpdif() ? 'ac3,eac3,dts-hd,truehd' : '')
     // 解复用器缓冲
@@ -167,10 +176,6 @@ export class AppMediaControl {
 
     // 画中画
     this.mediaPip = new MediaPip(this.context.getHostContext()!, this.mediaControl, (enter: boolean) => {
-      if (this.suppressPipNav) {
-        this.suppressPipNav = false
-        return
-      }
       if (enter) {
         AppRouter.goToPlayer(this.context)
       } else {
@@ -178,10 +183,6 @@ export class AppMediaControl {
       }
     })
     this.mediaPip.onClose(() => {
-      if (this.suppressPipNav) {
-        this.suppressPipNav = false
-        return
-      }
       this.reportPlaybackStop()
       this.destroyPlayer()
     })
@@ -198,7 +199,14 @@ export class AppMediaControl {
         dcForFR: this.appPrefer.getPlayerGestureDcFr(),
         slForVB: this.appPrefer.getPlayerGestureSlVb()
       },
-      callback: this.configCallback
+      subConfig: {
+        color: this.appPrefer.getSubColor(),
+        size: this.appPrefer.getSubSize(),
+        shadowRadius: this.appPrefer.getSubShadowRadius(),
+        shadowColor: this.appPrefer.getSubShadowColor(),
+        verticalPosition: this.appPrefer.getSubVerticalPosition()
+      },
+      callbacks: new Set([this.configCallback])
     }
   }
 
@@ -312,7 +320,6 @@ export class AppMediaControl {
   }
 
   private async replaceAndPlay(items: Array<FinItem>, index: number): Promise<void> {
-    this.suppressPipNav = true
     this.reportPlaybackStop()
     try {
       await this.mediaControl!.stop()
@@ -379,6 +386,17 @@ export class AppMediaControl {
     if (this.mediaConfig.loopMode !== undefined) {
       this.appPrefer.setPlayerLoopMode(this.mediaConfig.loopMode)
     }
+    this.appPrefer.flush()
+  }
+
+  private updateSubStyle() {
+    if (!this.mediaConfig?.subConfig) return
+    let sub = this.mediaConfig.subConfig
+    this.appPrefer.setSubSize(sub.size)
+    this.appPrefer.setSubColor(sub.color)
+    this.appPrefer.setSubShadowRadius(sub.shadowRadius)
+    this.appPrefer.setSubShadowColor(sub.shadowColor)
+    this.appPrefer.setSubVerticalPosition(sub.verticalPosition)
     this.appPrefer.flush()
   }
 

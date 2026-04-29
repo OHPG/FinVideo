@@ -46,6 +46,16 @@ export class AppPrefer {
 
   private static readonly KEY_HISTORY_ENABLE = "player_history_enable"
 
+  private static readonly KEY_SUB_SIZE = "player_sub_size"
+
+  private static readonly KEY_SUB_COLOR = "player_sub_color"
+
+  private static readonly KEY_SUB_SHADOW_RADIUS = "player_sub_shadow_radius"
+
+  private static readonly KEY_SUB_SHADOW_COLOR = "player_sub_shadow_color"
+
+  private static readonly KEY_SUB_VERTICAL_POSITION = "player_sub_vertical_position"
+
   private static readonly KEY_SORT_ORDER = "sort_order"
 
   private static readonly KEY_SORT_BY = "sort_by"
@@ -237,6 +247,61 @@ export class AppPrefer {
 
   public setHistoryEnable(enable: boolean) {
     this.preference.putSync(AppPrefer.KEY_HISTORY_ENABLE, enable)
+  }
+
+  public getSubSize(): number {
+    if (this.preference.hasSync(AppPrefer.KEY_SUB_SIZE)) {
+      return this.preference.getSync(AppPrefer.KEY_SUB_SIZE, 60) as number
+    }
+    return 60
+  }
+
+  public setSubSize(size: number) {
+    this.preference.putSync(AppPrefer.KEY_SUB_SIZE, size)
+  }
+
+  public getSubColor(): string {
+    if (this.preference.hasSync(AppPrefer.KEY_SUB_COLOR)) {
+      return this.preference.getSync(AppPrefer.KEY_SUB_COLOR, '#FFFFFFFF') as string
+    }
+    return '#FFFFFFFF'
+  }
+
+  public setSubColor(color: string) {
+    this.preference.putSync(AppPrefer.KEY_SUB_COLOR, color)
+  }
+
+  public getSubShadowRadius(): number {
+    if (this.preference.hasSync(AppPrefer.KEY_SUB_SHADOW_RADIUS)) {
+      return this.preference.getSync(AppPrefer.KEY_SUB_SHADOW_RADIUS, 0) as number
+    }
+    return 0
+  }
+
+  public setSubShadowRadius(radius: number) {
+    this.preference.putSync(AppPrefer.KEY_SUB_SHADOW_RADIUS, radius)
+  }
+
+  public getSubShadowColor(): string {
+    if (this.preference.hasSync(AppPrefer.KEY_SUB_SHADOW_COLOR)) {
+      return this.preference.getSync(AppPrefer.KEY_SUB_SHADOW_COLOR, '#80000000') as string
+    }
+    return '#80000000'
+  }
+
+  public setSubShadowColor(color: string) {
+    this.preference.putSync(AppPrefer.KEY_SUB_SHADOW_COLOR, color)
+  }
+
+  public getSubVerticalPosition(): number {
+    if (this.preference.hasSync(AppPrefer.KEY_SUB_VERTICAL_POSITION)) {
+      return this.preference.getSync(AppPrefer.KEY_SUB_VERTICAL_POSITION, 100) as number
+    }
+    return 100
+  }
+
+  public setSubVerticalPosition(position: number) {
+    this.preference.putSync(AppPrefer.KEY_SUB_VERTICAL_POSITION, position)
   }
 
   public getSortOrder(): FinSortOrder {
