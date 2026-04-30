@@ -52,10 +52,11 @@ struct InterfacePage {
           .fontColor($r('sys.color.ohos_id_color_text_primary'))
         Blank()
         Select(this.pageSizeSelectionArray)
+          .selected(this.pageSizeIndex)
           .value(this.pageSizeSelectionArray[this.pageSizeIndex].value)
           .onSelect((index) => {
             this.pageSizeIndex = index
-            let pageSize = this.pageSizeArray.findIndex((value) => value === index)
+            let pageSize = this.pageSizeArray[index]
             this.appPrefer.setPageSize(pageSize)
             this.appConfig!.pageSize = pageSize
           })

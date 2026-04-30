@@ -330,7 +330,10 @@ export class AppPrefer {
 
   public getPageSize(): FinPageSize {
     if (this.preference.hasSync(AppPrefer.KEY_PAGE_SIZE)) {
-      return this.preference.getSync(AppPrefer.KEY_PAGE_SIZE, FinPageSize.Size_50) as FinPageSize
+      let value = this.preference.getSync(AppPrefer.KEY_PAGE_SIZE, FinPageSize.Size_50) as number
+      if (value === FinPageSize.Size_25 || value === FinPageSize.Size_50 || value === FinPageSize.Size_100) {
+        return value as FinPageSize
+      }
     }
     return FinPageSize.Size_50
   }
