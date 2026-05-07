@@ -75,6 +75,7 @@ export class PlexFinApi implements FinVideoApi {
       originalTitle: item.originalTitle || '',
       overview: item.summary || '',
       seriesName: item.grandparentTitle || undefined,
+      seriesId: item.grandparentRatingKey || undefined,
       seasonId: item.parentRatingKey || undefined,
       runtimeTicks: item.duration || undefined,
       image: {

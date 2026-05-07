@@ -106,6 +106,7 @@ export class EmbyFinApi implements FinVideoApi {
       originalTitle: item.OriginalTitle!,
       overview: item.Overview!,
       seriesName: item.SeriesName || undefined,
+      seriesId: item.SeriesId || undefined,
       seasonId: item.SeasonId || undefined,
       runtimeTicks: item.RunTimeTicks ? item.RunTimeTicks / 10000 : undefined,
       image: {
