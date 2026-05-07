@@ -72,6 +72,10 @@ export class AppMediaControl {
           this.shouldResumePlay = true
         }
         break
+      case observer.RouterPageState.ON_BACK_PRESS:
+        // 用户主动退出，禁用自动画中画，防止退出过程中触发小窗
+        this.mediaPip?.setAutoStartEnabled(false)
+        break
     }
   }
 
