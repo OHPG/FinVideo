@@ -30,9 +30,14 @@ export class AppRouter {
           itemDtoArray.push(itemDto)
         } else if (args.type === FinItemType.Episode) {
           let itemDto = await repository.getEpisode(args.id)
-          itemDtoArray = await repository.getEpisodes(itemDto.seasonId!, itemDto.seasonId!)
-          itemIndex = itemDtoArray.findIndex((item) => item.id === args.id)
-          itemIndex = itemIndex < 0 ? 0 : itemIndex
+          if (itemDto.seriesId && itemDto.seasonId) {
+            itemDtoArray = await repository.getEpisodes(itemDto.seriesId, itemDto.seasonId)
+            itemIndex = itemDtoArray.findIndex((item) => item.id === args.id)
+            itemIndex = itemIndex < 0 ? 0 : itemIndex
+          } else {
+            // 直播等无season信息的内容，直接单独播放
+            itemDtoArray = [itemDto]
+          }
         } else {
           throw new Error('Unsupported type ' + args.type)
         }
