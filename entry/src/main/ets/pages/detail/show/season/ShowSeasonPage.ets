@@ -108,7 +108,7 @@ export struct SeasonItem {
         }))
         .margin(CommonConstants.SPACE_4)
 
-      Text(this.item?.index + ". " + this.item?.name)
+      Text((this.item?.index !== undefined ? this.item.index + ". " : "") + this.item?.name)
         .id("episode_name")
         .fontSize($r('sys.float.Body_L'))
         .maxLines(1)

@@ -44,7 +44,7 @@ export struct ShowEpisodePage {
               .id('episode_name')
               .fontSize($r('sys.float.Body_L'))
 
-            Text((this.episodeDto?.parentIndex && this.episodeDto?.index)
+            Text((this.episodeDto?.parentIndex !== undefined && this.episodeDto?.index !== undefined)
               ? `S${this.episodeDto?.parentIndex}:E${this.episodeDto?.index} - ${this.episodeDto?.name}`
               : this.episodeDto?.name)
               .fontSize($r('sys.float.Body_M'))
