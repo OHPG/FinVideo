@@ -113,7 +113,7 @@ export class Repository extends FinRepository {
    * @param seasonId
    * @returns
    */
-  public getEpisodes(seriesId: string, seasonId: string): Promise<Array<FinItem>> {
+  public getEpisodes(seriesId: string, seasonId?: string): Promise<Array<FinItem>> {
     return this.requireApi().getEpisodes(seriesId, seasonId)
   }
 

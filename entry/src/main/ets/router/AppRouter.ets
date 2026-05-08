@@ -30,12 +30,12 @@ export class AppRouter {
           itemDtoArray.push(itemDto)
         } else if (args.type === FinItemType.Episode) {
           let itemDto = await repository.getEpisode(args.id)
-          if (itemDto.seriesId && itemDto.seasonId) {
+          if (itemDto.seriesId) {
             itemDtoArray = await repository.getEpisodes(itemDto.seriesId, itemDto.seasonId)
             itemIndex = itemDtoArray.findIndex((item) => item.id === args.id)
             itemIndex = itemIndex < 0 ? 0 : itemIndex
           } else {
-            // 直播等无season信息的内容，直接单独播放
+            // 无seriesId的内容，直接单独播放
             itemDtoArray = [itemDto]
           }
         } else {

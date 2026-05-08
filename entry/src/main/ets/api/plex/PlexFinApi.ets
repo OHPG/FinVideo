@@ -382,8 +382,8 @@ export class PlexFinApi implements FinVideoApi {
     return result
   }
 
-  async getEpisodes(seriesId: string, seasonId: string): Promise<Array<FinItem>> {
-    let resp = await this.plex.getLibraryApi().getChildren({ ratingKey: seasonId })
+  async getEpisodes(seriesId: string, seasonId?: string): Promise<Array<FinItem>> {
+    let resp = await this.plex.getLibraryApi().getChildren({ ratingKey: seasonId || seriesId })
     return this.metadataListToFinItems(resp.MediaContainer?.Metadata)
   }
 

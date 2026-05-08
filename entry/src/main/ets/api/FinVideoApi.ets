@@ -73,7 +73,7 @@ export interface FinVideoApi extends FinApi {
    * @param seasonId
    * @returns
    */
-  getEpisodes(seriesId: string, seasonId: string): Promise<Array<FinItem>>
+  getEpisodes(seriesId: string, seasonId?: string): Promise<Array<FinItem>>
 
   /**
    * 获取集的信息

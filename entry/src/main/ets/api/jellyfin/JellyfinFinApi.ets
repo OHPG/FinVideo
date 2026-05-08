@@ -292,7 +292,7 @@ export class JellyfinFinApi implements FinVideoApi {
     return this.resultToFinItems(result)
   }
 
-  async getEpisodes(seriesId: string, seasonId: string): Promise<Array<FinItem>> {
+  async getEpisodes(seriesId: string, seasonId?: string): Promise<Array<FinItem>> {
     let result = await this.jellyfin.getTvShowsApi().getEpisodes({
       userId: this.activeInfo!.userInfo.userId,
       seriesId: seriesId,
