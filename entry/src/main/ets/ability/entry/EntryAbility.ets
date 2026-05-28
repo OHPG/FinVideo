@@ -4,7 +4,8 @@ import { window } from '@kit.ArkUI';
 import { BreakpointSystem } from '@ohpg/fin-core';
 import { AvoidAreaSystem } from '@ohpg/fin-core';
 import { DeviceUtil } from '@ohpg/fin-framework';
-import { AppMediaControl } from '../../player/AppMediaControl';
+import { AVPlaybackManager } from '@ohpg/player';
+import { AppPlayerManager } from '../../player/AppPlayerManager';
 
 export default class EntryAbility extends UIAbility {
 
@@ -12,7 +13,7 @@ export default class EntryAbility extends UIAbility {
 
   private avoidAreaSystem: AvoidAreaSystem = new AvoidAreaSystem();
 
-  private appMediaControl?: AppMediaControl
+  private playerManager?: AppPlayerManager
 
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
@@ -34,8 +35,8 @@ export default class EntryAbility extends UIAbility {
         hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
       }
-      this.appMediaControl = new AppMediaControl(window.getUIContext())
-      AppStorage.setOrCreate(AppMediaControl.MEDIA_CONTROL_KEY, this.appMediaControl)
+      this.playerManager = new AppPlayerManager(window.getUIContext())
+      AppStorage.setOrCreate(AVPlaybackManager.AV_PLAYER_MANAGER, this.playerManager)
       this.breakpointSystem.register(window);
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
@@ -45,6 +46,7 @@ export default class EntryAbility extends UIAbility {
     DeviceUtil.initWindow(undefined)
     this.avoidAreaSystem.unregister()
     this.breakpointSystem.unregister()
+    this.playerManager?.release()
   }
 
   onWindowStageDestroy(): void {

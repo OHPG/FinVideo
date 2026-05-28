@@ -219,7 +219,6 @@ export class EmbyFinApi implements FinVideoApi {
     let result = await this.emby.getTvShowsApi().getNextUp({
       userId: this.activeInfo!.userInfo.userId,
       seriesId: seriesId,
-      enableResumable: false,
       fields: [ItemFields.Overview],
       limit: 12
     })

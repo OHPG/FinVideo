@@ -9,6 +9,8 @@
     // https://ohpm.openharmony.cn/#/cn/detail/@abner%2Frefresh
     "@abner/refresh": "1.4.3",
     "@ohpg/player": "@param:ohpg",
+    "@ohpg/widget": "@param:ohpg",
+    "@ohpg/core": "@param:ohpg",
     "@ohpg/network": 'file:../sdk/network',
     "@ohpg/emby": 'file:../sdk/emby',
     "@ohpg/jellyfin": 'file:../sdk/jellyfin',

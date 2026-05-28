@@ -90,6 +90,18 @@ export struct PreferComponent {
         router.push({url: "pages/setting/VideoSettingPage"})
       })
 
+      this.preferItemBuilder($r('sys.symbol.hardware'), $r('app.string.prefer_video_codec_prefer'), () => {
+        router.push({url: "pages/setting/CodecSettingPage"})
+      })
+
+      this.preferItemBuilder($r('sys.symbol.hand_scribble'), $r('app.string.prefer_gesture'), () => {
+        router.push({url: "pages/setting/GestureSettingPage"})
+      })
+
+      this.preferItemBuilder($r('sys.symbol.ellipsis_bubble'), $r('app.string.prefer_subtitle'), () => {
+        router.push({url: "pages/setting/SubtitleSettingPage"})
+      })
+
       this.preferItemBuilder($r('sys.symbol.message'), $r('app.string.prefer_about'), () => {
         router.push({url: "pages/about/AboutPage"})
       })

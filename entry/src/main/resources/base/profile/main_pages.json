@@ -8,9 +8,11 @@
     "pages/detail/person/PersonPage",
     "pages/media/MediaListPage",
     "pages/favourite/FavouriteListPage",
-    "pages/player/PlayerPage",
     "pages/search/SearchPage",
     "pages/setting/VideoSettingPage",
+    "pages/setting/CodecSettingPage",
+    "pages/setting/GestureSettingPage",
+    "pages/setting/SubtitleSettingPage",
     "pages/interface/InterfacePage",
     "pages/about/AboutPage"
   ]
