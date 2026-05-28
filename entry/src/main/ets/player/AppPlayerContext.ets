@@ -31,7 +31,7 @@ export class AppPlayerContext extends AVPlayerContext {
     let playerPrefer = AVPlayerKit.getPrefer()
     let config = playerPrefer.toPlayerConfig()
     super(uiContext.getHostContext()!, config)
-
+    this.control.setCastEnabled(true)
     this.uiContext = uiContext
     this.repository = repository
   }
