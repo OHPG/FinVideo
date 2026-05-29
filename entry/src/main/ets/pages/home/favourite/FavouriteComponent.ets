@@ -20,6 +20,8 @@ export struct FavouriteComponent {
 
   private viewModel = new FavouriteViewModel(getContext())
 
+  @Consume("bottomOffset") bottomOffset: number
+
   @Builder
   favouriteGroupBuilder(group: GroupInfo, index: number) {
     FavouriteGroup({item: group})
@@ -40,6 +42,7 @@ export struct FavouriteComponent {
             color: Color.Transparent,
             strokeWidth: 16
           }
+          attr.contentEndOffset = this.bottomOffset
           attr.width = CommonConstants.FULL_PERCENT
           attr.height = CommonConstants.FULL_PERCENT
         },

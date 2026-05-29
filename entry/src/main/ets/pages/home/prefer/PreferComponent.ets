@@ -1,9 +1,11 @@
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar"
 import { CommonConstants } from "../../common/CommonConstants"
-import { ActiveInfo, AppStorageKeys, WebTool} from '@ohpg/fin-core'
-import { FinRouter} from '@ohpg/fin-framework'
+import { ActiveInfo, AppStorageKeys, WebTool } from '@ohpg/fin-core'
+import { FinRouter } from '@ohpg/fin-framework'
 import router from "@ohos.router"
 import { pasteboard } from "@kit.BasicServicesKit"
+import { groupAttributeModifier, itemDividerBuilder } from '../../../style/Modifier'
+import { PreferItem } from '../../../widget/comp/PreferItem'
 
 /**
  * @Author peerless2012
@@ -17,136 +19,145 @@ export struct PreferComponent {
 
   @StorageProp(AppStorageKeys.KEY_ACTIVE_INFO) activeInfo?: ActiveInfo = undefined
 
-  @Builder
-  preferItemBuilder(icon: Resource, title: ResourceStr, callback: Callback<void>) {
-    Row({space: CommonConstants.SPACE_12}) {
-      SymbolGlyph(icon)
-        .fontSize(24)
-        .fontColor([$r('sys.color.ohos_id_color_text_primary')])
-      Text(title)
-        .fontSize(18)
-        .fontColor($r('sys.color.ohos_id_color_text_primary'))
-      Blank()
-    }
-    .width(CommonConstants.FULL_PERCENT)
-    .height(48)
-    .padding({
-      left: CommonConstants.SPACE_16,
-      right: CommonConstants.SPACE_16
-    })
-    .onClick(() => {
-      callback()
-    })
-  }
+  @Consume("bottomOffset") bottomOffset: number
 
   build() {
-    Column({space: CommonConstants.SPACE_8}) {
+    Column() {
       HomeToolBar({
         title: $r('app.string.home_prefer')
       })
 
-      Column({ space: CommonConstants.SPACE_12}) {
-        Row() {
-          Text($r('app.string.prefer_current_type'))
-          Text(this.activeInfo?.serverInfo.serverType)
+      Scroll() {
+        Column({ space: CommonConstants.SPACE_12 }) {
+
+
+          // ===== Group 1: 服务器和用户信息 =====
+          Column() {
+            PreferItem({
+              icon: $r('sys.symbol.externaldrive'),
+              title: $r('app.string.prefer_server'),
+              tips: this.activeInfo?.serverInfo.serverName ?? '',
+              callback: () => { FinRouter.editServer(this.getUIContext()) }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.worldclock'),
+              title: $r('app.string.prefer_address'),
+              tips: this.activeInfo?.addressInfo.address ?? '',
+              callback: () => { FinRouter.editAddress(this.getUIContext()) }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.person'),
+              title: $r('app.string.prefer_user'),
+              tips: this.activeInfo?.userInfo.userName ?? '',
+              callback: () => { FinRouter.editUser(this.getUIContext()) }
+            })
+          }
+          .attributeModifier(groupAttributeModifier)
+
+          // ===== Group 2: 界面到字幕 =====
+          Column() {
+            PreferItem({
+              icon: $r('sys.symbol.satellite_map_fill'),
+              title: $r('app.string.prefer_interface'),
+              callback: () => { router.pushUrl({ url: "pages/interface/InterfacePage" }) }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.play_video'),
+              title: $r('app.string.prefer_video'),
+              callback: () => { router.pushUrl({ url: "pages/setting/VideoSettingPage" }) }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.play_hexagon'),
+              title: $r('app.string.prefer_video_codec_prefer'),
+              callback: () => { router.pushUrl({ url: "pages/setting/CodecSettingPage" }) }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.hand_scribble'),
+              title: $r('app.string.prefer_gesture'),
+              callback: () => { router.pushUrl({ url: "pages/setting/GestureSettingPage" }) }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.ellipsis_bubble'),
+              title: $r('app.string.prefer_subtitle'),
+              callback: () => { router.pushUrl({ url: "pages/setting/SubtitleSettingPage" }) }
+            })
+          }
+          .attributeModifier(groupAttributeModifier)
+
+          // ===== Group 3: 关于等 =====
+          Column() {
+            PreferItem({
+              icon: $r('sys.symbol.message'),
+              title: $r('app.string.prefer_about'),
+              callback: () => { router.pushUrl({ url: "pages/about/AboutPage" }) }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.doc_plaintext'),
+              title: $r('app.string.prefer_privacy'),
+              callback: () => {
+                WebTool.openBrowser(getContext(),
+                  "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1571961528242951104")
+              }
+            })
+          }
+          .attributeModifier(groupAttributeModifier)
+
+          // QQ群
+          Row({ space: CommonConstants.SPACE_4 }) {
+            Text($r('app.string.prefer_about_qq_group'))
+              .fontSize(14)
+              .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+
+            Text($r('app.string.prefer_about_qq_group_value'))
+              .fontSize(14)
+              .fontColor($r('sys.color.ohos_id_color_component_activated'))
+              .onClick(() => {
+                let text = getContext().resourceManager
+                  .getStringSync($r('app.string.prefer_about_qq_group_value'))
+                const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
+                const systemPasteboard = pasteboard.getSystemPasteboard();
+                systemPasteboard.setData(pasteboardData);
+                this.getUIContext().getPromptAction().showToast({ message: $r('app.string.prefer_about_qq_group_copied') })
+              })
+          }
+          .padding({ top: CommonConstants.SPACE_8 })
+
+          // ICP 备案
+          Row({ space: CommonConstants.SPACE_4 }) {
+            Text("ICP备案：")
+              .fontSize(14)
+              .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+
+            Text("豫ICP备2025110731号-2A")
+              .fontSize(14)
+              .fontColor($r('sys.color.ohos_id_color_component_activated'))
+              .onClick(() => {
+                WebTool.openBrowser(getContext(), "https://beian.miit.gov.cn")
+              })
+          }
+          .padding({ bottom: CommonConstants.SPACE_16 })
         }
-        Row() {
-          Text($r('app.string.prefer_current_server'))
-          Text(this.activeInfo?.serverInfo.serverName)
-        }
-        Row() {
-          Text($r('app.string.prefer_current_address'))
-          Text(this.activeInfo?.addressInfo.address)
-        }
-        Row() {
-          Text($r('app.string.prefer_current_user'))
-          Text(this.activeInfo?.userInfo.userName)
-        }
+        .constraintSize({
+          minHeight: "100%"
+        })
       }
+      .align(Alignment.Top)
+      .edgeEffect(EdgeEffect.Fade)
       .width(CommonConstants.FULL_PERCENT)
-      .alignItems(HorizontalAlign.Start)
-      .padding({
-        left: CommonConstants.SPACE_16,
-        right: CommonConstants.SPACE_16
-      })
-
-      this.preferItemBuilder($r('sys.symbol.externaldrive'), $r('app.string.prefer_server'), () => {
-        FinRouter.editServer(this.getUIContext())
-      })
-
-      this.preferItemBuilder($r('sys.symbol.worldclock'), $r('app.string.prefer_address'), () => {
-        FinRouter.editAddress(this.getUIContext())
-      })
-
-      this.preferItemBuilder($r('sys.symbol.person'), $r('app.string.prefer_user'), () => {
-        FinRouter.editUser(this.getUIContext())
-      })
-
-      this.preferItemBuilder($r('sys.symbol.satellite_map_fill'), $r('app.string.prefer_interface'), () => {
-        router.push({url: "pages/interface/InterfacePage"})
-      })
-
-      this.preferItemBuilder($r('sys.symbol.play_video'), $r('app.string.prefer_video'), () => {
-        router.push({url: "pages/setting/VideoSettingPage"})
-      })
-
-      this.preferItemBuilder($r('sys.symbol.hardware'), $r('app.string.prefer_video_codec_prefer'), () => {
-        router.push({url: "pages/setting/CodecSettingPage"})
-      })
-
-      this.preferItemBuilder($r('sys.symbol.hand_scribble'), $r('app.string.prefer_gesture'), () => {
-        router.push({url: "pages/setting/GestureSettingPage"})
-      })
-
-      this.preferItemBuilder($r('sys.symbol.ellipsis_bubble'), $r('app.string.prefer_subtitle'), () => {
-        router.push({url: "pages/setting/SubtitleSettingPage"})
-      })
-
-      this.preferItemBuilder($r('sys.symbol.message'), $r('app.string.prefer_about'), () => {
-        router.push({url: "pages/about/AboutPage"})
-      })
-
-      this.preferItemBuilder($r('sys.symbol.doc_plaintext'), $r('app.string.prefer_privacy'), () => {
-        WebTool.openBrowser(getContext(), "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1571961528242951104")
-      })
-
-      Blank()
-
-      Row({space: CommonConstants.SPACE_4}) {
-        Text($r('app.string.prefer_about_qq_group'))
-          .fontSize(16)
-          .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-
-        Text($r('app.string.prefer_about_qq_group_value'))
-          .fontSize(16)
-          .fontColor($r('sys.color.ohos_id_color_component_activated'))
-          .onClick(() => {
-            let text = getContext().resourceManager
-              .getStringSync($r('app.string.prefer_about_qq_group_value'))
-            const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
-            const systemPasteboard = pasteboard.getSystemPasteboard();
-            systemPasteboard.setData(pasteboardData);
-            this.getUIContext().getPromptAction().showToast({message: $r('app.string.prefer_about_qq_group_copied')})
-          })
-      }
-
-      Row({space: CommonConstants.SPACE_4}) {
-        Text("ICP备案：")
-          .fontSize(16)
-          .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-
-        Text("豫ICP备2025110731号-2A")
-          .fontColor($r('sys.color.ohos_id_color_component_activated'))
-          .onClick(() => {
-            WebTool.openBrowser(getContext(), "https://beian.miit.gov.cn")
-          })
-      }
-      .margin(CommonConstants.SPACE_16)
-
+      .height('auto')
+      .layoutWeight(1)
+      .padding({ bottom: this.bottomOffset })
+      .backgroundColor($r('sys.color.background_secondary'))
     }
     .width(CommonConstants.FULL_PERCENT)
     .height(CommonConstants.FULL_PERCENT)
   }
 
 }
-

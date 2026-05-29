@@ -20,6 +20,8 @@ export struct MainComponent {
 
   private viewModel = new MainViewModel(getContext())
 
+  @Consume("bottomOffset") bottomOffset: number
+
   @Builder
   private mainGroup(groupInfo: GroupInfo, index: number) {
     MainNormalGroup({
@@ -41,6 +43,7 @@ export struct MainComponent {
             color: Color.Transparent,
             strokeWidth: CommonConstants.SPACE_12
           }
+          attr.contentEndOffset = this.bottomOffset
           attr.width = CommonConstants.FULL_PERCENT
           attr.height = CommonConstants.FULL_PERCENT
         },

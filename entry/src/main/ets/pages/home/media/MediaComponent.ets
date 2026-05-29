@@ -18,6 +18,8 @@ export struct MediaComponent {
 
   private viewModel = new MediaViewModel(getContext())
 
+  @Consume("bottomOffset") bottomOffset: number
+
   @Builder
   mediaLibraryItem(item: Object, index: number) {
     MediaLibraryItem({
@@ -37,7 +39,8 @@ export struct MediaComponent {
         gridAttribute: (attr: GridAttr) => {
           attr.padding = {
             left: CommonConstants.SPACE_16,
-            right: CommonConstants.SPACE_16
+            right: CommonConstants.SPACE_16,
+            bottom: this.bottomOffset
           }
           attr.rowsGap = CommonConstants.SPACE_12
           attr.columnsGap = CommonConstants.SPACE_12
