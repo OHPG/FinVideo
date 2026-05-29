@@ -2,10 +2,11 @@ import { AbilityStage, Configuration, ConfigurationConstant } from "@kit.Ability
 import { AppConfig } from "../config/AppConfig";
 import { Repository } from "../data/Repository";
 import { AppPrefer } from "../prefer/AppPrefer";
-import { AVPlayerKit, AVPlayerFactory, AVPlayer, AVRenderType, AVCodecType } from '@ohpg/player'
-import { AppPlayer } from '../player/AppPlayer'
+import { AVPlayerKit } from '@ohpg/player'
 import { AppMediaResolver } from '../player/AppMediaResolver'
 import { Logger, ConsoleLogOutput } from '@ohpg/core'
+import { AppPlayerFactory } from "../player/AppPlayerFactory";
+import { AppPlayerContextFactory } from "../player/AppPlayerContextFactory";
 import BuildProfile from 'BuildProfile'
 
 /**
@@ -22,7 +23,8 @@ export class App extends AbilityStage {
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     const appContext = this.context.getApplicationContext()
     // 初始化播放器库
-    AVPlayerKit.init(appContext, new AppPlayerFactoryImpl())
+    AVPlayerKit.init(appContext, new AppPlayerFactory())
+    AVPlayerKit.setContextFactory(new AppPlayerContextFactory())
     // Logger
     const logger = new Logger(Logger.DEFAULT_BUFFER_CAPACITY, BuildProfile.DEBUG)
     logger.addOutput(new ConsoleLogOutput())
@@ -38,10 +40,4 @@ export class App extends AbilityStage {
   onConfigurationUpdate(newConfig: Configuration): void {
   }
 
-}
-
-class AppPlayerFactoryImpl implements AVPlayerFactory {
-  create(context: Context, render: AVRenderType, codec?: AVCodecType): AVPlayer {
-    return new AppPlayer(context, render, codec)
-  }
 }

@@ -1,24 +1,26 @@
 import {
   AVPlayerContext,
+  PlayData,
   AVPlayerKit,
   PlaybackState,
   PlaybackParams,
   PlaybackParamsTool
 } from '@ohpg/player'
 import { avSession } from '@kit.AVSessionKit'
-import { BusinessError } from '@kit.BasicServicesKit'
 import { FinItem, FinItemType } from '@ohpg/fin-core'
 import { Repository } from '../data/Repository'
+
+interface PlayAllArgs {
+  items: Array<FinItem>
+  index: number
+}
 
 /**
  * FinVideo 的播放上下文实现。
  * 继承 AVPlayerContext 基类，实现：
  * - 服务端播放进度上报（start/progress/stop）
- * - 错误提示
  */
 export class AppPlayerContext extends AVPlayerContext {
-
-  private readonly uiContext: UIContext
 
   private readonly repository: Repository
 
@@ -30,37 +32,37 @@ export class AppPlayerContext extends AVPlayerContext {
   constructor(uiContext: UIContext, repository: Repository) {
     let playerPrefer = AVPlayerKit.getPrefer()
     let config = playerPrefer.toPlayerConfig()
-    super(uiContext.getHostContext()!, config)
+    super(uiContext, config)
     this.control.setCastEnabled(true)
-    this.uiContext = uiContext
     this.repository = repository
   }
 
-  // ─── 播放入口 ──────────────────────────────────────────────────────────────
+  // ─── 抽象方法实现 ──────────────────────────────────────────────────────────
 
-  /**
-   * 全新播放：构建队列并开始播放
-   */
-  async play(items: Array<FinItem>, index: number): Promise<void> {
-    let queueItems = this.buildQueue(items)
-    let startId = items[index].id
-    await this.control.session.setQueueItems(queueItems)
-    await this.control.playItem(startId)
+  protected buildPlayData(args: Object): PlayData {
+    let playArgs = args as PlayAllArgs
+    let items = this.buildQueue(playArgs.items)
+    let startId = playArgs.items[playArgs.index].id
+    return { items: items, startId: startId }
   }
 
-  /**
-   * 替换播放：保存当前状态，停止，重建队列并播放
-   */
-  async replaceAndPlay(items: Array<FinItem>, index: number): Promise<void> {
+  protected async onHistorySave(assetId: string, state: PlaybackState, _notify: boolean): Promise<void> {
+    this.reportPlaybackUpdate(assetId, state.position, false)
+  }
+
+  // ─── 覆写方法 ──────────────────────────────────────────────────────────────
+
+  protected onAssetChanged(assetId: string, _description: avSession.AVMediaDescription): void {
     this.reportPlaybackStop()
-    this.saveCurrentState(true)
-    await this.control.stop()
-    let queueItems = this.buildQueue(items)
-    let startId = items[index].id
-    await this.control.setQueueItems(queueItems)
-    await this.control.playItem(startId)
-    await this.control.stopPiP()
+    this.reportPosition = undefined
+    this.reportPlaybackStart(assetId)
   }
+
+  resetItemState(): void {
+    this.reportPlaybackStop()
+  }
+
+  // ─── 内部方法 ──────────────────────────────────────────────────────────────
 
   /**
    * 构建播放队列
@@ -96,34 +98,6 @@ export class AppPlayerContext extends AVPlayerContext {
     })
 
     return queueItems
-  }
-
-  // ─── 覆写方法 ──────────────────────────────────────────────────────────────
-
-  protected onAssetChanged(assetId: string, _description: avSession.AVMediaDescription): void {
-    this.reportPlaybackStop()
-    this.reportPosition = undefined
-    this.reportPlaybackStart(assetId)
-  }
-
-  // ─── 抽象方法实现 ──────────────────────────────────────────────────────────
-
-  protected async onHistorySave(assetId: string, state: PlaybackState, _notify: boolean): Promise<void> {
-    this.reportPlaybackUpdate(assetId, state.position, false)
-  }
-
-  // ─── 错误处理 ──────────────────────────────────────────────────────────────
-
-  protected onError(error?: BusinessError): void {
-    if (error) {
-      this.uiContext.getPromptAction().showToast({
-        message: $r('app.string.player_error_with_code', error.code, error.message)
-      })
-    } else {
-      this.uiContext.getPromptAction().showToast({
-        message: $r('app.string.player_error_generic')
-      })
-    }
   }
 
   // ─── 服务端上报 ────────────────────────────────────────────────────────────
