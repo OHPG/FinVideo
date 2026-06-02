@@ -3,7 +3,6 @@ import { AppConfig } from "../config/AppConfig";
 import { Repository } from "../data/Repository";
 import { AppPrefer } from "../prefer/AppPrefer";
 import { AVPlayerKit } from '@ohpg/player'
-import { AppMediaResolver } from '../player/AppMediaResolver'
 import { Logger, ConsoleLogOutput } from '@ohpg/core'
 import { AppPlayerFactory } from "../player/AppPlayerFactory";
 import { AppPlayerContextFactory } from "../player/AppPlayerContextFactory";
@@ -33,8 +32,7 @@ export class App extends AbilityStage {
     AppStorage.setOrCreate(AppConfig.CONFIG, new AppConfig(appContext))
     const repository = new Repository(appContext)
     AppStorage.setOrCreate(Repository.REPOSITORY, repository)
-    // MediaResolver（全局注册，用于解析播放 URL）
-    AVPlayerKit.setMediaResolver(new AppMediaResolver(repository))
+    // MediaResolver 需要 UIContext，延迟到 EntryAbility.onWindowStageCreate 中注册
   }
 
   onConfigurationUpdate(newConfig: Configuration): void {

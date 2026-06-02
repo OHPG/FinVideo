@@ -90,12 +90,11 @@ export interface FinVideoApi extends FinApi {
   getItemData(id: string): Promise<FinItemData>
 
   /**
-   * 获取媒体数据源
+   * 获取媒体数据源列表（支持多版本）
    * @param id
-   * @param sourceInfo
    * @returns
    */
-  getItemSource(id: string): Promise<FinItemSource>
+  getItemSource(id: string): Promise<Array<FinItemSource>>
 
   /**
    * 获取收藏

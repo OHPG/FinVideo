@@ -405,45 +405,66 @@ export class PlexFinApi implements FinVideoApi {
     return []
   }
 
-  async getItemSource(id: string): Promise<FinItemSource> {
+  async getItemSource(id: string): Promise<Array<FinItemSource>> {
     let resp = await this.plex.getLibraryApi().getMetadata({ ratingKey: id })
     let item = resp.MediaContainer?.Metadata?.[0]!
-    let media = item.Media?.[0]!
-    let part = media.Part?.[0]!
 
-    let url = `${this.getBaseUrl()}${part.key}?X-Plex-Token=${this.getToken()}`
+    this.lastDuration = item.duration || 0
 
-    this.lastDuration = item.duration || media.duration || 0
+    let results = new Array<FinItemSource>()
+    let mediaList = item.Media ?? []
 
-    // Check HDR
-    let sdr = true
-    part.Stream?.forEach((stream) => {
-      if (stream.streamType === 1) {
-        if (stream.videoRange && stream.videoRange !== 'SDR') {
-          sdr = false
+    for (let media of mediaList) {
+      let part = media.Part?.[0]
+      if (!part) continue
+
+      let url = `${this.getBaseUrl()}${part.key}?X-Plex-Token=${this.getToken()}`
+
+      // Check HDR
+      let sdr = true
+      part.Stream?.forEach((stream) => {
+        if (stream.streamType === 1) {
+          if (stream.videoRange && stream.videoRange !== 'SDR') {
+            sdr = false
+          }
         }
+      })
+
+      // Subtitles
+      let subSources: Array<FinSubSource> | undefined
+      let subs = part.Stream?.filter(s => s.streamType === 3 && s.key)
+      if (subs && subs.length > 0) {
+        subSources = subs.map(sub => {
+          let subUrl = `${this.getBaseUrl()}${sub.key}?X-Plex-Token=${this.getToken()}`
+          let subSource: FinSubSource = {
+            title: sub.displayTitle || sub.title || sub.language || undefined,
+            index: sub.index || undefined,
+            force: sub.forced || undefined,
+            default: sub.default,
+            url: subUrl
+          }
+          return subSource
+        })
       }
-    })
 
-    // Subtitles
-    let subSources: Array<FinSubSource> | undefined
-    let subs = part.Stream?.filter(s => s.streamType === 3 && s.key)
-    if (subs && subs.length > 0) {
-      subSources = subs.map(sub => {
-        let subUrl = `${this.getBaseUrl()}${sub.key}?X-Plex-Token=${this.getToken()}`
-        let subSource: FinSubSource = {
-          title: sub.displayTitle || sub.title || sub.language || undefined,
-          index: sub.index || undefined,
-          force: sub.forced || undefined,
-          default: sub.default,
-          url: subUrl
-        }
-        return subSource
+      // 构建版本名称：分辨率 + 视频编码
+      let versionName = media.videoResolution
+        ? `${media.videoResolution} (${media.videoCodec || 'unknown'})`
+        : (part.file || id)
+
+      results.push({
+        id: media.id?.toString() || undefined,
+        name: versionName,
+        url: url,
+        sdr: sdr,
+        sub: subSources
       })
     }
 
-    let source: FinItemSource = { url: url, sdr: sdr, sub: subSources }
-    return source
+    if (results.length === 0) {
+      throw new Error("Source not support.")
+    }
+    return results
   }
 
   async search(keyword: string): Promise<FinItem[]> {

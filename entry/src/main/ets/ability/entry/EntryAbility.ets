@@ -4,9 +4,11 @@ import { window } from '@kit.ArkUI';
 import { AppEventHub, AppEvents, BreakpointSystem } from '@ohpg/fin-core';
 import { AvoidAreaSystem } from '@ohpg/fin-core';
 import { DeviceUtil } from '@ohpg/fin-framework';
-import { AVPlaybackManager } from '@ohpg/player';
+import { AVPlayerKit, AVPlaybackManager } from '@ohpg/player';
 import { AppPlayerManager } from '../../player/AppPlayerManager';
+import { AppMediaResolver } from '../../player/AppMediaResolver';
 import { Repository } from '../../data/Repository';
+import { AppPrefer } from '../../prefer/AppPrefer';
 
 export default class EntryAbility extends UIAbility {
 
@@ -50,12 +52,17 @@ export default class EntryAbility extends UIAbility {
       }
       this.playerManager = new AppPlayerManager(mainWindow.getUIContext())
       AppStorage.setOrCreate(AVPlaybackManager.AV_PLAYER_MANAGER, this.playerManager)
+      // 注册 MediaResolver（需要 UIContext 用于版本选择弹框）
+      const repository = AppStorage.get<Repository>(Repository.REPOSITORY)!
+      const appPrefer = AppStorage.get<AppPrefer>(AppPrefer.PREFER)!
+      AVPlayerKit.setMediaResolver(new AppMediaResolver(mainWindow.getUIContext(), repository, appPrefer))
       this.breakpointSystem.register(mainWindow);
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
   }
 
   onWindowStageWillDestroy(windowStage: window.WindowStage): void {
+    AVPlayerKit.setMediaResolver(undefined)
     this.windowStage = undefined
     DeviceUtil.initWindow(undefined)
     this.avoidAreaSystem.unregister()

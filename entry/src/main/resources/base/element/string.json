@@ -191,6 +191,18 @@
     {
       "name": "person_series",
       "value": "剧集"
+    },
+    {
+      "name": "version_picker_title",
+      "value": "选择播放版本"
+    },
+    {
+      "name": "version_picker_default",
+      "value": "默认"
+    },
+    {
+      "name": "version_picker_cancel",
+      "value": "取消"
     }
   ]
 }

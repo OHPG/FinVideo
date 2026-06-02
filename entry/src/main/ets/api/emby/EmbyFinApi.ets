@@ -318,7 +318,7 @@ export class EmbyFinApi implements FinVideoApi {
     return this.resultToFinItems(result)
   }
 
-  async getItemSource(id: string): Promise<FinItemSource> {
+  async getItemSource(id: string): Promise<Array<FinItemSource>> {
     let playbackInfo = await this.emby.getMediaInfoApi().postPlaybackInfo({
       userId: this.activeInfo!.userInfo.userId,
       itemId: id,
@@ -351,79 +351,92 @@ export class EmbyFinApi implements FinVideoApi {
       }
     })
 
-    let source = playbackInfo.MediaSources?.[0]!
-    this.lastMediaSourceId = source.Id || undefined
     this.lastPlaySessionId = playbackInfo.PlaySessionId || undefined
 
-    // 判断是否是hdr
-    let sdr = true
-    source.MediaStreams?.forEach((stream) => {
-      if (stream.Type === MediaStreamType.Video) {
-        if (stream.VideoRange) {
-          sdr = stream.VideoRange !== VideoRange.Hdr
-        }
-      }
-    })
+    let results = new Array<FinItemSource>()
+    let mediaSources = playbackInfo.MediaSources ?? []
 
-    let url: string | undefined | null
-    switch (source.Protocol) {
-      case MediaProtocol.File:
-        // 优先使用服务端返回的直接播放地址
-        if (source.DirectStreamUrl) {
-          let directUrl = source.DirectStreamUrl
-          // 如果是相对路径，拼接服务器地址和 /emby 路径前缀
-          if (!directUrl.startsWith('http')) {
-            let base = this.activeInfo!.addressInfo.address
-            // Emby 视频流需要 /emby 路径前缀
-            if (!base.endsWith('/emby') && !directUrl.startsWith('/emby/')) {
-              directUrl = base + '/emby' + directUrl
-            } else {
-              directUrl = base + directUrl
+    for (let source of mediaSources) {
+      // 判断是否是hdr
+      let sdr = true
+      source.MediaStreams?.forEach((stream) => {
+        if (stream.Type === MediaStreamType.Video) {
+          if (stream.VideoRange) {
+            sdr = stream.VideoRange !== VideoRange.Hdr
+          }
+        }
+      })
+
+      let url: string | undefined | null
+      switch (source.Protocol) {
+        case MediaProtocol.File:
+          if (source.DirectStreamUrl) {
+            let directUrl = source.DirectStreamUrl
+            if (!directUrl.startsWith('http')) {
+              let base = this.activeInfo!.addressInfo.address
+              if (!base.endsWith('/emby') && !directUrl.startsWith('/emby/')) {
+                directUrl = base + '/emby' + directUrl
+              } else {
+                directUrl = base + directUrl
+              }
             }
+            if (source.AddApiKeyToDirectStreamUrl && !directUrl.includes('api_key=')) {
+              let separator = directUrl.includes('?') ? '&' : '?'
+              directUrl = directUrl + separator + 'api_key=' + this.activeInfo!.userInfo.accessToken
+            }
+            url = directUrl
+          } else {
+            url = await this.emby.getVideosApi().getVideoStreamUrl({
+              itemId: id,
+              static: true,
+              mediaSourceId: source.Id!,
+              api_key: this.activeInfo!.userInfo.accessToken
+            })
           }
-          // 服务端指示需要追加 api_key，但如果 URL 里已经有了就不重复追加
-          if (source.AddApiKeyToDirectStreamUrl && !directUrl.includes('api_key=')) {
-            let separator = directUrl.includes('?') ? '&' : '?'
-            directUrl = directUrl + separator + 'api_key=' + this.activeInfo!.userInfo.accessToken
-          }
-          url = directUrl
+          break
+        case MediaProtocol.Http:
+          url = source.Path
+          break
+      }
+
+      const subSources = source.MediaStreams?.filter(stream =>
+        stream.Type === MediaStreamType.Subtitle && stream.IsExternal
+      ).map(sub => {
+        let subUrl: string;
+        if (sub.Path?.startsWith('http')) {
+          subUrl = sub.Path;
         } else {
-          url = await this.emby.getVideosApi().getVideoStreamUrl({
-            itemId: id,
-            static: true,
-            mediaSourceId: source.Id!,
-            api_key: this.activeInfo!.userInfo.accessToken
-          })
+          subUrl = `${this.activeInfo!.addressInfo.address}/Videos/${id}/${source.Id}/Subtitles/${sub.Index}/Stream.${sub.Codec}`;
         }
-        break
-      case MediaProtocol.Http:
-        url = source.Path
-        break
+        let subSource: FinSubSource = {
+          title: sub.Title || undefined,
+          index: sub.Index || undefined,
+          force: sub.IsForced || undefined,
+          'default': sub.IsDefault,
+          url: subUrl
+        }
+        return subSource
+      });
+
+      if (url) {
+        // 记录第一个来源的 mediaSourceId 用于播放上报
+        if (results.length === 0) {
+          this.lastMediaSourceId = source.Id || undefined
+        }
+        results.push({
+          id: source.Id || undefined,
+          name: source.Name || source.Id || id,
+          url: url,
+          sdr: sdr,
+          sub: subSources
+        })
+      }
     }
 
-    const subSources = source.MediaStreams?.filter(stream =>
-      stream.Type === MediaStreamType.Subtitle && stream.IsExternal
-    ).map(sub => {
-      let subUrl: string;
-      if (sub.Path?.startsWith('http')) {
-        subUrl = sub.Path;
-      } else {
-        subUrl = `${this.activeInfo!.addressInfo.address}/Videos/${id}/${source.Id}/Subtitles/${sub.Index}/Stream.${sub.Codec}`;
-      }
-      let subSource: FinSubSource = {
-        title: sub.Title || undefined,
-        index: sub.Index || undefined,
-        force: sub.IsForced || undefined,
-        default: sub.IsDefault,
-        url: subUrl
-      }
-      return subSource
-    });
-
-    if (url) {
-      return { url: url, sdr: sdr, sub: subSources }
+    if (results.length === 0) {
+      throw new Error("Source not support.")
     }
-    throw new Error("Source not support.")
+    return results
   }
 
   async search(keyword: string): Promise<FinItem[]> {

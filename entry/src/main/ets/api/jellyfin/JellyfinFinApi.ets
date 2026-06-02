@@ -21,6 +21,7 @@ import { FinItemSource } from "../../entity/FinItemSource";
 import { AppConfig } from "../../config/AppConfig";
 import { FinSubSource } from "../../entity/FinSubSource";
 
+
 /**
  * @Author peerless2012
  * @Email peerless2012@126.com
@@ -311,11 +312,19 @@ export class JellyfinFinApi implements FinVideoApi {
   }
 
   async getItemData(id: string): Promise<FinItemData> {
-    let itemData = await this.jellyfin.getItemsApi().getItemUserData({
-      itemId: id,
-      userId: this.activeInfo!.userInfo.userId
+    // getItemUserData (/UserItems/{id}/UserData) 在部分 Jellyfin 版本中
+    // 返回的 PlaybackPositionTicks 为 0（ItemId 全零），数据不可靠。
+    // getUserLibraryApi().getItem() 走 GET /Items/{id}，该接口不携带 userId，
+    // 服务端不会填充 UserData.PlaybackPositionTicks。
+    // 正确做法：走 getItems({ ids, userId, enableUserData: true })，
+    // 服务端会根据 userId 返回完整的 UserData（与列表接口逻辑一致）。
+    const result = await this.jellyfin.getItemsApi().getItems({
+      ids: [id],
+      userId: this.activeInfo!.userInfo.userId,
+      enableUserData: true
     })
-    return this.itemDataToFinItemData(itemData)!
+    const item = result.Items?.[0]
+    return this.itemDataToFinItemData(item?.UserData)!
   }
 
   async getFavourite(types?: FinItemType[] | undefined): Promise<FinItem[]> {
@@ -329,66 +338,78 @@ export class JellyfinFinApi implements FinVideoApi {
     return this.resultToFinItems(result)
   }
 
-  async getItemSource(id: string): Promise<FinItemSource> {
+  async getItemSource(id: string): Promise<Array<FinItemSource>> {
 
     let playbackInfo = await this.jellyfin.getMediaInfoApi().getPlaybackInfo({
       userId: this.activeInfo!.userInfo.userId,
       itemId: id
     })
 
-    // 目前只支持首个
-    let source = playbackInfo.MediaSources?.[0]!
+    let results = new Array<FinItemSource>()
+    let mediaSources = playbackInfo.MediaSources ?? []
 
-    // 判断是否是hdr
-    let sdr = true
-    source.MediaStreams?.forEach((source) => {
-      if (source.Type === MediaStreamType.Video) {
-        if (source.VideoRangeType) {
-          sdr = source.VideoRangeType === VideoRangeType.Sdr
-            || source.VideoRangeType == VideoRangeType.Unknown
-        } else if (source.VideoRange) {
-          sdr = source.VideoRange !== VideoRange.Hdr
+    for (let source of mediaSources) {
+      // 判断是否是hdr
+      let sdr = true
+      source.MediaStreams?.forEach((stream) => {
+        if (stream.Type === MediaStreamType.Video) {
+          if (stream.VideoRangeType) {
+            sdr = stream.VideoRangeType === VideoRangeType.Sdr
+              || stream.VideoRangeType == VideoRangeType.Unknown
+          } else if (stream.VideoRange) {
+            sdr = stream.VideoRange !== VideoRange.Hdr
+          }
         }
-      }
-    })
+      })
 
-    let url: string | undefined | null
-    switch (source.Protocol) {
-      case MediaProtocol.File:
-        url = await this.jellyfin.getVideosApi().getVideoStreamUrl({
-          itemId: id,
-          static: true,
-          mediaSourceId: id
+      let url: string | undefined | null
+      switch (source.Protocol) {
+        case MediaProtocol.File:
+          url = await this.jellyfin.getVideosApi().getVideoStreamUrl({
+            itemId: id,
+            static: true,
+            mediaSourceId: source.Id ?? id
+          })
+          break
+        case MediaProtocol.Http:
+          url = source.Path
+          break
+      }
+
+      const subSources = source.MediaStreams?.filter(stream =>
+        stream.Type === MediaStreamType.Subtitle && stream.IsExternal
+      ).map(sub => {
+        let subUrl: string;
+        if (sub.Path?.startsWith('http')) {
+          subUrl = sub.Path;
+        } else {
+          subUrl = `${this.activeInfo!.addressInfo.address}/Videos/${id}/${source.Id}/Subtitles/${sub.Index}/Stream.${sub.Codec}`;
+        }
+        let subSource: FinSubSource = {
+          title: sub.Title || undefined,
+          index: sub.Index || undefined,
+          force: sub.IsForced || undefined,
+          'default': sub.IsDefault,
+          url: subUrl
+        }
+        return subSource
+      });
+
+      if (url) {
+        results.push({
+          id: source.Id || undefined,
+          name: source.Name || source.Id || id,
+          url: url,
+          sdr: sdr,
+          sub: subSources
         })
-        break
-      case MediaProtocol.Http:
-        url = source.Path
-        break
+      }
     }
 
-    const subSources = source.MediaStreams?.filter(stream =>
-      stream.Type === MediaStreamType.Subtitle && stream.IsExternal
-    ).map(sub => {
-      let subUrl: string;
-      if (sub.Path?.startsWith('http')) {
-        subUrl = sub.Path;
-      } else {
-        subUrl = `${this.activeInfo!.addressInfo.address}/Videos/${id}/${source.Id}/Subtitles/${sub.Index}/Stream.${sub.Codec}`;
-      }
-      let subSource: FinSubSource = {
-        title: sub.Title || undefined,
-        index: sub.Index || undefined,
-        force: sub.IsForced || undefined,
-        default: sub.IsDefault,
-        url: subUrl
-      }
-      return subSource
-    });
-
-    if (url) {
-      return {url: url, sdr: sdr, sub: subSources}
+    if (results.length === 0) {
+      throw new Error("Source not support.")
     }
-    throw new Error("Source not support.")
+    return results
   }
 
   async search(keyword: string): Promise<FinItem[]> {

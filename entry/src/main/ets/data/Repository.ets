@@ -136,11 +136,11 @@ export class Repository extends FinRepository {
   }
 
   /**
-   * 获取媒体数据源
+   * 获取媒体数据源列表（支持多版本）
    * @param id
    * @returns
    */
-  public getMediaSource(id: string): Promise<FinItemSource> {
+  public getMediaSource(id: string): Promise<Array<FinItemSource>> {
     return this.requireApi().getItemSource(id)
   }
 
