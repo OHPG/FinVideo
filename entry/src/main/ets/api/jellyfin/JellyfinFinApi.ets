@@ -312,19 +312,12 @@ export class JellyfinFinApi implements FinVideoApi {
   }
 
   async getItemData(id: string): Promise<FinItemData> {
-    // getItemUserData (/UserItems/{id}/UserData) 在部分 Jellyfin 版本中
-    // 返回的 PlaybackPositionTicks 为 0（ItemId 全零），数据不可靠。
-    // getUserLibraryApi().getItem() 走 GET /Items/{id}，该接口不携带 userId，
-    // 服务端不会填充 UserData.PlaybackPositionTicks。
-    // 正确做法：走 getItems({ ids, userId, enableUserData: true })，
-    // 服务端会根据 userId 返回完整的 UserData（与列表接口逻辑一致）。
-    const result = await this.jellyfin.getItemsApi().getItems({
-      ids: [id],
-      userId: this.activeInfo!.userInfo.userId,
-      enableUserData: true
+    const userId = this.activeInfo!.userInfo.userId
+    const userData = await this.jellyfin.getItemsApi().getItemUserData({
+      itemId: id,
+      userId: userId
     })
-    const item = result.Items?.[0]
-    return this.itemDataToFinItemData(item?.UserData)!
+    return this.itemDataToFinItemData(userData)!
   }
 
   async getFavourite(types?: FinItemType[] | undefined): Promise<FinItem[]> {

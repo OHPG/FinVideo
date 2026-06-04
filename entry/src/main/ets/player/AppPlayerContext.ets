@@ -19,6 +19,10 @@ interface PlayAllArgs {
  * FinVideo 的播放上下文实现。
  * 继承 AVPlayerContext 基类，实现：
  * - 服务端播放进度上报（start/progress/stop）
+ *
+ * 上报时序保证：
+ * onPlaybackStart 在 onPrepared 钩子里触发，此时 resolve 已完成、
+ * getItemData 已返回正确进度，不会与服务端进度产生竞争。
  */
 export class AppPlayerContext extends AVPlayerContext {
 
@@ -52,10 +56,16 @@ export class AppPlayerContext extends AVPlayerContext {
 
   // ─── 覆写方法 ──────────────────────────────────────────────────────────────
 
+  protected onPrepared(params: PlaybackParams): void {
+    // resolve 已完成，此时上报 onPlaybackStart 不会与 getItemData 竞争
+    if (this.currentAssetId) {
+      this.reportPlaybackStart(this.currentAssetId)
+    }
+  }
+
   protected onAssetChanged(assetId: string, _description: avSession.AVMediaDescription): void {
     this.reportPlaybackStop()
     this.reportPosition = undefined
-    this.reportPlaybackStart(assetId)
   }
 
   resetItemState(): void {
@@ -120,9 +130,9 @@ export class AppPlayerContext extends AVPlayerContext {
   }
 
   private reportPlaybackStop() {
-    if (!this.currentAssetId) return
+    if (!this.currentAssetId || !this.reportPosition) return
     this.reportingPlayback = true
-    this.repository.onPlaybackStopped(this.currentAssetId, this.reportPosition || 0)
+    this.repository.onPlaybackStopped(this.currentAssetId, this.reportPosition)
       .then(() => { this.reportingPlayback = false })
       .catch((_e: Error) => { this.reportingPlayback = false })
   }

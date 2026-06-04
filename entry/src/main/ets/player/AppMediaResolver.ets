@@ -14,9 +14,10 @@ import { VersionSelectStrategy } from './VersionSelectStrategy'
  * 职责：
  * 1. 获取版本列表（getMediaSource 返回数组）
  * 2. 多版本时弹框让用户选择
- * 3. 通过 Repository.getItemData 获取播放进度，填充 PlaybackParams（断点续播）
- *    - Jellyfin：改用 getUserLibraryApi().getItem() 取内嵌 UserData，数据准确
- *    - getMediaSource 与 getItemData 并行请求，互不阻塞
+ * 3. 断点续播位置填充：从服务端 getItemData 获取进度
+ *
+ * 时序保证：onPlaybackStart 在 onPrepared 钩子中上报（resolve 完成后），
+ * 不会与 getItemData 产生竞争导致服务端进度被清零。
  */
 export class AppMediaResolver implements AVMediaResolver {
 
@@ -37,7 +38,7 @@ export class AppMediaResolver implements AVMediaResolver {
 
     // 播放历史查询与版本列表请求并行，互不依赖
     const historyPromise = this.appPrefer.enableHistory()
-      ? this.repository.getItemData(assetId).catch((_e: Error) => undefined)
+      ? this.repository.getItemData(assetId).catch(() => undefined)
       : Promise.resolve(undefined)
 
     // ─── 1. 获取版本列表 ──────────────────────────────────────────────────────
@@ -71,11 +72,8 @@ export class AppMediaResolver implements AVMediaResolver {
 
     // 断点续播位置
     const itemData = await historyPromise
-    if (itemData) {
-      const position = itemData.playedPositionTicks
-      if (position && position > 0) {
-        params.startPosition = position
-      }
+    if (itemData?.playedPositionTicks && itemData.playedPositionTicks > 0) {
+      params.startPosition = itemData.playedPositionTicks
     }
 
     return { url: selected.url, params: params }
