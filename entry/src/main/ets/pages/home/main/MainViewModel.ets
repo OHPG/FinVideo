@@ -17,40 +17,56 @@ export class MainViewModel extends ListViewModel {
 
   async loadData(type: LoadType): Promise<void> {
     let groupArray = new Array<GroupInfo>()
-    let resumeItems = await this.repository.getResumeItems()
-    if (resumeItems && resumeItems.length > 0) {
-      groupArray.push({
-        type: "Continue",
-        group: {
-          id: "",
-          name: "继续观看"
-        },
-        items: resumeItems
-      })
+    try {
+      let resumeItems = await this.repository.getResumeItems()
+      if (resumeItems && resumeItems.length > 0) {
+        groupArray.push({
+          type: "Continue",
+          group: {
+            id: "",
+            name: "继续观看"
+          },
+          items: resumeItems
+        })
+      }
+    } catch (e) {
+      console.error("MainViewModel", "getResumeItems failed: " + JSON.stringify(e))
     }
-    let nextUpItems = await this.repository.getNextUp()
-    if (nextUpItems && nextUpItems.length > 0) {
-      groupArray.push({
-        type: "Next",
-        group: {
-          id: "",
-          name: "接下来"
-        },
-        items: nextUpItems
-      })
+    try {
+      let nextUpItems = await this.repository.getNextUp()
+      if (nextUpItems && nextUpItems.length > 0) {
+        groupArray.push({
+          type: "Next",
+          group: {
+            id: "",
+            name: "接下来"
+          },
+          items: nextUpItems
+        })
+      }
+    } catch (e) {
+      console.error("MainViewModel", "getNextUp failed: " + JSON.stringify(e))
     }
-    let normalItems = await this.repository.getLibraryList()
-    if (normalItems) {
-      for (let item of normalItems) {
-        let items = await this.repository.getLibraryLatestMedia(item.id)
-        if (items && items.length > 0) {
-          groupArray.push({
-            type: "Normal",
-            group: item,
-            items: items
-          })
+    try {
+      let normalItems = await this.repository.getLibraryList()
+      if (normalItems) {
+        for (let item of normalItems) {
+          try {
+            let items = await this.repository.getLibraryLatestMedia(item.id)
+            if (items && items.length > 0) {
+              groupArray.push({
+                type: "Normal",
+                group: item,
+                items: items
+              })
+            }
+          } catch (e) {
+            console.error("MainViewModel", "getLibraryLatestMedia failed for " + item.id + ": " + JSON.stringify(e))
+          }
         }
       }
+    } catch (e) {
+      console.error("MainViewModel", "getLibraryList failed: " + JSON.stringify(e))
     }
     this.dataSource.initData(groupArray)
   }
