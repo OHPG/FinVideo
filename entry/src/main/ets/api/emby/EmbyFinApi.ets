@@ -250,7 +250,6 @@ export class EmbyFinApi implements FinVideoApi {
   async getLatestItems(id?: string | undefined): Promise<FinItem[]> {
     let result = await this.emby.getUserLibraryApi().getLatestMedia({
       userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.Episode, BaseItemKind.Movie],
       parentId: id,
       limit: 12
     })
