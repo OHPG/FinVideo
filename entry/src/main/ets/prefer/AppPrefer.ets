@@ -2,6 +2,7 @@ import { preferences } from "@kit.ArkData"
 import { FinPageSize, FinSortBy, FinSortOrder } from "@ohpg/fin-core"
 import { avSession } from "@kit.AVSessionKit"
 import { RotationType } from "../enum/RotationType"
+import { VersionSelectMode } from "../player/VersionSelectMode"
 
 /**
  * @Author peerless2012
@@ -61,6 +62,8 @@ export class AppPrefer {
   private static readonly KEY_SORT_BY = "sort_by"
 
   private static readonly KEY_PAGE_SIZE = "page_size"
+
+  private static readonly KEY_VERSION_SELECT_MODE = "player_version_select_mode"
 
   private readonly preference: preferences.Preferences
 
@@ -344,6 +347,18 @@ export class AppPrefer {
   }
 
   public flush() {
+    this.preference.flush()
+  }
+
+  public getVersionSelectMode(): VersionSelectMode {
+    if (this.preference.hasSync(AppPrefer.KEY_VERSION_SELECT_MODE)) {
+      return this.preference.getSync(AppPrefer.KEY_VERSION_SELECT_MODE, VersionSelectMode.Auto) as VersionSelectMode
+    }
+    return VersionSelectMode.Auto
+  }
+
+  public setVersionSelectMode(mode: VersionSelectMode) {
+    this.preference.putSync(AppPrefer.KEY_VERSION_SELECT_MODE, mode)
     this.preference.flush()
   }
 

@@ -457,7 +457,11 @@ export class PlexFinApi implements FinVideoApi {
         name: versionName,
         url: url,
         sdr: sdr,
-        sub: subSources
+        sub: subSources,
+        width: media.width ?? undefined,
+        height: media.height ?? undefined,
+        bitrate: media.bitrate ?? undefined,
+        videoCodec: media.videoCodec ?? undefined,
       })
     }
 

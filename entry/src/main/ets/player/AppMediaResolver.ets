@@ -5,6 +5,8 @@ import { AppPrefer } from '../prefer/AppPrefer'
 import { FinItemSource } from '../entity/FinItemSource'
 import { FinSubSource } from '../entity/FinSubSource'
 import { VersionPickerSheet } from '../sheet/VersionPickerSheet'
+import { VersionSelectMode } from './VersionSelectMode'
+import { VersionSelectStrategy } from './VersionSelectStrategy'
 
 /**
  * FinVideo 媒体解析器。
@@ -50,7 +52,12 @@ export class AppMediaResolver implements AVMediaResolver {
       if (preferredId) {
         selected = sources.find((s: FinItemSource): boolean => s.id === preferredId) ?? sources[0]
       } else {
-        selected = await this.pickVersion(sources)
+        const mode = this.appPrefer.getVersionSelectMode()
+        if (mode === VersionSelectMode.Ask) {
+          selected = await this.pickVersion(sources)
+        } else {
+          selected = VersionSelectStrategy.select(sources, mode)
+        }
       }
     }
 

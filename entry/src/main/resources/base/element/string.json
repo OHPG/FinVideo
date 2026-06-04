@@ -203,6 +203,42 @@
     {
       "name": "version_picker_cancel",
       "value": "取消"
+    },
+    {
+      "name": "prefer_version_select_mode",
+      "value": "版本选择策略"
+    },
+    {
+      "name": "prefer_version_mode_ask",
+      "value": "每次询问"
+    },
+    {
+      "name": "prefer_version_mode_ask_desc",
+      "value": "播放前手动选择版本"
+    },
+    {
+      "name": "prefer_version_mode_auto",
+      "value": "自动选择"
+    },
+    {
+      "name": "prefer_version_mode_auto_desc",
+      "value": "根据设备类型和网络状况智能选择"
+    },
+    {
+      "name": "prefer_version_mode_highest",
+      "value": "最高质量"
+    },
+    {
+      "name": "prefer_version_mode_highest_desc",
+      "value": "总是选择分辨率和码率最高的版本"
+    },
+    {
+      "name": "prefer_version_mode_lowest",
+      "value": "最低质量"
+    },
+    {
+      "name": "prefer_version_mode_lowest_desc",
+      "value": "总是选择最低质量版本，节省流量"
     }
   ]
 }

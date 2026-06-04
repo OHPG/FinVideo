@@ -423,12 +423,17 @@ export class EmbyFinApi implements FinVideoApi {
         if (results.length === 0) {
           this.lastMediaSourceId = source.Id || undefined
         }
+        const videoStream = source.MediaStreams?.find(s => s.Type === MediaStreamType.Video)
         results.push({
           id: source.Id || undefined,
           name: source.Name || source.Id || id,
           url: url,
           sdr: sdr,
-          sub: subSources
+          sub: subSources,
+          width: videoStream?.Width ?? undefined,
+          height: videoStream?.Height ?? undefined,
+          bitrate: source.Bitrate ?? undefined,
+          videoCodec: videoStream?.Codec ?? undefined,
         })
       }
     }
