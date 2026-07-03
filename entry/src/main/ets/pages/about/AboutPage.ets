@@ -1,6 +1,6 @@
 import { window } from '@kit.ArkUI'
 import { WebTool } from '@ohpg/fin-core'
-import { CommonConstants, ToolBar } from '@ohpg/fin-framework'
+import { CommonConstants, FinWebTool, ToolBar } from '@ohpg/fin-framework'
 import { pasteboard } from '@kit.BasicServicesKit'
 
 @Entry
@@ -55,9 +55,7 @@ struct AboutPage {
         .fontSize(16)
         .fontColor($r('sys.color.ohos_id_color_component_activated'))
           .onClick(() => {
-            WebTool.openBrowser(getContext()
-              , getContext().resourceManager
-                .getStringSync($r('app.string.prefer_about_official_web_value')))
+            FinWebTool.open(this.getUIContext(), $r('app.string.prefer_about_official_web'), "https://ohpg.org")
           })
       }
 

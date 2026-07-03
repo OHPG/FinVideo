@@ -1,8 +1,7 @@
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar"
 import { CommonConstants } from "../../common/CommonConstants"
-import { ActiveInfo, AppStorageKeys, WebTool } from '@ohpg/fin-core'
-import { FinRouter } from '@ohpg/fin-framework'
-import router from "@ohos.router"
+import { ActiveInfo, AppStorageKeys } from '@ohpg/fin-core'
+import { FinRouter, FinWebTool } from '@ohpg/fin-framework'
 import { pasteboard } from "@kit.BasicServicesKit"
 import { groupAttributeModifier, itemDividerBuilder } from '../../../style/Modifier'
 import { PreferItem } from '../../../widget/comp/PreferItem'
@@ -61,31 +60,31 @@ export struct PreferComponent {
             PreferItem({
               icon: $r('sys.symbol.satellite_map_fill'),
               title: $r('app.string.prefer_interface'),
-              callback: () => { router.pushUrl({ url: "pages/interface/InterfacePage" }) }
+              callback: () => { this.getUIContext().getRouter().pushUrl({ url: "pages/interface/InterfacePage" }) }
             })
             itemDividerBuilder()
             PreferItem({
               icon: $r('sys.symbol.play_video'),
               title: $r('app.string.prefer_video'),
-              callback: () => { router.pushUrl({ url: "pages/setting/VideoSettingPage" }) }
+              callback: () => { this.getUIContext().getRouter().pushUrl({ url: "pages/setting/VideoSettingPage" }) }
             })
             itemDividerBuilder()
             PreferItem({
               icon: $r('sys.symbol.play_hexagon'),
               title: $r('app.string.prefer_video_codec_prefer'),
-              callback: () => { router.pushUrl({ url: "pages/setting/CodecSettingPage" }) }
+              callback: () => { this.getUIContext().getRouter().pushUrl({ url: "pages/setting/CodecSettingPage" }) }
             })
             itemDividerBuilder()
             PreferItem({
               icon: $r('sys.symbol.hand_scribble'),
               title: $r('app.string.prefer_gesture'),
-              callback: () => { router.pushUrl({ url: "pages/setting/GestureSettingPage" }) }
+              callback: () => { this.getUIContext().getRouter().pushUrl({ url: "pages/setting/GestureSettingPage" }) }
             })
             itemDividerBuilder()
             PreferItem({
               icon: $r('sys.symbol.ellipsis_bubble'),
               title: $r('app.string.prefer_subtitle'),
-              callback: () => { router.pushUrl({ url: "pages/setting/SubtitleSettingPage" }) }
+              callback: () => { this.getUIContext().getRouter().pushUrl({ url: "pages/setting/SubtitleSettingPage" }) }
             })
           }
           .attributeModifier(groupAttributeModifier)
@@ -95,15 +94,16 @@ export struct PreferComponent {
             PreferItem({
               icon: $r('sys.symbol.message'),
               title: $r('app.string.prefer_about'),
-              callback: () => { router.pushUrl({ url: "pages/about/AboutPage" }) }
+              callback: () => { this.getUIContext().getRouter().pushUrl({ url: "pages/about/AboutPage" }) }
             })
             itemDividerBuilder()
             PreferItem({
               icon: $r('sys.symbol.doc_plaintext'),
               title: $r('app.string.prefer_privacy'),
               callback: () => {
-                WebTool.openBrowser(getContext(),
-                  "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1571961528242951104")
+                FinWebTool.open(this.getUIContext()
+                  , $r('app.string.prefer_privacy')
+                  , "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1571961528242951104")
               }
             })
           }
@@ -139,7 +139,7 @@ export struct PreferComponent {
               .fontSize(14)
               .fontColor($r('sys.color.ohos_id_color_component_activated'))
               .onClick(() => {
-                WebTool.openBrowser(getContext(), "https://beian.miit.gov.cn")
+                FinWebTool.open(this.getUIContext(), "ICP备案", "https://beian.miit.gov.cn")
               })
           }
           .padding({ bottom: CommonConstants.SPACE_16 })

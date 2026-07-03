@@ -3,10 +3,8 @@ import { AppConfig } from "../config/AppConfig";
 import { Repository } from "../data/Repository";
 import { AppPrefer } from "../prefer/AppPrefer";
 import { AVPlayerKit } from '@ohpg/player'
-import { Logger, ConsoleLogOutput } from '@ohpg/core'
 import { AppPlayerFactory } from "../player/AppPlayerFactory";
 import { AppPlayerContextFactory } from "../player/AppPlayerContextFactory";
-import BuildProfile from 'BuildProfile'
 
 /**
  * @Author peerless2012
@@ -25,14 +23,10 @@ export class App extends AbilityStage {
     AVPlayerKit.init(appContext, new AppPlayerFactory())
     AVPlayerKit.setContextFactory(new AppPlayerContextFactory())
     // Logger
-    const logger = new Logger(Logger.DEFAULT_BUFFER_CAPACITY, BuildProfile.DEBUG)
-    logger.addOutput(new ConsoleLogOutput())
-    AppStorage.setOrCreate(Logger.LOGGER_KEY, logger)
     AppStorage.setOrCreate(AppPrefer.PREFER, new AppPrefer(appContext))
     AppStorage.setOrCreate(AppConfig.CONFIG, new AppConfig(appContext))
     const repository = new Repository(appContext)
     AppStorage.setOrCreate(Repository.REPOSITORY, repository)
-    // MediaResolver 需要 UIContext，延迟到 EntryAbility.onWindowStageCreate 中注册
   }
 
   onConfigurationUpdate(newConfig: Configuration): void {
