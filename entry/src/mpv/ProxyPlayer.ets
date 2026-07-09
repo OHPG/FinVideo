@@ -1,4 +1,6 @@
-import { MpvPlayer } from "@ohpg/mpv";
+import { MPVLib, MpvPlayer } from "@ohpg/mpv";
+import { AVCodecType, AVRenderType } from "@ohpg/player";
+import BuildProfile from "entry/BuildProfile";
 
 /**
  * @Author peerless2012
@@ -7,4 +9,9 @@ import { MpvPlayer } from "@ohpg/mpv";
  * @Version V1.0
  * @Description
  */
-export class ProxyPlayer extends MpvPlayer {}
+export class ProxyPlayer extends MpvPlayer {
+  constructor(context: Context, type: AVRenderType, codecPrefer?: AVCodecType) {
+    super(context, type, codecPrefer)
+    MPVLib.DEBUG = BuildProfile.DEBUG
+  }
+}
