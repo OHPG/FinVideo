@@ -371,20 +371,7 @@ export class EmbyFinApi implements FinVideoApi {
       switch (source.Protocol) {
         case MediaProtocol.File:
           if (source.DirectStreamUrl) {
-            let directUrl = source.DirectStreamUrl
-            if (!directUrl.startsWith('http')) {
-              let base = this.activeInfo!.addressInfo.address
-              if (!base.endsWith('/emby') && !directUrl.startsWith('/emby/')) {
-                directUrl = base + '/emby' + directUrl
-              } else {
-                directUrl = base + directUrl
-              }
-            }
-            if (source.AddApiKeyToDirectStreamUrl && !directUrl.includes('api_key=')) {
-              let separator = directUrl.includes('?') ? '&' : '?'
-              directUrl = directUrl + separator + 'api_key=' + this.activeInfo!.userInfo.accessToken
-            }
-            url = directUrl
+            url = this.buildDirectStreamUrl(source.DirectStreamUrl, source.AddApiKeyToDirectStreamUrl ?? false)
           } else {
             url = await this.emby.getVideosApi().getVideoStreamUrl({
               itemId: id,
@@ -395,7 +382,10 @@ export class EmbyFinApi implements FinVideoApi {
           }
           break
         case MediaProtocol.Http:
-          url = source.Path
+          // Http 协议的 DirectStreamUrl 是 Emby 生成的完整相对路径，直接拼 host 即可
+          url = source.DirectStreamUrl
+            ? this.buildDirectStreamUrl(source.DirectStreamUrl, source.AddApiKeyToDirectStreamUrl ?? false)
+            : source.Path
           break
       }
 
@@ -528,6 +518,22 @@ export class EmbyFinApi implements FinVideoApi {
       playSessionId: this.lastPlaySessionId || '',
       positionTicks: position * 10000
     })
+  }
+
+  /**
+   * 将 DirectStreamUrl 补全为完整 URL，并按需追加 api_key。
+   * 调用方负责在传入前处理协议相关的路径前缀（如 File 协议的 /emby）。
+   */
+  private buildDirectStreamUrl(directStreamUrl: string, addApiKey: boolean): string {
+    let url = directStreamUrl
+    if (!url.startsWith('http')) {
+      url = this.activeInfo!.addressInfo.address + url
+    }
+    if (addApiKey && !url.includes('api_key=')) {
+      const sep = url.includes('?') ? '&' : '?'
+      url = url + sep + 'api_key=' + this.activeInfo!.userInfo.accessToken
+    }
+    return url
   }
 
   async release(): Promise<void> {
