@@ -163,8 +163,8 @@ export class JellyfinFinApi implements FinVideoApi {
   private resultToFinPage(result: BaseItemDtoQueryResult, index?: number): FinPage {
     let finItems = new Array<FinItem>()
     result.Items?.forEach((item) => finItems.push(this.itemToFinItem(item)))
-    let cur: number = result.StartIndex ? result.StartIndex : 0
-    let more: boolean = cur + finItems.length < (result.TotalRecordCount || 0) - 1
+    let cur: number = result.StartIndex ?? index ?? 0
+    let more: boolean = cur + finItems.length < (result.TotalRecordCount || 0)
     return {cur: cur, items: finItems, more: more}
   }
 
