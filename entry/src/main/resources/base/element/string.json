@@ -157,6 +157,14 @@
       "value": "隐私政策"
     },
     {
+      "name": "prefer_rate",
+      "value": "评价一下"
+    },
+    {
+      "name": "prefer_version",
+      "value": "版本"
+    },
+    {
       "name": "search_title",
       "value": "搜索"
     },

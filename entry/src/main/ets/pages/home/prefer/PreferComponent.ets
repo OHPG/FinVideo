@@ -1,10 +1,12 @@
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar"
 import { CommonConstants } from "../../common/CommonConstants"
-import { ActiveInfo, AppStorageKeys } from '@ohpg/fin-core'
+import { ActiveInfo, AppStorageKeys, CommentTool, MarketUtil } from '@ohpg/fin-core'
 import { FinRouter, FinWebTool } from '@ohpg/fin-framework'
 import { pasteboard } from "@kit.BasicServicesKit"
 import { groupAttributeModifier, itemDividerBuilder } from '../../../style/Modifier'
 import { PreferItem } from '../../../widget/comp/PreferItem'
+import { common } from '@kit.AbilityKit'
+import BuildProfile from 'entry/BuildProfile'
 
 /**
  * @Author peerless2012
@@ -104,6 +106,23 @@ export struct PreferComponent {
                 FinWebTool.open(this.getUIContext()
                   , $r('app.string.prefer_privacy')
                   , "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1571961528242951104")
+              }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.message_on_message'),
+              title: $r('app.string.prefer_rate'),
+              callback: () => {
+                CommentTool.showComment(this.getUIContext().getHostContext() as common.UIAbilityContext)
+              }
+            })
+            itemDividerBuilder()
+            PreferItem({
+              icon: $r('sys.symbol.bag'),
+              title: $r('app.string.prefer_version'),
+              tips: `V${BuildProfile.VERSION_NAME}(${BuildProfile.VERSION_CODE})`,
+              callback: () => {
+                MarketUtil.gotoMarket(this.getUIContext().getHostContext() as common.UIAbilityContext)
               }
             })
           }
