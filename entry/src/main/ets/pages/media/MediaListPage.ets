@@ -5,7 +5,7 @@ import { MediaListVewModel } from './MediaListVewModel'
 import { GridRefreshView } from '@ohpg/fin-framework'
 import { ToolBar } from '@ohpg/fin-framework'
 import { MediaItem } from '../../widget/media/MediaItem'
-import { FinItem } from '@ohpg/fin-core'
+import { BreakpointSystem, FinItem } from '@ohpg/fin-core'
 import { SortMenu } from '../../widget/menu/SortMenu'
 
 @Entry
@@ -17,6 +17,8 @@ struct MediaListPage {
   private viewModel = new MediaListVewModel(this.args, this.getUIContext().getHostContext()!)
 
   @StorageProp('currentAvoidArea') currentAvoidArea?: window.AvoidArea = undefined
+
+  @StorageProp(BreakpointSystem.CURRENT_WIDTH_BREAKPOINT) currentWidthBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
 
   @Builder
   mediaListView(info: Object, index: number) {
@@ -42,7 +44,7 @@ struct MediaListPage {
           }
           attr.rowsGap = CommonConstants.SPACE_16
           attr.columnsGap = CommonConstants.SPACE_12
-          attr.columnsTemplate = 'repeat(auto-fit, 140)'
+          attr.columnsTemplate = CommonConstants.gridColumnsTemplate(this.currentWidthBreakpoint)
           attr.width = CommonConstants.FULL_PERCENT
           attr.height = CommonConstants.FULL_PERCENT
         },

@@ -5,7 +5,7 @@ import { GridRefreshView } from '@ohpg/fin-framework'
 import { MediaItem } from '../../widget/media/MediaItem'
 import { FavouriteListArgs } from './FavouriteListArgs'
 import { ToolBar } from '@ohpg/fin-framework'
-import { FinItem, FinItemType } from '@ohpg/fin-core'
+import { BreakpointSystem, FinItem, FinItemType } from '@ohpg/fin-core'
 import { EpisodeItem } from '../../widget/media/EpisodeItem'
 
 @Entry
@@ -17,6 +17,8 @@ struct FavouriteListPage {
   private viewModel = new FavouriteListVewModel(this.args, this.getUIContext().getHostContext()!)
 
   @StorageProp('currentAvoidArea') currentAvoidArea?: window.AvoidArea = undefined
+
+  @StorageProp(BreakpointSystem.CURRENT_WIDTH_BREAKPOINT) currentWidthBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
 
   @Builder
   mediaListView(info: Object, index: number) {
@@ -44,7 +46,7 @@ struct FavouriteListPage {
           }
           attr.rowsGap = CommonConstants.SPACE_16
           attr.columnsGap = CommonConstants.SPACE_12
-          attr.columnsTemplate = 'repeat(auto-fit, 140)'
+          attr.columnsTemplate = CommonConstants.gridColumnsTemplate(this.currentWidthBreakpoint)
           attr.width = CommonConstants.FULL_PERCENT
           attr.height = CommonConstants.FULL_PERCENT
         },

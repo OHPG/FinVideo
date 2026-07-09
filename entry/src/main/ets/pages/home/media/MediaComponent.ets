@@ -4,7 +4,7 @@ import { CommonConstants } from "../../common/CommonConstants";
 import { GridRefreshView } from "@ohpg/fin-framework";
 import { HomeToolBar } from "../../../widget/bar/HomeToolBar";
 import { MediaRouter } from "../../common/MediaRouter";
-import { FinItem } from "@ohpg/fin-core";
+import { BreakpointSystem, FinItem } from "@ohpg/fin-core";
 
 /**
  * @Author peerless2012
@@ -19,6 +19,8 @@ export struct MediaComponent {
   private viewModel = new MediaViewModel(getContext())
 
   @Consume("bottomOffset") bottomOffset: number
+
+  @StorageProp(BreakpointSystem.CURRENT_WIDTH_BREAKPOINT) currentWidthBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
 
   @Builder
   mediaLibraryItem(item: Object, index: number) {
@@ -44,7 +46,7 @@ export struct MediaComponent {
           }
           attr.rowsGap = CommonConstants.SPACE_12
           attr.columnsGap = CommonConstants.SPACE_12
-          attr.columnsTemplate = 'repeat(auto-fit, 140)'
+          attr.columnsTemplate = CommonConstants.gridColumnsTemplate(this.currentWidthBreakpoint)
           attr.width = CommonConstants.FULL_PERCENT
           attr.height = CommonConstants.FULL_PERCENT
         },

@@ -54,5 +54,16 @@ export class CommonConstants {
 
   static readonly ITEM_HEIGHT = 240
 
+  /**
+   * 根据宽度断点返回 grid 的 columnsTemplate。
+   * sm（手机）: 110vp/列，md（平板竖屏）: 140vp/列，lg（平板横屏）: 160vp/列
+   */
+  static gridColumnsTemplate(widthBreakpoint: WidthBreakpoint): string {
+    if (widthBreakpoint >= WidthBreakpoint.WIDTH_MD) {
+      return 'repeat(auto-fit, 140)'
+    } else {
+      return 'repeat(auto-fit, 100)'
+    }
+  }
 
 }
