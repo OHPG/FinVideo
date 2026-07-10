@@ -142,7 +142,7 @@ struct PersonPage {
       .contentStartOffset(CommonConstants.SPACE_16)
       .contentEndOffset(CommonConstants.SPACE_16)
       .width(CommonConstants.FULL_PERCENT)
-      .height(this.isPad() ? 280 : 240)
+      .height(this.isPad() ? 280 : 260)
     }
     .alignItems(HorizontalAlign.Start)
     .width(CommonConstants.FULL_PERCENT)
