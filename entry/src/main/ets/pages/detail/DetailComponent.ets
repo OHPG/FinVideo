@@ -199,12 +199,10 @@ export struct DetailOperate {
 
 }
 
-// ─── 背景图（延伸到海报行底部，叠加渐变遮罩） ─────────────────────────────────
+// ─── 背景图 + 海报行（延伸到内容底部，叠加渐变遮罩） ──────────────────────────
 
 @Component
 export struct DetailCover {
-
-  @StorageLink("Repository") repository?: Repository = undefined
 
   @Prop itemDto: FinItem
 
@@ -212,19 +210,18 @@ export struct DetailCover {
 
   @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
-  /** 海报行 slot：贴底对齐 */
-  @BuilderParam posterRow: () => void
-
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
-      // backdrop：position 绝对覆盖填满 Stack，顶部 crop
+      // backdrop：填满 Stack，顶部对齐 crop
       Image(this.itemDto?.image?.backdrop)
         .alt($r('app.media.alt'))
         .objectFit(ImageFit.Cover)
+        .align(Alignment.Top)
+        .autoResize(true)
         .width(CommonConstants.FULL_PERCENT)
         .height(CommonConstants.FULL_PERCENT)
 
-      // 底部渐变遮罩：从透明过渡到页面背景色
+      // 底部渐变遮罩：透明 → 背景色
       Column()
         .width(CommonConstants.FULL_PERCENT)
         .height('60%')
@@ -237,14 +234,14 @@ export struct DetailCover {
         })
         .hitTestBehavior(HitTestMode.None)
 
-      // 海报 + 标题区，贴底对齐
-      this.posterRow()
+      // 海报 + 标题行，贴底对齐
+      DetailPosterRow({ itemDto: this.itemDto })
     }
     .width(CommonConstants.FULL_PERCENT)
     .height(
       (this.currentWidthBreakpoint <= WidthBreakpoint.WIDTH_SM ? 200 : 260)
         + this.getUIContext().px2vp(this.avoidArea?.topRect.height ?? 0)
-        + 56 // ohos_id_navigation_bar_height
+        + 56
     )
   }
 
@@ -423,7 +420,7 @@ export struct DetailPosterRow {
         .aspectRatio(CommonConstants.ITEM_RATIO)
         .shadow(ShadowStyle.OUTER_DEFAULT_MD)
 
-      // 标题信息区：纯内容，无背景
+      // 标题信息区：纯内容，底部对齐
       Column({ space: CommonConstants.SPACE_8 }) {
         Text(this.itemDto?.name)
           .fontSize($r('sys.float.Title_M'))
@@ -435,9 +432,7 @@ export struct DetailPosterRow {
         DetailMetaTags({ itemDto: this.itemDto, onDark: true })
       }
       .alignItems(HorizontalAlign.Start)
-      .justifyContent(FlexAlign.End)
       .layoutWeight(1)
-      .height(CommonConstants.FULL_PERCENT)
     }
     .alignItems(VerticalAlign.Bottom)
     .width(CommonConstants.FULL_PERCENT)

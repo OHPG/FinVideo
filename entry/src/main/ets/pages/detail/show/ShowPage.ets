@@ -1,6 +1,6 @@
 import { CommonConstants } from '../../common/CommonConstants'
 import { DetailArgs } from '../DetailArgs'
-import { DetailCover, DetailFooter, DetailPosterRow, DetailContent } from '../DetailComponent'
+import { DetailCover, DetailFooter, DetailContent } from '../DetailComponent'
 import { ShowViewModel } from './ShowViewModel'
 import { window } from '@kit.ArkUI'
 import { ShowInfo } from './ShowInfo'
@@ -31,9 +31,7 @@ struct ShowPage {
   @Builder
   showScrollView(info?: ShowInfo) {
     Column({space: CommonConstants.SPACE_12}) {
-      DetailCover({itemDto: info?.show}) {
-        DetailPosterRow({itemDto: info?.show})
-      }
+      DetailCover({itemDto: info?.show})
       if (this.currentWidthBreakpoint <= WidthBreakpoint.WIDTH_SM) {
         DetailContent({itemDto: info?.show})
         if (info?.nextUp) {

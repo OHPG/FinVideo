@@ -2,7 +2,7 @@ import { window } from '@kit.ArkUI'
 import { DetailArgs } from '../DetailArgs'
 import { MovieViewModel } from './MovieViewModel'
 import { CommonConstants } from '../../common/CommonConstants'
-import { DetailCover, DetailFooter, DetailPosterRow, DetailContent, DetailSourceBar } from '../DetailComponent'
+import { DetailCover, DetailFooter, DetailContent, DetailSourceBar } from '../DetailComponent'
 import { ScrollRefreshView } from '@ohpg/fin-framework'
 import { BreakpointSystem, FinItem } from '@ohpg/fin-core'
 import { ToolBar } from '@ohpg/fin-framework'
@@ -32,9 +32,7 @@ struct MoviePage {
   @Builder
   movieScrollView(item?: FinItem) {
     Column({ space: CommonConstants.SPACE_12 }) {
-      DetailCover({ itemDto: item }) {
-        DetailPosterRow({ itemDto: item })
-      }
+      DetailCover({ itemDto: item })
       DetailContent({ itemDto: item })
       if (item && item.person && item.person.length > 0) {
         DetailFooter({ itemDto: item })
