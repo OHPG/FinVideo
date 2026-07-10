@@ -1,4 +1,5 @@
 import { FinSubSource } from "./FinSubSource"
+import { FinMediaTrack } from "./FinMediaTrack"
 
 export interface FinItemSource {
 
@@ -29,5 +30,11 @@ export interface FinItemSource {
 
   /** 视频编码，如 h264 / hevc / av1 / vp9，用于版本自动选择策略 */
   videoCodec?: string
+
+  /** 媒体轨道列表（视频轨 + 音频轨） */
+  tracks?: Array<FinMediaTrack>
+
+  /** 文件路径 */
+  path?: string
 
 }

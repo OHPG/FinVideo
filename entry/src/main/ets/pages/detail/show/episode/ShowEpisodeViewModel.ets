@@ -15,7 +15,7 @@ export class ShowEpisodeViewModel extends DetailViewModel {
       id: args.id!,
       name: args.name!
     })
-    this.userItemDto = args.data
+    this.userItemDto = args.data!
   }
 
 }

@@ -1,6 +1,6 @@
 import { CommonConstants } from '../../common/CommonConstants'
 import { DetailArgs } from '../DetailArgs'
-import { DetailCover, DetailFooter, DetailHeader } from '../DetailComponent'
+import { DetailCover, DetailFooter, DetailPosterRow, DetailContent } from '../DetailComponent'
 import { ShowViewModel } from './ShowViewModel'
 import { window } from '@kit.ArkUI'
 import { ShowInfo } from './ShowInfo'
@@ -32,32 +32,27 @@ struct ShowPage {
   showScrollView(info?: ShowInfo) {
     Column({space: CommonConstants.SPACE_12}) {
       DetailCover({itemDto: info?.show})
+      DetailPosterRow({itemDto: info?.show})
       if (this.currentWidthBreakpoint <= WidthBreakpoint.WIDTH_SM) {
-        DetailHeader({itemDto: info?.show})
-        // 季及接下来
+        DetailContent({itemDto: info?.show})
         if (info?.nextUp) {
           ShowNextUp({
             nextDto: info.nextUp
           })
         }
       } else {
-        Row() {
-          // 简介
-          DetailHeader({itemDto: info?.show})
-            .width(info?.nextUp ? '50%' : '100%')
-            .height('auto')
-          // 季及接下来
+        Row({ space: CommonConstants.SPACE_12 }) {
+          DetailContent({itemDto: info?.show})
+            .layoutWeight(1)
           if (info?.nextUp) {
             ShowNextUp({
               nextDto: info.nextUp
             })
-              .width('50%')
-              .height('auto')
+              .layoutWeight(1)
           }
         }
-        .width('100%')
+        .width(CommonConstants.FULL_PERCENT)
         .alignItems(VerticalAlign.Top)
-        .justifyContent(FlexAlign.Start)
       }
       if (info?.seasons) {
         ShowSeasons({
@@ -68,31 +63,31 @@ struct ShowPage {
       if (info?.show && info.show.person && info.show.person.length > 0) {
         DetailFooter({itemDto: info?.show})
       }
+      // 剧集的版本信息在剧集详情页展示，此处不需要底部 Source 信息栏
     }
     .padding({
-      bottom: px2vp(this.avoidArea?.bottomRect.height)
+      bottom: (px2vp(this.avoidArea?.bottomRect.height) || 0) + CommonConstants.SPACE_16
     })
     .width(CommonConstants.FULL_PERCENT)
   }
 
   build() {
-    Stack() {
+    Stack({ alignContent: Alignment.Top }) {
       ScrollRefreshView({
         source: this.viewModel,
         itemLayout: (info: ESObject) => {
           this.showScrollView(info)
         }
       })
+
       ToolBar({
         color: $r('sys.color.font_on_primary')
       })
     }
-    .alignContent(Alignment.Top)
     .width(CommonConstants.FULL_PERCENT)
     .height(CommonConstants.FULL_PERCENT)
   }
 
   aboutToDisappear(): void {
   }
-
 }

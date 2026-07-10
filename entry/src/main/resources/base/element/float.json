@@ -191,6 +191,46 @@
     {
       "name": "hot_card_item_height",
       "value": "56vp"
+    },
+    {
+      "name": "detail_poster_width",
+      "value": "120vp"
+    },
+    {
+      "name": "detail_poster_height",
+      "value": "180vp"
+    },
+    {
+      "name": "detail_poster_width_tablet",
+      "value": "160vp"
+    },
+    {
+      "name": "detail_poster_height_tablet",
+      "value": "240vp"
+    },
+    {
+      "name": "detail_version_chip_height",
+      "value": "32vp"
+    },
+    {
+      "name": "detail_version_chip_spacing",
+      "value": "8vp"
+    },
+    {
+      "name": "detail_source_bar_min_height",
+      "value": "56vp"
+    },
+    {
+      "name": "detail_meta_tag_height",
+      "value": "24vp"
+    },
+    {
+      "name": "detail_backdrop_height",
+      "value": "240vp"
+    },
+    {
+      "name": "detail_backdrop_height_tablet",
+      "value": "280vp"
     }
   ]
 }

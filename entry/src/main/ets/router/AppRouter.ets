@@ -44,7 +44,7 @@ export class AppRouter {
         return
       }
       await dialog.dismiss(true)
-      if (!playerManager.playAll(itemDtoArray, itemIndex)) {
+      if (!playerManager.playAll(itemDtoArray, itemIndex, args.preferredSourceId)) {
         context.getPromptAction().showToast({ message: $r('app.string.global_operation_busy') })
         return
       }

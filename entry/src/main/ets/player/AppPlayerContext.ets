@@ -13,6 +13,7 @@ import { Repository } from '../data/Repository'
 interface PlayAllArgs {
   items: Array<FinItem>
   index: number
+  preferredSourceId?: string
 }
 
 /**
@@ -33,6 +34,9 @@ export class AppPlayerContext extends AVPlayerContext {
 
   private reportPosition?: number = undefined
 
+  /** 用户在详情页选中的版本 ID（透传到 extras 供 AppMediaResolver 读取） */
+  private preferredSourceId?: string = undefined
+
   constructor(uiContext: UIContext, repository: Repository) {
     let playerPrefer = AVPlayerKit.getPrefer()
     let config = playerPrefer.toPlayerConfig()
@@ -45,6 +49,7 @@ export class AppPlayerContext extends AVPlayerContext {
 
   protected buildPlayData(args: Object): PlayData {
     let playArgs = args as PlayAllArgs
+    this.preferredSourceId = playArgs.preferredSourceId
     let items = this.buildQueue(playArgs.items)
     let startId = playArgs.items[playArgs.index].id
     return { items: items, startId: startId }
@@ -90,6 +95,11 @@ export class AppPlayerContext extends AVPlayerContext {
         params.startPosition = item.data.playedPositionTicks
       }
       extra[PlaybackParamsTool.KEY] = params
+
+      // 透传用户在详情页选中的版本 ID
+      if (this.preferredSourceId) {
+        extra['preferredSourceId'] = this.preferredSourceId
+      }
 
       queueItems.push({
         itemId: i,

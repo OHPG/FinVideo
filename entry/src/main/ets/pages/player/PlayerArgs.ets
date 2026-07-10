@@ -12,4 +12,10 @@ export interface PlayerArgs extends DetailArgs {
 
   type: FinItemType
 
+  /**
+   * 用户在详情页选中的版本 ID。
+   * 不传时由 AppMediaResolver 按版本选择策略自动决定。
+   */
+  preferredSourceId?: string
+
 }

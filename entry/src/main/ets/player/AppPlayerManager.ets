@@ -12,10 +12,11 @@ export class AppPlayerManager extends AVWidgetPlaybackManager {
    * 播放列表
    * @param items 播放列表
    * @param index 起始索引
+   * @param preferredSourceId 用户在详情页选中的版本 ID（可选）
    * @returns true=可以跳转播放页，false=当前繁忙
    */
-  public playAll(items: Array<FinItem>, index: number = 0): boolean {
-    let args: PlayAllArgs = { items: items, index: index }
+  public playAll(items: Array<FinItem>, index: number = 0, preferredSourceId?: string): boolean {
+    let args: PlayAllArgs = { items: items, index: index, preferredSourceId: preferredSourceId }
     return this.dispatchPlay(args)
   }
 }
@@ -23,4 +24,5 @@ export class AppPlayerManager extends AVWidgetPlaybackManager {
 interface PlayAllArgs {
   items: Array<FinItem>
   index: number
+  preferredSourceId?: string
 }

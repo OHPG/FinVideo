@@ -247,6 +247,122 @@
     {
       "name": "prefer_version_mode_lowest_desc",
       "value": "总是选择最低质量版本，节省流量"
+    },
+    {
+      "name": "detail_play",
+      "value": "播放"
+    },
+    {
+      "name": "detail_version",
+      "value": "版本"
+    },
+    {
+      "name": "detail_version_default",
+      "value": "默认"
+    },
+    {
+      "name": "detail_subtitle",
+      "value": "字幕"
+    },
+    {
+      "name": "detail_subtitle_none",
+      "value": "无"
+    },
+    {
+      "name": "detail_hdr",
+      "value": "HDR"
+    },
+    {
+      "name": "detail_no_versions",
+      "value": "暂无版本信息"
+    },
+    {
+      "name": "detail_genres",
+      "value": "风格"
+    },
+    {
+      "name": "detail_directors",
+      "value": "导演"
+    },
+    {
+      "name": "detail_writers",
+      "value": "编剧"
+    },
+    {
+      "name": "detail_cast",
+      "value": "演职人员"
+    },
+    {
+      "name": "detail_overview",
+      "value": "简介"
+    },
+    {
+      "name": "detail_runtime_format",
+      "value": "%dmin"
+    },
+    {
+      "name": "detail_media_info",
+      "value": "媒体信息"
+    },
+    {
+      "name": "detail_track_codec",
+      "value": "编码"
+    },
+    {
+      "name": "detail_track_resolution",
+      "value": "分辨率"
+    },
+    {
+      "name": "detail_track_framerate",
+      "value": "帧率"
+    },
+    {
+      "name": "detail_track_bitrate",
+      "value": "比特率"
+    },
+    {
+      "name": "detail_track_range",
+      "value": "动态范围"
+    },
+    {
+      "name": "detail_track_aspect",
+      "value": "宽高比"
+    },
+    {
+      "name": "detail_track_profile",
+      "value": "配置"
+    },
+    {
+      "name": "detail_track_bitdepth",
+      "value": "位深"
+    },
+    {
+      "name": "detail_track_pixfmt",
+      "value": "颜色格式"
+    },
+    {
+      "name": "detail_track_language",
+      "value": "语言"
+    },
+    {
+      "name": "detail_track_layout",
+      "value": "布局"
+    },
+    {
+      "name": "detail_track_channels",
+      "value": "声道"
+    },
+    {
+      "name": "detail_track_samplerate",
+      "value": "采样率"
+    },
+    {
+      "name": "detail_track_external",
+      "value": "外挂"
+    },
+    {
+      "name": "detail_track_forced",
+      "value": "强制"
     }
   ]
 }

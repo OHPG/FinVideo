@@ -78,6 +78,9 @@ export class PlexFinApi implements FinVideoApi {
       seriesId: item.grandparentRatingKey || undefined,
       seasonId: item.parentRatingKey || undefined,
       runtimeTicks: item.duration || undefined,
+      productionYear: item.year ? item.year.toString() : undefined,
+      officialRating: item.contentRating || undefined,
+      communityRating: item.rating ? item.rating.toString() : undefined,
       image: {
         primary: this.buildImage(item.thumb),
         backdrop: this.buildImage(item.art || item.grandparentArt)

@@ -20,6 +20,7 @@ import { BaseItemDtoQueryResult } from "@ohpg/jellyfin/src/main/ets/model/BaseIt
 import { FinItemSource } from "../../entity/FinItemSource";
 import { AppConfig } from "../../config/AppConfig";
 import { FinSubSource } from "../../entity/FinSubSource";
+import { FinMediaTrack } from "../../entity/FinMediaTrack";
 
 
 /**
@@ -118,6 +119,9 @@ export class JellyfinFinApi implements FinVideoApi {
       seriesId: item.SeriesId || undefined,
       seasonId: item.SeasonId || undefined,
       runtimeTicks: item.RunTimeTicks ? item.RunTimeTicks / 10000 : undefined,
+      productionYear: item.ProductionYear ? item.ProductionYear.toString() : undefined,
+      officialRating: item.OfficialRating || undefined,
+      communityRating: item.CommunityRating ? item.CommunityRating.toString() : undefined,
       image: {
         primary: this.buildImage(item, ImageType.Primary),
         backdrop: this.buildImage(item, ImageType.Backdrop)
@@ -390,6 +394,51 @@ export class JellyfinFinApi implements FinVideoApi {
 
       if (url) {
         const videoStream = source.MediaStreams?.find(s => s.Type === MediaStreamType.Video)
+
+        // 构建轨道信息
+        const tracks: FinMediaTrack[] = []
+        source.MediaStreams?.forEach((stream) => {
+          if (stream.Type === MediaStreamType.Video) {
+            tracks.push({
+              type: 'Video',
+              title: stream.DisplayTitle || `${stream.Codec?.toUpperCase() ?? 'Video'}`,
+              codec: stream.Codec || undefined,
+              width: stream.Width ?? undefined,
+              height: stream.Height ?? undefined,
+              frameRate: stream.RealFrameRate ?? stream.AverageFrameRate ?? undefined,
+              bitrate: stream.BitRate ?? undefined,
+              videoRangeType: stream.VideoRangeType || undefined,
+              aspectRatio: stream.AspectRatio || undefined,
+              profile: stream.Profile || undefined,
+              bitDepth: stream.BitDepth ?? undefined,
+              pixelFormat: stream.PixelFormat || undefined,
+              isDefault: stream.IsDefault ?? undefined
+            })
+          } else if (stream.Type === MediaStreamType.Audio) {
+            tracks.push({
+              type: 'Audio',
+              title: stream.DisplayTitle || `${stream.Codec?.toUpperCase() ?? 'Audio'}`,
+              codec: stream.Codec || undefined,
+              language: stream.Language || undefined,
+              bitrate: stream.BitRate ?? undefined,
+              channels: stream.Channels ?? undefined,
+              channelLayout: stream.ChannelLayout || undefined,
+              sampleRate: stream.SampleRate ?? undefined,
+              isDefault: stream.IsDefault ?? undefined
+            })
+          } else if (stream.Type === MediaStreamType.Subtitle) {
+            tracks.push({
+              type: 'Subtitle',
+              title: stream.DisplayTitle || stream.Title || stream.Language || 'Subtitle',
+              codec: stream.Codec || undefined,
+              language: stream.Language || undefined,
+              isDefault: stream.IsDefault ?? undefined,
+              isExternal: stream.IsExternal ?? undefined,
+              isForced: stream.IsForced ?? undefined
+            })
+          }
+        })
+
         results.push({
           id: source.Id || undefined,
           name: source.Name || source.Id || id,
@@ -400,6 +449,8 @@ export class JellyfinFinApi implements FinVideoApi {
           height: videoStream?.Height ?? undefined,
           bitrate: source.Bitrate ?? undefined,
           videoCodec: videoStream?.Codec ?? undefined,
+          tracks: tracks.length > 0 ? tracks : undefined,
+          path: source.Path || undefined
         })
       }
     }
