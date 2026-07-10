@@ -46,7 +46,7 @@ export struct MediaComponent {
           }
           attr.rowsGap = CommonConstants.SPACE_12
           attr.columnsGap = CommonConstants.SPACE_12
-          attr.columnsTemplate = CommonConstants.gridColumnsTemplate(this.currentWidthBreakpoint)
+          attr.columnsTemplate = 'repeat(auto-fit, 140)'
           attr.width = CommonConstants.FULL_PERCENT
           attr.height = CommonConstants.FULL_PERCENT
         },

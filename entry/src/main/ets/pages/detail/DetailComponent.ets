@@ -1,4 +1,4 @@
-import { LengthMetrics } from "@kit.ArkUI"
+import { LengthMetrics, window } from "@kit.ArkUI"
 import { CommonConstants } from "../common/CommonConstants"
 import { DetailViewModel } from "./DetailViewModel"
 import { Repository } from "../../data/Repository"
@@ -199,7 +199,7 @@ export struct DetailOperate {
 
 }
 
-// ─── 背景图（短小氛围条 + 渐变遮罩） ──────────────────────────────────────────
+// ─── 背景图（延伸到海报行底部，叠加渐变遮罩） ─────────────────────────────────
 
 @Component
 export struct DetailCover {
@@ -210,15 +210,17 @@ export struct DetailCover {
 
   @StorageProp(BreakpointSystem.CURRENT_WIDTH_BREAKPOINT) currentWidthBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
 
-  @StorageProp(BreakpointSystem.CURRENT_HEIGHT_BREAKPOINT) currentHeightBreakpoint: HeightBreakpoint = HeightBreakpoint.HEIGHT_SM
+  @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
+
+  /** 海报行 slot：贴底对齐 */
+  @BuilderParam posterRow: () => void
 
   build() {
-    Stack() {
-      // backdrop 图片
+    Stack({ alignContent: Alignment.Bottom }) {
+      // backdrop：position 绝对覆盖填满 Stack，顶部 crop
       Image(this.itemDto?.image?.backdrop)
         .alt($r('app.media.alt'))
         .objectFit(ImageFit.Cover)
-        .autoResize(true)
         .width(CommonConstants.FULL_PERCENT)
         .height(CommonConstants.FULL_PERCENT)
 
@@ -234,12 +236,16 @@ export struct DetailCover {
           ]
         })
         .hitTestBehavior(HitTestMode.None)
+
+      // 海报 + 标题区，贴底对齐
+      this.posterRow()
     }
     .width(CommonConstants.FULL_PERCENT)
-    .height(this.currentWidthBreakpoint <= WidthBreakpoint.WIDTH_SM
-      ? $r('app.float.detail_backdrop_height') : $r('app.float.detail_backdrop_height_tablet'))
-    .clip(true)
-    .alignContent(Alignment.Bottom)
+    .height(
+      (this.currentWidthBreakpoint <= WidthBreakpoint.WIDTH_SM ? 200 : 260)
+        + this.getUIContext().px2vp(this.avoidArea?.topRect.height ?? 0)
+        + 56 // ohos_id_navigation_bar_height
+    )
   }
 
 }
@@ -250,6 +256,8 @@ export struct DetailCover {
 struct DetailMetaTags {
 
   @Prop itemDto: FinItem
+  /** 深色背景模式：使用白色文字 + 半透明深色 tag 背景 */
+  @Prop onDark: boolean = false
 
   build() {
     if (this.itemDto.productionYear || this.itemDto.runtimeTicks
@@ -258,33 +266,33 @@ struct DetailMetaTags {
         if (this.itemDto.productionYear) {
           Text(this.itemDto.productionYear.toString())
             .fontSize($r('sys.float.Body_S'))
-            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+            .fontColor(this.onDark ? 'rgba(255,255,255,0.9)' : $r('sys.color.ohos_id_color_text_secondary'))
             .padding({ left: CommonConstants.SPACE_8, right: CommonConstants.SPACE_8 })
             .height($r('app.float.detail_meta_tag_height'))
             .borderRadius($r('app.float.sm_border_radius'))
-            .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+            .backgroundColor(this.onDark ? 'rgba(0,0,0,0.35)' : $r('sys.color.ohos_id_color_button_normal'))
             .textAlign(TextAlign.Center)
         }
 
         if (this.itemDto.runtimeTicks) {
           Text($r('app.string.detail_runtime_format', Math.round(this.itemDto.runtimeTicks / 60000)))
             .fontSize($r('sys.float.Body_S'))
-            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+            .fontColor(this.onDark ? 'rgba(255,255,255,0.9)' : $r('sys.color.ohos_id_color_text_secondary'))
             .padding({ left: CommonConstants.SPACE_8, right: CommonConstants.SPACE_8 })
             .height($r('app.float.detail_meta_tag_height'))
             .borderRadius($r('app.float.sm_border_radius'))
-            .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+            .backgroundColor(this.onDark ? 'rgba(0,0,0,0.35)' : $r('sys.color.ohos_id_color_button_normal'))
             .textAlign(TextAlign.Center)
         }
 
         if (this.itemDto.officialRating) {
           Text(this.itemDto.officialRating)
             .fontSize($r('sys.float.Body_S'))
-            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+            .fontColor(this.onDark ? 'rgba(255,255,255,0.9)' : $r('sys.color.ohos_id_color_text_secondary'))
             .padding({ left: CommonConstants.SPACE_8, right: CommonConstants.SPACE_8 })
             .height($r('app.float.detail_meta_tag_height'))
             .borderRadius($r('app.float.sm_border_radius'))
-            .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+            .backgroundColor(this.onDark ? 'rgba(0,0,0,0.35)' : $r('sys.color.ohos_id_color_button_normal'))
             .textAlign(TextAlign.Center)
         }
 
@@ -295,12 +303,12 @@ struct DetailMetaTags {
               .fontSize($r('sys.float.Body_S'))
             Text(parseFloat(this.itemDto.communityRating).toFixed(1))
               .fontSize($r('sys.float.Body_S'))
-              .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+              .fontColor(this.onDark ? 'rgba(255,255,255,0.9)' : $r('sys.color.ohos_id_color_text_secondary'))
           }
           .padding({ left: CommonConstants.SPACE_8, right: CommonConstants.SPACE_8 })
           .height($r('app.float.detail_meta_tag_height'))
           .borderRadius($r('app.float.sm_border_radius'))
-          .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+          .backgroundColor(this.onDark ? 'rgba(0,0,0,0.35)' : $r('sys.color.ohos_id_color_button_normal'))
         }
       }
     }
@@ -415,22 +423,25 @@ export struct DetailPosterRow {
         .aspectRatio(CommonConstants.ITEM_RATIO)
         .shadow(ShadowStyle.OUTER_DEFAULT_MD)
 
+      // 标题信息区：纯内容，无背景
       Column({ space: CommonConstants.SPACE_8 }) {
         Text(this.itemDto?.name)
           .fontSize($r('sys.float.Title_M'))
-          .fontColor($r('sys.color.ohos_id_color_text_primary'))
+          .fontColor($r('sys.color.font_on_primary'))
           .maxLines(2)
           .ellipsisMode(EllipsisMode.END)
+          .textShadow({ radius: 4, color: 'rgba(0,0,0,0.6)', offsetX: 0, offsetY: 1 })
 
-        DetailMetaTags({ itemDto: this.itemDto })
+        DetailMetaTags({ itemDto: this.itemDto, onDark: true })
       }
       .alignItems(HorizontalAlign.Start)
+      .justifyContent(FlexAlign.End)
       .layoutWeight(1)
+      .height(CommonConstants.FULL_PERCENT)
     }
     .alignItems(VerticalAlign.Bottom)
     .width(CommonConstants.FULL_PERCENT)
-    .margin({ top: this.currentWidthBreakpoint <= WidthBreakpoint.WIDTH_SM ? -100 : -130 })
-    .padding({ left: CommonConstants.SPACE_16, right: CommonConstants.SPACE_16 })
+    .padding({ left: CommonConstants.SPACE_16, right: CommonConstants.SPACE_16, bottom: CommonConstants.SPACE_16 })
   }
 
 }

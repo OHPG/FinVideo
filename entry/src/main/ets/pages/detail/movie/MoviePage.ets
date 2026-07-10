@@ -32,8 +32,9 @@ struct MoviePage {
   @Builder
   movieScrollView(item?: FinItem) {
     Column({ space: CommonConstants.SPACE_12 }) {
-      DetailCover({ itemDto: item })
-      DetailPosterRow({ itemDto: item })
+      DetailCover({ itemDto: item }) {
+        DetailPosterRow({ itemDto: item })
+      }
       DetailContent({ itemDto: item })
       if (item && item.person && item.person.length > 0) {
         DetailFooter({ itemDto: item })
