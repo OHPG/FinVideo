@@ -18,7 +18,7 @@ import BuildProfile from 'entry/BuildProfile'
 @Component
 export struct PreferComponent {
 
-  @StorageProp(AppStorageKeys.KEY_ACTIVE_INFO) activeInfo?: ActiveInfo = undefined
+  @StorageLink(AppStorageKeys.KEY_ACTIVE_INFO) activeInfo?: ActiveInfo = undefined
 
   @Consume("bottomOffset") bottomOffset: number
 

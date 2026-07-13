@@ -1,8 +1,8 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
-import { AppEventHub, AppEvents, BreakpointSystem } from '@ohpg/fin-core';
-import { AvoidAreaSystem } from '@ohpg/fin-core';
+import { BreakpointSystem, AvoidAreaSystem } from '@ohpg/fin-core';
+
 import { DeviceUtil } from '@ohpg/fin-framework';
 import { AVPlayerKit, AVPlaybackManager } from '@ohpg/player';
 import { AppPlayerManager } from '../../player/AppPlayerManager';
@@ -20,21 +20,12 @@ export default class EntryAbility extends UIAbility {
 
   private playerManager?: AppPlayerManager
 
-  private onActiveInfoChanged = () => {
-    const repository = AppStorage.get<Repository>(Repository.REPOSITORY)
-    if (repository && !repository.getActiveInfo()) {
-      this.windowStage?.loadContent('pages/splash/SplashPage')
-    }
-  }
-
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
-    AppEventHub.on(AppEvents.EVENT_ACTIVE_INFO_CHANGED, this.onActiveInfoChanged)
   }
 
   onDestroy(): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
-    AppEventHub.off(AppEvents.EVENT_ACTIVE_INFO_CHANGED, this.onActiveInfoChanged)
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {

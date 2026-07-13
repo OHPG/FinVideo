@@ -1,4 +1,3 @@
-import { FinRouter } from '@ohpg/fin-framework'
 import { PrivacyDialog } from '@ohpg/fin-framework'
 import { Repository } from '../../data/Repository'
 import { AppPrefer } from '../../prefer/AppPrefer'
@@ -8,8 +7,6 @@ import { AppRouter } from '../../router/AppRouter'
 @Component
 struct SplashPage {
 
-  private repository: Repository = AppStorage.get(Repository.REPOSITORY)!
-  
   private appPrefer: AppPrefer = AppStorage.get(AppPrefer.PREFER)!
 
   private privacyDialog: PrivacyDialog = new PrivacyDialog(this.getUIContext())
@@ -56,17 +53,8 @@ struct SplashPage {
     } catch (error) {
     }
     setTimeout(() => {
-      this.enterHomeOrAddServer()
-    }, 1000)
-  }
-
-  private enterHomeOrAddServer() {
-    let activeInfo = this.repository?.getActiveInfo()
-    if (activeInfo) {
       AppRouter.goToHome(this.getUIContext())
-    } else {
-      FinRouter.auth(this.getUIContext(), true)
-    }
+    }, 1000)
   }
 
 }

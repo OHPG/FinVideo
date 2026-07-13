@@ -4,7 +4,8 @@ import { MainComponent } from './main/MainComponent';
 import { PreferComponent } from './prefer/PreferComponent';
 import { MediaComponent } from './media/MediaComponent';
 import { CommonConstants } from '../common/CommonConstants';
-import { BreakpointSystem } from '@ohpg/fin-core';
+import { ActiveInfo, AppStorageKeys, BreakpointSystem } from '@ohpg/fin-core';
+import { FinRouter, EmptyStateView } from '@ohpg/fin-framework';
 
 enum HomeTabType {
   Main = 'main',
@@ -22,8 +23,9 @@ interface HomeTabMeta {
 @Entry
 @Component
 struct HomePage {
-
   @State currentIndex: number = 0;
+
+  @StorageLink(AppStorageKeys.KEY_ACTIVE_INFO) activeInfo?: ActiveInfo = undefined
 
   @StorageProp('currentAvoidArea') @Watch('onAvoidAreaChanged') currentAvoidArea?: window.AvoidArea = undefined
 
@@ -97,39 +99,52 @@ struct HomePage {
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
-      // 内容区
-      Swiper(this.swiperController) {
-        ForEach(this.homeTabs, (type: HomeTabType) => {
-          this.renderTab(type)
-        }, (type: HomeTabType) => type)
-      }
-      .index(this.currentIndex)
-      .indicator(false)
-      .loop(false)
-      .disableSwipe(true)
-      .duration(0)
-      .width('100%')
-      .height('100%')
+      if (this.activeInfo) {
+        // 内容区
+        Swiper(this.swiperController) {
+          ForEach(this.homeTabs, (type: HomeTabType) => {
+            this.renderTab(type)
+          }, (type: HomeTabType) => type)
+        }
+        .index(this.currentIndex)
+        .indicator(false)
+        .loop(false)
+        .disableSwipe(true)
+        .duration(0)
+        .width('100%')
+        .height('100%')
 
-      // 悬浮底部导航
-      Row({ space: 4 }) {
-        ForEach(this.homeTabs, (type: HomeTabType, index: number) => {
-          this.TabBuilder(
-            this.tabMetaMap.get(type)!.title,
-            index,
-            this.tabMetaMap.get(type)!.icon
-          )
-        }, (type: HomeTabType) => type)
+        // 悬浮底部导航
+        Row({ space: 4 }) {
+          ForEach(this.homeTabs, (type: HomeTabType, index: number) => {
+            this.TabBuilder(
+              this.tabMetaMap.get(type)!.title,
+              index,
+              this.tabMetaMap.get(type)!.icon
+            )
+          }, (type: HomeTabType) => type)
+        }
+        .padding({
+          left: 12,
+          right: 12,
+        })
+        .margin({ bottom: px2vp(this.currentAvoidArea?.bottomRect.height) || CommonConstants.SPACE_8 })
+        .borderRadius(28)
+        .backgroundBlurStyle(BlurStyle.Thin)
+        .backgroundColor($r('sys.color.comp_background_secondary'))
+        .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+      } else {
+        EmptyStateView({
+          icon: $r('sys.symbol.externaldrive'),
+          title: $r('app.string.home_no_server_tips'),
+          subtitle: $r('app.string.home_no_server_desc')
+        })
+          .width('100%')
+          .height('100%')
+          .onClick(() => {
+            FinRouter.auth(this.getUIContext())
+          })
       }
-      .padding({
-        left: 12,
-        right: 12,
-      })
-      .margin({ bottom: px2vp(this.currentAvoidArea?.bottomRect.height) || CommonConstants.SPACE_8 })
-      .borderRadius(28)
-      .backgroundBlurStyle(BlurStyle.Thin)
-      .backgroundColor($r('sys.color.comp_background_secondary'))
-      .shadow(ShadowStyle.OUTER_DEFAULT_MD)
     }
     .width('100%')
     .height('100%')
