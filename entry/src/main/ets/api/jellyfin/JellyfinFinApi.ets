@@ -71,22 +71,47 @@ export class JellyfinFinApi implements FinVideoApi {
     this.jellyfin.selectUser({id: activeInfo.userInfo.userId, token: activeInfo.userInfo.accessToken})
   }
 
-  private buildImage(dto: BaseItemDto, type: ImageType): string {
-    let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
+  private buildImage(dto: BaseItemDto, type: ImageType): string | undefined {
     let id = dto.Id!
-    if (dto.Type === BaseItemKind.Season) {
-      if (!dto.ImageTags || Object.keys(dto.ImageTags).length <= 0) {
-        id = dto.SeriesId!
+    let tag: string | undefined
+    if (type === ImageType.Primary) {
+      if (dto.Type === BaseItemKind.Season) {
+        // Season 没有自己的 Primary 时，fallback 到 Series
+        if (!dto.ImageTags || !dto.ImageTags[ImageType.Primary]) {
+          if (!dto.SeriesId) return undefined
+          id = dto.SeriesId
+          tag = dto.SeriesPrimaryImageTag || undefined
+        } else {
+          tag = dto.ImageTags[ImageType.Primary] || undefined
+        }
+      } else {
+        if (!dto.ImageTags || !dto.ImageTags[ImageType.Primary]) return undefined
+        tag = dto.ImageTags[ImageType.Primary] || undefined
       }
+    } else if (type === ImageType.Backdrop) {
+      if (!dto.BackdropImageTags || dto.BackdropImageTags.length === 0) return undefined
+      tag = dto.BackdropImageTags[0] || undefined
+    } else if (type === ImageType.Logo) {
+      if (!dto.ImageTags || !dto.ImageTags[ImageType.Logo]) return undefined
+      tag = dto.ImageTags[ImageType.Logo] || undefined
     }
+    let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
     imageUri = imageUri.addEncodedSegment(`items/${id}/Images/${type}`)
-    return imageUri.toString()
+    let url = imageUri.toString()
+    if (tag) {
+      url += `?tag=${tag}`
+    }
+    return url
   }
 
   private buildPersonImage(person: BaseItemPerson, type: ImageType): string {
     let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
     imageUri = imageUri.addEncodedSegment(`items/${person.Id!}/Images/${type}`)
-    return imageUri.toString()
+    let url = imageUri.toString()
+    if (person.PrimaryImageTag) {
+      url += `?tag=${person.PrimaryImageTag}`
+    }
+    return url
   }
 
   private itemDataToFinItemData(itemData?: UserItemDataDto): FinItemData | undefined {
