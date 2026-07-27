@@ -2,7 +2,7 @@ import { AbilityStage, Configuration, ConfigurationConstant } from "@kit.Ability
 import { AppConfig } from "../config/AppConfig";
 import { Repository } from "../data/Repository";
 import { AppPrefer } from "../prefer/AppPrefer";
-import { AVPlayerKit } from '@ohpg/player'
+import { AVPlayerKit, AVPlayerPrefer, AVRenderType, AVCodecType } from '@ohpg/player'
 import { AppPlayerFactory } from "../player/AppPlayerFactory";
 import { AppPlayerContextFactory } from "../player/AppPlayerContextFactory";
 
@@ -19,6 +19,9 @@ export class App extends AbilityStage {
     // https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/arkts-light-dark-color-adaptation-V5#section1421172621111
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     const appContext = this.context.getApplicationContext()
+    // 设置默认渲染模式和解码模式
+    AVPlayerPrefer.DEFAULT_RENDER_TYPE = AVRenderType.GPU_NEXT
+    AVPlayerPrefer.DEFAULT_CODEC_TYPE = AVCodecType.HW
     // 初始化播放器库
     AVPlayerKit.init(appContext, new AppPlayerFactory())
     AVPlayerKit.setContextFactory(new AppPlayerContextFactory())
