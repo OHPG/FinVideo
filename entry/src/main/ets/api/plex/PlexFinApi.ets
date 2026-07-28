@@ -4,6 +4,7 @@ import { ActiveInfo, FinAuthResult,
   FinItemType,
   FinPage,
   FinPerson, FinPersonType, FinPublicSystemInfo,
+  FinSortBy, FinSortOrder,
   ServerType } from "@ohpg/fin-core";
 import { ClientInfo, DeviceInfo } from "@ohpg/network";
 import { Plex, PlexMetadata, PlexDirectory } from "@ohpg/plex";
@@ -274,13 +275,37 @@ export class PlexFinApi implements FinVideoApi {
   async getItemList(id: string, types: FinItemType[], recursive: boolean, index?: number): Promise<FinPage> {
     let start = index || 0
     let size = this.appConfig.pageSize
-    let resp = await this.plex.getLibraryApi().getItems(id, start, size)
+    let sort = this.getPlexSort()
+    let resp = await this.plex.getLibraryApi().getItems(id, start, size, sort)
     let mc = resp.MediaContainer
     let items = this.metadataListToFinItems(mc?.Metadata)
     let total = mc?.totalSize || mc?.size || items.length
     let more = start + items.length < total
     let page: FinPage = { cur: start, items: items, more: more }
     return page
+  }
+
+  private getPlexSort(): string {
+    let field: string
+    switch (this.appConfig.sortBy) {
+      case FinSortBy.DateCreated:
+        field = 'addedAt'
+        break
+      case FinSortBy.PremiereDate:
+        field = 'originallyAvailableAt'
+        break
+      case FinSortBy.ProductionYear:
+        field = 'year'
+        break
+      case FinSortBy.CommunityRating:
+        field = 'audienceRating'
+        break
+      default:
+        field = 'titleSort'
+        break
+    }
+    let direction = this.appConfig.sortOrder === FinSortOrder.Descending ? 'desc' : 'asc'
+    return `${field}:${direction}`
   }
 
   async getLatestItems(id?: string): Promise<FinItem[]> {

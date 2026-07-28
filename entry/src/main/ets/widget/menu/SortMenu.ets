@@ -35,17 +35,6 @@ export struct SortMenu {
         MenuItem({
           content: $r('app.string.menu_sort_by_name'),
           symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.textformat')),
-          symbolEndIcon: this.appConfig?.sortBy === FinSortBy.Name ? this.checkedModifier : this.uncheckedModifier
-        })
-          .onClick(() => {
-            this.appConfig!.sortBy = FinSortBy.Name
-            this.appPrefer?.setSortBy(FinSortBy.Name)
-            this.notifySort()
-          })
-
-        MenuItem({
-          content: $r('app.string.menu_sort_by_sort_name'),
-          symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.character_arrow_clockwise')),
           symbolEndIcon: this.appConfig?.sortBy === FinSortBy.SortName ? this.checkedModifier : this.uncheckedModifier
         })
           .onClick(() => {
@@ -62,6 +51,39 @@ export struct SortMenu {
           .onClick(() => {
             this.appConfig!.sortBy = FinSortBy.DateCreated
             this.appPrefer?.setSortBy(FinSortBy.DateCreated)
+            this.notifySort()
+          })
+
+        MenuItem({
+          content: $r('app.string.menu_sort_by_premiere_date'),
+          symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.calendar')),
+          symbolEndIcon: this.appConfig?.sortBy === FinSortBy.PremiereDate ? this.checkedModifier : this.uncheckedModifier
+        })
+          .onClick(() => {
+            this.appConfig!.sortBy = FinSortBy.PremiereDate
+            this.appPrefer?.setSortBy(FinSortBy.PremiereDate)
+            this.notifySort()
+          })
+
+        MenuItem({
+          content: $r('app.string.menu_sort_by_production_year'),
+          symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.film')),
+          symbolEndIcon: this.appConfig?.sortBy === FinSortBy.ProductionYear ? this.checkedModifier : this.uncheckedModifier
+        })
+          .onClick(() => {
+            this.appConfig!.sortBy = FinSortBy.ProductionYear
+            this.appPrefer?.setSortBy(FinSortBy.ProductionYear)
+            this.notifySort()
+          })
+
+        MenuItem({
+          content: $r('app.string.menu_sort_by_community_rating'),
+          symbolStartIcon: new SymbolGlyphModifier($r('sys.symbol.star')),
+          symbolEndIcon: this.appConfig?.sortBy === FinSortBy.CommunityRating ? this.checkedModifier : this.uncheckedModifier
+        })
+          .onClick(() => {
+            this.appConfig!.sortBy = FinSortBy.CommunityRating
+            this.appPrefer?.setSortBy(FinSortBy.CommunityRating)
             this.notifySort()
           })
       }

@@ -85,12 +85,20 @@
       "value": "名称"
     },
     {
-      "name": "menu_sort_by_sort_name",
-      "value": "排序名称"
-    },
-    {
       "name": "menu_sort_by_time",
       "value": "入库时间"
+    },
+    {
+      "name": "menu_sort_by_premiere_date",
+      "value": "发行时间"
+    },
+    {
+      "name": "menu_sort_by_production_year",
+      "value": "制作年份"
+    },
+    {
+      "name": "menu_sort_by_community_rating",
+      "value": "社区评分"
     },
     {
       "name": "menu_sort_order_asc",
